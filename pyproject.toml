@@ -19,6 +19,9 @@ classifiers = [
 dependencies = [
     "numpy",
     "matplotlib",
+    "opencv-python",
+    "rich",
+    ""
 ]
 
 [project.urls]
