@@ -44,7 +44,7 @@ pip install --no-build-isolation --editable .            # compile and install h
 
 ## Documentation
 
-### [Click here for Docs!](https://readthedocs.org/projects/hsi-wizard/)
+### [Click here for Docs!](https://hsi-wizard.readthedocs.io/en/latest/)
 
 The Documentation is available as readthedocs project. Build with `sphinx` and the `sphinx_rtd_theme`.
 
