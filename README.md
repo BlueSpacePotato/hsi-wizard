@@ -52,7 +52,7 @@ The Documentation is available as readthedocs project. Build with `sphinx` and t
 * `docs/`data for the sphinx/readthedocs implementation
 * `resources/` for storing images and sample data and equivalent
 * `wizard/` the source code for the `hsi-wizard` python-lib that can be used as stand alone
-* `workflows/` .yml-files for autobuild etc
+* `.github/workflows/` .yaml-files for autobuild etc
 
 ## Code Philosophy
 
