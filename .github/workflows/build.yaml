@@ -1,0 +1,56 @@
+name: Python Package Build
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Check Commit Message
+        run: |
+          if [[ $(git log --format=%B -n 1 ${{ github.sha }}) == *"--build"* ]]; then
+            echo "Commit message contains --build keyword. Proceeding with workflow."
+          else
+            echo "Commit message does not contain --build keyword. Skipping workflow."
+            exit 0
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run PEP8 Check
+        run: |
+          if ! pycodestyle .; then
+            echo "PEP8 check failed. Exiting workflow."
+            exit 1
+          fi
+
+      - name: Build Sphinx
+        run: |
+          # Add commands to build Sphinx documentation
+          # This step will only run if the PEP8 check passes
+
+      - name: Build Package
+        run: |
+          # Add commands to build and publish your Python package
+          # This step will only run if the Sphinx build passes
+
+      - name: Push to Main Branch
+        if: success() # This step will only run if all previous steps were successful
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          git checkout main
+          git merge dev
+          git push origin main
