@@ -1,16 +1,16 @@
-.. wizard-of-os documentation master file, created by
-   sphinx-quickstart on Thu Aug  4 15:03:09 2022.
+.. hsi_wizard documentation master file, created by
+   sphinx-quickstart on Sun Jan 21 10:27:45 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to hsi_wizard documentation!
-========================================
+Welcome to hsi_wizard's documentation!
+======================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-    intro
+
 
 Indices and tables
 ==================
