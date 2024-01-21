@@ -9,13 +9,14 @@ from .utils.tracker import TrackExecutionMeta
 
 class DataCube(metaclass=TrackExecutionMeta):
     """
-    DataCube class to store several important information. Also, nearly all functions use DataCubes as In- and Output.
+    DataCube class to store several important information for the hsi data. Also, nearly all functions use DataCubes as In- and Output.
 
-    The cube is a 3D array with shape `vxy` It can be extended with a 4th Dimension, called `z`.
-    x, y, z values describe the `pixel`.
+    The cube is a 3D array with shape `vxy`.
+    x, y values describe the `pixel`.
     v values are for the measured counts, channels, values, ...
 
-    In the most cases you have some kind of wavelengths information in your dc.
+    In the most cases you have some kind of wavelengths information in your dc. These can be nm or cm^-1. You can
+    applie your description in notation for the dc and cast it.
     """
 
     def __init__(self, cube=None, wavelengths=None, name=None, notation=None, record: bool = False) -> None:

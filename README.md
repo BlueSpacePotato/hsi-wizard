@@ -25,7 +25,7 @@ The goal is to set up a straightforward environment for hyperspectral analysis. 
 When utilizing pip, hsi-wizard releases are accessible in the form of source packages and binary wheels. Before proceeding with the installation of hsi-wizard and its prerequisites, ensure that your pip, setuptools, and wheel are updated to the latest versions
 
 ```
-pip install hsi_wiz
+pip install hsi_wizard
 ```
 
 ### Compile from source
@@ -71,9 +71,9 @@ To build a clean code and communicate the ideas the right way, we need to define
 - `x` and `y` values describe the number of pixels in each direction
 - `v` values (often called λ in papers) describe the information deapth of the spectrum, commanly as measured counts.
 
-```
+```python3
 from matplotlib import pyplot as plt
-import numpy as np
+from hsi_wizard imoort DataCube as dc
 
 len_v = 50
 len_x = 5
