@@ -2,6 +2,9 @@
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+packages = ["hsi_wizard"]
+
 [project]
 name = "hsi_wizard"
 version = "0.0.1"
@@ -21,7 +24,6 @@ dependencies = [
     "matplotlib",
     "opencv-python",
     "rich",
-    ""
 ]
 
 [project.urls]
