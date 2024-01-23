@@ -1,12 +1,16 @@
-
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
+[tool.setuptools]
+package-dir = {"" = "hsi_wizard"}
+
+[project]
 name = "hsi_wizard"
 version = "0.0.1"
-authors = ["Felix Wuehler <f.wuehler@hs-mannheim.de>"]
+authors = [
+    {name = "Felix Wuehler", email="f.wuehler@hs-mannheim.de"},
+]
 description = "A magical hyperspectral imaing package"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -16,25 +20,16 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-[tool.poetry.dependencies]
+dependencies = [
 # Your regular dependencies go here
-numpy="*"
-matplotlib="*"
-opencv-python="*"
-rich="*"
+    "numpy",
+    "matplotlib",
+    "opencv-python",
+    "rich",
+]
 
-[tool.poetry.dev-dependencies]
-# Your development dependencies go here
-pydocstyle = "*"
-flake8 = "*"
-
-
-[tool.poetry.scripts]
-# Your scripts go here, if any
-
-[tool.poetry.extras]
-# Extras, if any, go here
-
+[project.optional-dependencies]
+tests = ["pydocstyle", "flake8"]
 
 [project.urls]
 Homepage = "https://github.com/BlueSpacePotato/hsi-wizard"
