@@ -1,3 +1,4 @@
+"""Decorators to handle behavier."""
 import os
 import time
 
@@ -7,8 +8,7 @@ import numpy as np
 
 
 def check_load_dc(func) -> np.array:
-    """
-    check if the loading function is correctly defined
+    """Check if the loading function is correctly defined.
 
     :param func:
     :return: func
@@ -17,14 +17,15 @@ def check_load_dc(func) -> np.array:
     def wrapper(*args, **kwargs):
         # process function
         cube = func(*args, **kwargs)
-        
+
         if cube != 'no implementation':
             # check if np array
             if cube is not np.array:
                 raise ValueError('Loading function should return a np array')
 
             if 2 < len(cube.shape) <= 4:
-                raise ValueError('loading function is not valid. The return shape should be (z|x|y) or (z|x|y|v)')
+                raise ValueError('loading function is not valid. The return'
+                                 'shape should be (z|x|y) or (z|x|y|v)')
         else:
             cube = None
         return cube
@@ -32,8 +33,7 @@ def check_load_dc(func) -> np.array:
 
 
 def check_path(func):
-    """
-    check if data path is valid, if not throw exception
+    """Check if data path is valid, if not throw exception.
 
     :param func:
     :return:
@@ -55,28 +55,29 @@ def check_path(func):
 
 
 def add_method(cls):
-    """
-    add method to class
+    """Add method to class.
 
     :param cls:
     :return:
 
-    source: [Michael Garod @ Medium](https://mgarod.medium.com/dynamically-add-a-method-to-a-class-in-python-c49204b85bd6)
+    source: [Michael Garod @ Medium](https://mgarod.medium.com/
+    dynamically-add-a-method-to-a-class-in-python-c49204b85bd6)
     """
     def decorator(func):
-        @wraps(func) 
-        #def wrapper(self, *args, **kwargs):
+        @wraps(func)
+        # def wrapper(self, *args, **kwargs):
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
         setattr(cls, func.__name__, wrapper)
-        # Note we are not binding func, but wrapper which accepts self but does exactly the same as func
-        return func # returning func means func can still be used normally
+        # Note we are not binding func, but wrapper which accepts self but
+        # does exactly the same as func
+        return func  # returning func means func can still be used normally
     return decorator
 
 
 def check_time(func):
-    """
-    check execution time of an function
+    """Check execution time of an function.
+
     :param func:
     :return:
     """
@@ -90,8 +91,7 @@ def check_time(func):
 
 
 def add_to_workflow(func):
-    """
-    add a function and the parameter to an template
+    """Add a function and the parameter to an template.
 
     :param func:
     :return:
@@ -104,8 +104,7 @@ def add_to_workflow(func):
 
 
 def check_limits(func) -> np.array:
-    """
-    force clipping limits to an image or array.
+    """Force clipping limits to an image or array.
 
     :param func:
     :return:
@@ -125,4 +124,3 @@ def check_limits(func) -> np.array:
 
         return image
     return wrapper
-
