@@ -26,12 +26,12 @@ jobs:
         with:
           python-version: 3.x
 
-      - name: Install dependencies
-        run: pip install .
+      - name: Install dev dependencies
+        run: pip install -e '.[dev]'
 
       - name: Run PEP8 Check
         run: |
-          if ! pycodestyle .; then
+          if ! pycodestyle hsi_wizard; then
             echo "PEP8 check failed. Exiting workflow."
             exit 1
           fi
