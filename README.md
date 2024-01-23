@@ -1,5 +1,4 @@
 [![Documentation Status](https://readthedocs.org/projects/hsi-wizard/badge/?version=latest)](https://hsi-wizard.readthedocs.io/en/latest/?badge=latest)
-[![Downloads](https://pepy.tech/project/pydocstyle)
 
 <img src="./resources/imgs/logo/linkedin_banner_image_2.png" alt="">
 
