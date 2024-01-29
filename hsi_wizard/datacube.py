@@ -5,8 +5,8 @@ from rich import print
 import numpy as np
 import pickle
 
-from .utils import decorators
-from .utils.tracker import TrackExecutionMeta
+from ._utils import decorators
+from ._utils.tracker import TrackExecutionMeta
 
 
 class DataCube(metaclass=TrackExecutionMeta):
@@ -78,16 +78,14 @@ class DataCube(metaclass=TrackExecutionMeta):
         return DataCube(cube=new_cube, wavelengths=new_wavelengths,
                         name=self.name, notation=self.notation)
 
-    def __len__(self, axis: int = 0) -> int:
+    def __len__(self) -> int:
         """Magic Method for getting length of axis as int.
 
         :param axis: int for selection axis
         :return: length of DataCube for given axis
         :rtype: int
         """
-        if axis >= 3:
-            raise ValueError('Axis can only be 0, 1 or 2.')
-        return self.shape[axis] if self.cube is not None else 0
+        return self.shape[0] if self.cube is not None else 0
 
     def __getitem__(self, idx):
         """Magic Method to get an item.
