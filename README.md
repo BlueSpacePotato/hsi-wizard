@@ -25,7 +25,7 @@ The goal is to set up a straightforward environment for hyperspectral analysis. 
 When utilizing pip, hsi-wizard releases are accessible in the form of source packages and binary wheels. Before proceeding with the installation of hsi-wizard and its prerequisites, ensure that your pip, setuptools, and wheel are updated to the latest versions
 
 ```
-pip install hsi_wizard
+pip install hsi-wizard
 ```
 
 ### Compile from source
@@ -37,7 +37,8 @@ git clone https://github.com/BlueSpacePotato/hsi-wizard  # clone hsi-wizard
 cd hsi-wizard                                            # navigate into dir
 python -m venv .env                                      # create environment in .env
 source .env/bin/activate                                 # activate virtual env
-pip install -r requirements.txt                          # install requirements
+pip install -e .                                         # install requirements
+pip install wheel                                        # install wheel
 pip install --no-build-isolation --editable .            # compile and install hsi-wizard
 ```
 
@@ -73,14 +74,14 @@ To build a clean code and communicate the ideas the right way, we need to define
 
 ```python3
 from matplotlib import pyplot as plt
-from hsi_wizard imoort DataCube as dc
+from hsi_wizard import datacube as dc
 
 len_v = 50
 len_x = 5
 len_y = 6
 
 # define empty array with given shape
-data_cube = dc.empty(shape=(len_v, len_x, len_y))
+data_cube = dc.DataCube()
 
 # get the spectru for a single pixel and plot it
 spectrum = data_cube[:, 3, 3]
@@ -91,10 +92,9 @@ plt.show()
 img = datacube[3]
 plt.imshow(img_2d)
 plt.show()
-
 ```
 
-### Diffrence read and load
+### Difference read and load
 As `loading` function is used to import already processed data. For example if you want to load in an already existing numpy array. A `read` function on the other hand, reads dedicate files, like a `*.csv` or `*.fsm` file.
 
 ### Pre-Processing Level
