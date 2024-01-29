@@ -1,3 +1,5 @@
+# style-check.yml
+
 name: run python style checks
 
 on:
@@ -6,12 +8,11 @@ on:
       - dev
 
 jobs:
-  build:
-
+  style-check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repositor
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Python

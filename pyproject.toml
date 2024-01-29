@@ -29,11 +29,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-tests = ["pydocstyle", "flake8"]
+dev = ["pydocstyle", "flake8", "pytest", "coverage"]
+tests = ["pytest", "coverage"]
 
 [project.urls]
 Homepage = "https://github.com/BlueSpacePotato/hsi-wizard"
 Issues = "https://github.com/BlueSpacePotato/hsi-wizard/issues"
-
-
-

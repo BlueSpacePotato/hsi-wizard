@@ -1,0 +1,13 @@
+# main.yml
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  style-check:
+    uses: .github/workflows/style-check.yml
+
+  test-and-coverage:
+    uses: .github/workflows/test-and-coverage.yml
