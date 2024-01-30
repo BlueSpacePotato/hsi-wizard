@@ -1,4 +1,5 @@
 """DataCube class for storring HSI data."""
+import warnings
 
 import cv2
 from rich import print
@@ -41,9 +42,6 @@ class DataCube(metaclass=TrackExecutionMeta):
         self.cube = None if cube is None else cube
         self.notation = notation
 
-        if self.wavelengths is None and self.cube is not None:
-            self.wavelengths = np.array([i for i in range(self.shape[0])])
-
         self.record = record
         if self.record:
             self.start_recording()
@@ -55,8 +53,8 @@ class DataCube(metaclass=TrackExecutionMeta):
         :return: None
         :type: None
         """
-        if type(other) is not DataCube:
-            raise ValueError()
+        if not isinstance(other, DataCube):
+            raise ValueError('Cant add DataCube and none DataCube.')
 
         new_wavelengths = None
 
@@ -68,12 +66,14 @@ class DataCube(metaclass=TrackExecutionMeta):
             )
 
         if self.wavelengths is None or other.wavelengths is None:
-            print('\033[93mOne of the two DataCubes dos not contain the'
-                  'wavelength information, add will work but you lose'
-                  'these information\033[0m')
+            warnings.warn('One of the two DataCubes does not contain the'
+                          ' wavelength information. Adding them will work,'
+                          ' but you will lose this information.')
         else:
             new_wavelengths = self.wavelengths + other.wavelengths
 
+        if self.cube is None or other.cube is None:
+            raise ValueError("Cannot add DataCubes with None values.")
         new_cube = np.concatenate((self.cube, other.cube), axis=0)
         return DataCube(cube=new_cube, wavelengths=new_wavelengths,
                         name=self.name, notation=self.notation)

@@ -107,3 +107,37 @@ class TestDataCube:
         with pytest.raises(ValueError):
             result = data_cube1 + data_cube2
 
+    # Initializes a DataCube instance with all parameters.
+    def test_all_parameters(self):
+        cube = np.zeros((10, 100, 100))
+        wavelengths = [400, 410, 420, 430, 440, 450, 460, 470, 480, 490]
+        name = "Example DataCube"
+        notation = "wavelengths"
+        record = True
+
+        data_cube = DataCube(cube=cube, wavelengths=wavelengths, name=name, notation=notation, record=record)
+
+        assert data_cube.name == name
+        assert data_cube.shape == cube.shape
+        assert data_cube.dim is None
+        assert np.array_equal(data_cube.wavelengths, np.array(wavelengths))
+        assert np.array_equal(data_cube.cube, cube)
+        assert data_cube.notation == notation
+        assert data_cube.record is True
+
+    # Add a datacube and an int and check if the ValueError gets raised.
+    def test_add_with_int_raises_valueerror(self):
+        cube1 = DataCube(cube=np.ones((3, 2, 2)))
+        cube2 = 5
+        with pytest.raises(ValueError):
+            cube1 + cube2
+
+    def test_different_shape_no_wavelengths(self):
+        dc1 = DataCube(cube=np.ones((10, 100, 100)), wavelengths=np.arange(10), name="dc1")
+        dc2 = DataCube(cube=np.ones((5, 200, 200)), name="dc2")
+        dc2.wavelengths = None
+
+        with pytest.raises(ValueError) as e:
+            result = dc1 + dc2
+
+        assert isinstance(e.value, ValueError)
