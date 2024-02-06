@@ -121,5 +121,3 @@ def check_limits(func) -> np.array:
 
         return image
     return wrapper
-
-
