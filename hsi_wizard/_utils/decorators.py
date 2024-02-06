@@ -23,9 +23,9 @@ def check_load_dc(func) -> np.array:
             if cube is not np.array:
                 raise ValueError('Loading function should return a np array')
 
-            if 2 < len(cube.shape) <= 4:
+            if 2 < len(cube.shape) <= 3:
                 raise ValueError('loading function is not valid. The return'
-                                 'shape should be (z|x|y) or (z|x|y|v)')
+                                 'shape should be (v|x|y)')
         else:
             cube = None
         return cube
@@ -42,7 +42,7 @@ def check_path(func):
 
         path = args[0] if kwargs.get('path') is None else kwargs.get('path')
 
-        if path is None:
+        if path is None or path == '':
             raise ValueError('no path given')
 
         if not os.path.exists(path):
@@ -116,11 +116,10 @@ def check_limits(func) -> np.array:
         # process function
         image = func(*args, **kwargs)
 
-        # check limits
-        if dtype == 'uint8':
-            image = np.clip(image, 0, 255).astype(dtype)
         if dtype in ['float32', 'float64']:
             image = np.clip(image, 0, 1).astype(dtype)
 
         return image
     return wrapper
+
+

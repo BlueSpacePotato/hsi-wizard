@@ -65,6 +65,7 @@ class DataCube(metaclass=TrackExecutionMeta):
                 f'You can use the DataCube.resize function to adjust the cubes'
             )
 
+        # wavelengths cant be empty atm
         if self.wavelengths is None or other.wavelengths is None:
             warnings.warn('One of the two DataCubes does not contain the'
                           ' wavelength information. Adding them will work,'
@@ -235,13 +236,20 @@ class DataCube(metaclass=TrackExecutionMeta):
         if not isinstance(wavelengths, np.ndarray):
             try:
                 # todo: better error handling
-                self.wavelengths = np.array(wavelengths)
+                if np.array(wavelengths).ndim == 1:
+                    self.wavelengths = np.array(wavelengths)
+                else:
+                    raise AttributeError
             except AttributeError:
                 raise AttributeError('Your wavelengths didnt match an'
                                      '1d np.array')
 
         else:
-            self.wavelengths = wavelengths
+            if wavelengths.ndim == 1:
+                self.wavelengths = wavelengths
+            else:
+                raise AttributeError('Your wavelengths didnt match an'
+                                     '1d np.array')
 
     def set_cube(self, cube: np.array) -> None:
         """Set cube data.
@@ -274,7 +282,7 @@ class DataCube(metaclass=TrackExecutionMeta):
         self.shape = self.cube.shape
 
     def start_recording(self):
-        """Start Recoring.
+        """Start Recording.
 
         :return: None
         """
@@ -282,7 +290,7 @@ class DataCube(metaclass=TrackExecutionMeta):
         TrackExecutionMeta.start_recording()
 
     def stop_recording(self) -> None:
-        """Stop Recoring.
+        """Stop Recording.
 
         :return: None
         """
@@ -291,7 +299,7 @@ class DataCube(metaclass=TrackExecutionMeta):
 
     @staticmethod
     def save_template(filename) -> None:
-        """Save temlate from executed functions.
+        """Save template from executed functions.
 
         :return: None
         """
@@ -301,7 +309,7 @@ class DataCube(metaclass=TrackExecutionMeta):
             pickle.dump(TrackExecutionMeta.recorded_methods, template_file)
 
     def load_template(self, filenmae) -> None:
-        """Load temlate and execute function.
+        """Load template and execute function.
 
         :return: None
         """
