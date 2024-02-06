@@ -11,8 +11,9 @@ from nptdms import TdmsFile
 
 from matplotlib import pyplot as plt
 
-import hsi_wizard as wizard
-from .decorators import check_path, add_method
+from hsi_wizard.datacube import DataCube
+
+from hsi_wizard._utils.decorators import check_path, add_method
 
 
 def get_files_by_extension(path: str, extension: str) -> list:
@@ -72,8 +73,8 @@ def to_cube(data, len_x, len_y) -> np.array:
 
 
 @check_path
-@add_method(wizard.DataCube)
-def read(path: str, datatype: str = 'auto') -> wizard.DataCube:
+@add_method(DataCube)
+def read(path: str, datatype: str = 'auto') -> DataCube:
     """Read functions for importing data from different file types.
 
     :param path: data path to file
@@ -95,7 +96,7 @@ def read(path: str, datatype: str = 'auto') -> wizard.DataCube:
         _datacube = __read_fsm__(path)
     elif suffix == '.tdms':
         sample, dark, wave = read_tdms(path)
-        _datacube = wizard.DataCube(sample, wavelengths=wave)
+        _datacube = DataCube(sample, wavelengths=wave)
     elif suffix == '.jpg':
         _datacube = image_to_dc(path)
     elif suffix == '.npy':
@@ -109,7 +110,7 @@ def read(path: str, datatype: str = 'auto') -> wizard.DataCube:
     return _datacube
 
 
-def load_npy(path) -> wizard.DataCube:
+def load_npy(path) -> DataCube:
     """Load numpy data.
 
     :param path:
@@ -119,10 +120,10 @@ def load_npy(path) -> wizard.DataCube:
     data = np.transpose(data, (2, 0, 1))
 
     # put data in DataCube and return
-    return wizard.DataCube(data)
+    return DataCube(data)
 
 
-def load(data) -> wizard.DataCube:
+def load(data) -> DataCube:
     """Load function for existing data.
 
     :param data:
@@ -131,15 +132,15 @@ def load(data) -> wizard.DataCube:
     _datacube = None
 
     if isinstance(data, np.ndarray):
-        _datacube = wizard.DataCube(cube=data)
+        _datacube = DataCube(cube=data)
     elif isinstance(data, list):
-        _datacube = wizard.DataCube(cube=data)
+        _datacube = DataCube(cube=data)
 
     return _datacube
 
 
 @check_path
-def images_from_folder_to_dc(path: str) -> wizard.DataCube:
+def images_from_folder_to_dc(path: str) -> DataCube:
     """Load a folder of images into a DataCube.
 
     :param path:
@@ -161,10 +162,10 @@ def images_from_folder_to_dc(path: str) -> wizard.DataCube:
     data = np.transpose(data, (2, 0, 1))
 
     # put data in DataCube and return
-    return wizard.DataCube(data)
+    return DataCube(data)
 
 
-def image_to_dc(path: str) -> wizard.DataCube:
+def image_to_dc(path: str) -> DataCube:
     """Load image into a DataCube.
 
     :param path:
@@ -172,36 +173,36 @@ def image_to_dc(path: str) -> wizard.DataCube:
     """
     img = plt.imread(path)
     data = np.transpose(np.array(img), (2, 0, 1))
-    return wizard.DataCube(data)
+    return DataCube(data)
 
 
 # todo
-def __read_csv__(path: str) -> wizard.DataCube:
+def __read_csv__(path: str) -> DataCube:
     """Read csv file.
 
     :param path: path to csv file
     :return:
     """
     raise NotImplementedError('Not Implemented yet')
-    _datacube = wizard.DataCube(cube=None)
+    _datacube = DataCube(cube=None)
 
     return _datacube
 
 
 # todo
-def __read_xlsx__(path: str) -> wizard.DataCube:
+def __read_xlsx__(path: str) -> DataCube:
     """Read xlsx file.
 
     :param path: path to xslx file
     :return:
     """
     raise NotImplementedError('Not Implemented yet')
-    _datacube = wizard.DataCube(cube=None)
+    _datacube = DataCube(cube=None)
 
     return _datacube
 
 
-def __read_fsm__(path: str) -> wizard.DataCube:
+def __read_fsm__(path: str) -> DataCube:
     """
     Read function for fsm-files from perkin elmer. Tested with FTIR-Data.
 
@@ -241,12 +242,12 @@ def __read_fsm__(path: str) -> wizard.DataCube:
     fsm_data_cube = to_cube(data=fsm_data.T, len_x=fsm_len_x, len_y=fsm_len_y)
 
     # may return with transposed date
-    _datacube = wizard.DataCube(fsm_data_cube, wavelengths=fsm_wave,
-                                name='.fsm', notation='cm-1')
+    _datacube = DataCube(fsm_data_cube, wavelengths=fsm_wave,
+                         name='.fsm', notation='cm-1')
     return _datacube
 
 
-def read_tdms(path: str = None) -> wizard.DataCube:
+def read_tdms(path: str = None) -> DataCube:
     """Read function for tdms file.
 
     The functions reads and pareses the in `tdms_file` defined file and
@@ -337,7 +338,7 @@ def read_tdms(path: str = None) -> wizard.DataCube:
 
     wave = wave.astype('int')
 
-    return wizard.DataCube(
+    return DataCube(
         cube=tdms_sample_cube,
         wavelengths=wave,
         name=data_type
@@ -382,8 +383,8 @@ def write_xlsx(datacube: np.array, wavelenghts: np.array, filename: str):
     df.to_excel(f'{filename}.xlsx')
 
 
-def merge_cubes(cube1: wizard.DataCube, cube2: wizard.DataCube)\
-        -> wizard.DataCube:
+def merge_cubes(cube1: DataCube, cube2: DataCube)\
+        -> DataCube:
     """Merge to datacubes to a new one.
 
     :param cube1:
@@ -400,7 +401,7 @@ def merge_cubes(cube1: wizard.DataCube, cube2: wizard.DataCube)\
                                   'This function is not implemented yet.'
                                   'At the moment you just can merge cubes'
                                   ' with the same size x,y.')
-    return wizard.DataCube(c3)
+    return DataCube(c3)
 
 
 def merge_waves(wave1: list, wave2: list) -> list:

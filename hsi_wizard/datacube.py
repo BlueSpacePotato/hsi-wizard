@@ -6,8 +6,8 @@ from rich import print
 import numpy as np
 import pickle
 
-from ._utils import decorators
-from ._utils.tracker import TrackExecutionMeta
+from hsi_wizard._utils import decorators
+from hsi_wizard._utils.tracker import TrackExecutionMeta
 
 
 class DataCube(metaclass=TrackExecutionMeta):
