@@ -4,3 +4,5 @@ __author__ = 'flx'
 
 from ._utils import decorators
 from ._utils import tracker
+from ._utils import fileHandler
+from datacube import DataCube
