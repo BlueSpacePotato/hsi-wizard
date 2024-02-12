@@ -146,33 +146,38 @@ def images_from_folder_to_dc(path: str) -> DataCube:
     :param path:
     :return:
     """
-    files = os.listdir(path)
-
-    # get a sample image for x and y shape
-    img = plt.imread(os.path.join(path, files[0]))
-
-    # define empty dc
-    data = np.empty(shape=(img.shape[0], img.shape[1], len(files)))
-
-    # open files and fill the empty data cube
-    for idx, file in enumerate(files):
-        img = plt.imread(os.path.join(path, file))
-        data[:, :, idx] = img
-
-    data = np.transpose(data, (2, 0, 1))
+    files = [os.path.join(path, f) for f in os.listdir(path)]
+    _dc = image_to_dc(files)
 
     # put data in DataCube and return
-    return DataCube(data)
+    return _dc
 
 
-def image_to_dc(path: str) -> DataCube:
+def image_to_dc(path: str | list) -> DataCube:
     """Load image into a DataCube.
 
     :param path:
     :return:
     """
-    img = plt.imread(path)
-    data = np.transpose(np.array(img), (2, 0, 1))
+    if isinstance(path, str):
+        img = plt.imread(path)
+        data = np.transpose(np.array(img), (2, 0, 1))
+    elif isinstance(path, list):
+
+        # get a sample image for x and y shape
+        img = plt.imread(path[0])
+
+        # define empty dc
+        data = np.empty(shape=(img.shape[0], img.shape[1], len(path)))
+
+        # open files and fill the empty data cube
+        for idx, file in enumerate(path):
+            img = plt.imread(file)
+            data[:, :, idx] = img
+
+        data = np.transpose(data, (2, 0, 1))
+    else:
+        raise TypeError('Path must be string to a file or a list of files')
     return DataCube(data)
 
 
