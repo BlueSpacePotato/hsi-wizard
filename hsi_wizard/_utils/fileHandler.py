@@ -143,6 +143,8 @@ def load(data) -> DataCube:
 def images_from_folder_to_dc(path: str) -> DataCube:
     """Load a folder of images into a DataCube.
 
+    #todo: add exclude parameter to avoid some files or to an include_only parameter
+
     :param path:
     :return:
     """
