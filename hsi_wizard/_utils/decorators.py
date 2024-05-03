@@ -85,7 +85,7 @@ def check_time(func):
         start = time.time()
         func(*args, **kwargs)
         x = stop = time.time()
-        print(stop-start)
+        print(stop - start)
         return x
     return wrapper
 

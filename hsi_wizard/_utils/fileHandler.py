@@ -143,7 +143,8 @@ def load(data) -> DataCube:
 def images_from_folder_to_dc(path: str) -> DataCube:
     """Load a folder of images into a DataCube.
 
-    #todo: add exclude parameter to avoid some files or to an include_only parameter
+    #todo: add exclude parameter to avoid some files or to an
+    include_only parameter
 
     :param path:
     :return:
@@ -289,9 +290,7 @@ def read_tdms(path: str = None) -> DataCube:
 
         if i.find('RAW') >= 1:
             col_raw.append(i)
-        elif (i.find('DarkCurrent') >= 1
-              or i.find('cm') >= 1
-              or i.find('nm') >= 1):
+        elif (i.find('DarkCurrent') >= 1 or i.find('cm') >= 1 or i.find('nm') >= 1):
             pass
         else:
             col_sample.append(i)
