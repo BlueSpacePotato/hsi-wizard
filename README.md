@@ -1,7 +1,13 @@
 [![Documentation Status](https://readthedocs.org/projects/hsi-wizard/badge/?version=latest)](https://hsi-wizard.readthedocs.io/en/latest/?badge=latest)
 
+<br/>
+<center style="font-size: 18px; font-weight: bold ">
+See Beyond the Visible: The Magic of Hyperspectral Imaging
+</center>
+<br/>
 <img src="./resources/imgs/logo/linkedin_banner_image_2.png" alt="">
-
+<br/>
+<br/>
 
 # HSI-Wizard
 The goal is to set up a straightforward environment for hyperspectral analysis. The HIS-Wizard provides a range of useful tools for this purpose, spanning from basic spectral analysis to advanced methods utilizing artificial intelligence.

@@ -1,9 +1,10 @@
 import numpy as np
-from wizard.utils.decorators import check_limits
+from wizard._utils.decorators import check_limits
 
 
 def extend_image(img: np.array, extend_x: int, extend_y: int) -> np.array:
-    """Extend image by 2 * extend_x and 2 * extend_y.
+    """
+    Extend image by 2 * extend_x and 2 * extend_y.
 
     Extend_x/y adds zero borders in the given size.
 
@@ -24,12 +25,9 @@ def extend_image(img: np.array, extend_x: int, extend_y: int) -> np.array:
     return new_img
 
 
-def decrease_image(
-        img: np.array,
-        decrease_x: int,
-        decrease_y: int
-) -> np.array:
-    """Decrease image by 2 * decrease_x and 2 * decrease_y.
+def decrease_image(img: np.array, decrease_x: int, decrease_y: int) -> np.array:
+    """
+    Decrease image by 2 * decrease_x and 2 * decrease_y.
 
     Decrease_x/y removes borders from the given size.
 
@@ -42,8 +40,9 @@ def decrease_image(
     return img[decrease_x:-decrease_x, decrease_y:-decrease_y]
 
 
-def get_output_size(image_lengths: int, filter_lengths: int, stride: int) -> [int, bool]:
-    """Calculate length of the feature map.
+def get_output_size(image_lengths: int, filter_lengths: int, stride: int) -> int:
+    """
+    Calculate length of the feature map.
 
     The function should return an integer value.
     If the math is not possible, the function returns 0.
@@ -55,7 +54,6 @@ def get_output_size(image_lengths: int, filter_lengths: int, stride: int) -> [in
     :param stride: Filter stride.
     :type stride: int
     :return: Feature lengths as an integer.
-             If the math is not possible return 0.
     :rtype: int
 
     >>> get_output_size(10, 2, 1)
@@ -63,15 +61,14 @@ def get_output_size(image_lengths: int, filter_lengths: int, stride: int) -> [in
 
     >>> get_output_size(10, 3, 2)
     0
-
     """
     feature_lengths = (image_lengths - filter_lengths) / stride + 1
-    # check if is_integer works, otherwise math.isclose()
     return int(feature_lengths) if feature_lengths.is_integer() else 0
 
 
 def feature_map(img: np.array, filter: np.array, padding: str = 'const', stride_x: int = 1, stride_y: int = 1):
-    """Generate a feature map by stepping over the image with a given filter function.
+    """
+    Generate a feature map by stepping over the image with a given filter function.
 
     :param img: The input image.
     :param filter: The filter to apply.
@@ -89,18 +86,14 @@ def feature_map(img: np.array, filter: np.array, padding: str = 'const', stride_
     feature_map_len_y = get_output_size(img.shape[1], filter.shape[1], stride_y)
 
     if feature_map_len_x == 0:
-        print('x is wong')
         while feature_map_len_x == 0:
             stride_x += 1
             feature_map_len_x = get_output_size(img.shape[0], filter.shape[0], stride_x)
-        print(f'stride x {stride_x} whould work')
         return None
     if feature_map_len_y == 0:
-        print('y is wrong')
         while feature_map_len_y == 0:
             stride_y += 1
             feature_map_len_y = get_output_size(img.shape[1], filter.shape[1], stride_y)
-        print(f'stride y {stride_y} whould work')
         return None
 
     feature_img = np.zeros(
@@ -128,7 +121,8 @@ def feature_map(img: np.array, filter: np.array, padding: str = 'const', stride_
 
 @check_limits
 def rgb_to_grayscale_average(image: np.array) -> np.array:
-    """Convert RGB image to grayscale using average values.
+    """
+    Convert RGB image to grayscale using average values.
 
     Color/3 to avoid conflicts with uint8 images.
 
@@ -141,7 +135,8 @@ def rgb_to_grayscale_average(image: np.array) -> np.array:
 @check_limits
 def rgb_to_grayscale_wight(image: np.array, r_weight: float = 0.299, g_weight: float = 0.587,
                            b_weight: float = 0.114) -> np.array:
-    """Convert RGB image to grayscale using weighted average.
+    """
+    Convert RGB image to grayscale using weighted average.
 
     :param image: The RGB image.
     :param r_weight: Weight for adjusting red color.
@@ -154,7 +149,8 @@ def rgb_to_grayscale_wight(image: np.array, r_weight: float = 0.299, g_weight: f
 
 @check_limits
 def brightness(image: np.array, delta: int) -> np.array:
-    """Adjust brightness of an image.
+    """
+    Adjust brightness of an image.
 
     :param image: The input image.
     :param delta: The delta value for brightness adjustment.
@@ -167,20 +163,20 @@ def brightness(image: np.array, delta: int) -> np.array:
 
 @check_limits
 def contrast(image: np.array, beta: int) -> np.array:
-    """Adjust contrast of an image.
+    """
+    Adjust contrast of an image.
 
     :param image: The input image.
     :param beta: The beta value for contrast adjustment.
     :return: Contrast adjusted image.
     """
-    # Calculate average brightness
     u = np.mean(image, axis=2)
     u_mean = u.mean()
 
-    # Calculate factor
     if beta == 255:
         alpha = np.infty
     else:
         alpha = (255 + beta) / (255 - beta)
 
-    image = ((image[:, :] - u_mean) * alpha + u_mean).astype('int')  # todo: avoid clipping values
+    image = ((image[:, :] - u_mean) * alpha + u_mean).astype('int')
+    return image

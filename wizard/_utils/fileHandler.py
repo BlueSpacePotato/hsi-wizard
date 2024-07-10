@@ -6,18 +6,22 @@ import pathlib
 import numpy as np
 import pandas as pd
 
+from tqdm import tqdm
 from specio import specread
 from nptdms import TdmsFile
 
 from matplotlib import pyplot as plt
 
-from hsi_wizard.datacube import DataCube
+from concurrent.futures import ThreadPoolExecutor
 
-from hsi_wizard._utils.decorators import check_path, add_method
+from wizard.datacube import DataCube
+
+from wizard._utils.decorators import check_path, add_method
 
 
 def get_files_by_extension(path: str, extension: str) -> list:
-    """Return a sorted list of filenames of a given extension from a directory.
+    """
+    Return a sorted list of filenames of a given extension from a directory.
 
     :param path: path of a directory
     :type path: str
@@ -58,7 +62,8 @@ def make_path_absolute(path: str) -> str:
 
 
 def to_cube(data, len_x, len_y) -> np.array:
-    """Transform a 2d numpy array to a dc like array.
+    """
+    Transform a 2d numpy array to a dc like array.
 
     data stored in Fortran-like index ordering, so using f-order instate c
 
@@ -75,7 +80,8 @@ def to_cube(data, len_x, len_y) -> np.array:
 @check_path
 @add_method(DataCube)
 def read(path: str, datatype: str = 'auto') -> DataCube:
-    """Read functions for importing data from different file types.
+    """
+    Read functions for importing data from different file types.
 
     :param path: data path to file
     :param datatype:
@@ -111,7 +117,8 @@ def read(path: str, datatype: str = 'auto') -> DataCube:
 
 
 def load_npy(path) -> DataCube:
-    """Load numpy data.
+    """
+    Load numpy data.
 
     :param path:
     :return:
@@ -124,7 +131,8 @@ def load_npy(path) -> DataCube:
 
 
 def load(data) -> DataCube:
-    """Load function for existing data.
+    """
+    Load function for existing data.
 
     :param data:
     :return:
@@ -141,7 +149,8 @@ def load(data) -> DataCube:
 
 @check_path
 def images_from_folder_to_dc(path: str) -> DataCube:
-    """Load a folder of images into a DataCube.
+    """
+    Load a folder of images into a DataCube.
 
     #todo: add exclude parameter to avoid some files or to an
     include_only parameter
@@ -149,36 +158,60 @@ def images_from_folder_to_dc(path: str) -> DataCube:
     :param path:
     :return:
     """
-    files = [os.path.join(path, f) for f in os.listdir(path)]
+    files = [os.path.join(path, f) for f in tqdm(os.listdir(path), desc='List Files')]
     _dc = image_to_dc(files)
 
     # put data in DataCube and return
     return _dc
 
 
+def load_image(path):
+    """
+    Load an image from a specified file path.
+
+    Parameters
+    ----------
+    path : str
+        The file path to the image to be loaded.
+
+    Returns
+    -------
+    ndarray
+        The image read from the file, represented as a NumPy array.
+
+    Examples
+    --------
+    >>> img = load_image('path/to/image.png')
+    >>> plt.imshow(img)
+    >>> plt.show()
+    """
+    return plt.imread(path)
+
+
 def image_to_dc(path: str | list) -> DataCube:
-    """Load image into a DataCube.
+    """
+    Load image into a DataCube.
 
     :param path:
     :return:
     """
     if isinstance(path, str):
-        img = plt.imread(path)
+        img = load_image(path)
         data = np.transpose(np.array(img), (2, 0, 1))
     elif isinstance(path, list):
 
-        # get a sample image for x and y shape
-        img = plt.imread(path[0])
+        def process_image(idx_file):
+            idx, file = idx_file
+            _img = load_image(file)
+            return _img
 
-        # define empty dc
-        data = np.empty(shape=(img.shape[0], img.shape[1], len(path)))
+        with ThreadPoolExecutor() as executor:
+            results = list(tqdm(executor.map(process_image, enumerate(path)), total=len(path), desc='Load Images'))
 
-        # open files and fill the empty data cube
-        for idx, file in enumerate(path):
-            img = plt.imread(file)
-            data[:, :, idx] = img
+        data = np.array(results)
 
         data = np.transpose(data, (2, 0, 1))
+
     else:
         raise TypeError('Path must be string to a file or a list of files')
     return DataCube(data)
@@ -186,7 +219,8 @@ def image_to_dc(path: str | list) -> DataCube:
 
 # todo
 def __read_csv__(path: str) -> DataCube:
-    """Read csv file.
+    """
+    Read csv file.
 
     :param path: path to csv file
     :return:
@@ -199,7 +233,8 @@ def __read_csv__(path: str) -> DataCube:
 
 # todo
 def __read_xlsx__(path: str) -> DataCube:
-    """Read xlsx file.
+    """
+    Read xlsx file.
 
     :param path: path to xslx file
     :return:
@@ -256,7 +291,8 @@ def __read_fsm__(path: str) -> DataCube:
 
 
 def read_tdms(path: str = None) -> DataCube:
-    """Read function for tdms file.
+    """
+    Read function for tdms file.
 
     The functions reads and pareses the in `tdms_file` defined file and
     returns the data in a defined way. The return value can be `np` or df`.
@@ -352,7 +388,8 @@ def read_tdms(path: str = None) -> DataCube:
 
 
 def write_xlsx(datacube: np.array, wavelenghts: np.array, filename: str):
-    """Write out a .xlsx file.
+    """
+    Write out a .xlsx file.
 
     :param datacube:
     :param wavelenghts:
@@ -389,9 +426,9 @@ def write_xlsx(datacube: np.array, wavelenghts: np.array, filename: str):
     df.to_excel(f'{filename}.xlsx')
 
 
-def merge_cubes(cube1: DataCube, cube2: DataCube)\
-        -> DataCube:
-    """Merge to datacubes to a new one.
+def merge_cubes(cube1: DataCube, cube2: DataCube) -> DataCube:
+    """
+    Merge to datacubes to a new one.
 
     :param cube1:
     :param cube2:
@@ -411,7 +448,8 @@ def merge_cubes(cube1: DataCube, cube2: DataCube)\
 
 
 def merge_waves(wave1: list, wave2: list) -> list:
-    """Merge two wave lists.
+    """
+    Merge two wave lists.
 
     todo: better merge algorithms
 
@@ -428,7 +466,8 @@ def merge_waves(wave1: list, wave2: list) -> list:
 
 
 def common_members(a: list, b: list) -> set:
-    """Check for comon members between two lists.
+    """
+    Check for comon members between two lists.
 
     :param a: list a
     :param b: list to compare to a

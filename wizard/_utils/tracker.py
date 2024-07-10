@@ -3,7 +3,8 @@ exculted = ['stop_recording', 'save_template']
 
 
 class TrackExecutionMeta(type):
-    """DataCube tracker.
+    """
+    DataCube tracker.
 
     Keep track of used functions and methods.
     """
@@ -12,7 +13,8 @@ class TrackExecutionMeta(type):
     recorded_methods = []
 
     def __new__(cls, name, bases, dct):
-        """Magic Method new.
+        """
+        Magic Method new.
 
         :return:
         """
@@ -23,7 +25,8 @@ class TrackExecutionMeta(type):
 
     @staticmethod
     def record_method(func):
-        """Record Decorator.
+        """
+        Record Decorator.
 
         :return: func
         """
@@ -39,7 +42,8 @@ class TrackExecutionMeta(type):
 
     @staticmethod
     def start_recording():
-        """Start tracker.
+        """
+        Start tracker.
 
         :return: None
         """
@@ -48,7 +52,8 @@ class TrackExecutionMeta(type):
 
     @staticmethod
     def stop_recording() -> None:
-        """Stop tracker.
+        """
+        Stop tracker.
 
         :return: None
         """
