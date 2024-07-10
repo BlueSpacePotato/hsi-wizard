@@ -7,7 +7,12 @@ import numpy as np
 import pandas as pd
 
 from tqdm import tqdm
-from specio import specread
+
+try:
+    from specio import specread # import errors
+except:
+    pass
+
 from nptdms import TdmsFile
 
 from matplotlib import pyplot as plt
