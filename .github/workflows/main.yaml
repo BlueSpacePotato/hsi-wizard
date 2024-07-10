@@ -23,11 +23,11 @@ jobs:
 
       - name: Run pydocstyle
         run: |
-          pydocstyle hsi_wizard
+          pydocstyle wizard
 
       - name: Run flake8
         run: |
-          flake8 hsi_wizard
+          flake8 wizard
 
   test-and-coverage:
     runs-on: ubuntu-latest
