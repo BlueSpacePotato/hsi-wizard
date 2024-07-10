@@ -29,6 +29,7 @@ dependencies = [
     "specio",
     "nptdms",
     "pandas",
+    "tqdm",
 ]
 
 [project.optional-dependencies]
