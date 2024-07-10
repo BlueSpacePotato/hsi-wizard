@@ -6,4 +6,4 @@ from wizard._utils import decorators
 from wizard._utils import tracker
 from wizard._utils import fileHandler
 
-from datacube import DataCube
+from wizard.datacube import DataCube
