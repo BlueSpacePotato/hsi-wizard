@@ -3,7 +3,7 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-package-dir = {"" = "hsi_wizard"}
+package-dir = {"" = "wizard"}
 
 [project]
 name = "hsi-wizard"
