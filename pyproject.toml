@@ -3,15 +3,15 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-package-dir = {"" = "hsi_wizard"}
+package-dir = {"" = "wizard"}
 
 [project]
-name = "hsi_wizard"
+name = "hsi-wizard"
 version = "0.0.1"
 authors = [
     {name = "Felix Wuehler", email="f.wuehler@hs-mannheim.de"},
 ]
-description = "A magical hyperspectral imaing package"
+description = "See Beyond the Visible: The Magic of Hyperspectral Imaging"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
@@ -26,6 +26,12 @@ dependencies = [
     "matplotlib",
     "opencv-python",
     "rich",
+    "specio@git+https://github.com/hozeren/specio.git@develop",
+    "nptdms",
+    "pandas",
+    "tqdm",
+    "imageio",
+    "IPython",
 ]
 
 [project.optional-dependencies]

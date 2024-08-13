@@ -6,12 +6,13 @@ from rich import print
 import numpy as np
 import pickle
 
-from ._utils import decorators
-from ._utils.tracker import TrackExecutionMeta
+from .._utils import decorators
+from .._utils.tracker import TrackExecutionMeta
 
 
 class DataCube(metaclass=TrackExecutionMeta):
-    """DataCube class to store several important information for the hsi data.
+    """
+    DataCube class to store several important information for the hsi data.
 
     The cube is a 3D array with shape `vxy`.
     x, y values describe the `pixel`.
@@ -24,7 +25,8 @@ class DataCube(metaclass=TrackExecutionMeta):
 
     def __init__(self, cube=None, wavelengths=None, name=None,
                  notation=None, record: bool = False) -> None:
-        """Magic Methods to init a new instance.
+        """
+        Magic Methods to init a new instance.
 
         :param cube: dc
         :param wavelengths: wavelengths of the spectral information as list
@@ -47,7 +49,8 @@ class DataCube(metaclass=TrackExecutionMeta):
             self.start_recording()
 
     def __add__(self, other):
-        """Magic Method to add two Datacubes.
+        """
+        Magic Method to add two Datacubes.
 
         :param other: DataCube that should be added
         :return: None
@@ -65,6 +68,7 @@ class DataCube(metaclass=TrackExecutionMeta):
                 f'You can use the DataCube.resize function to adjust the cubes'
             )
 
+        # wavelengths cant be empty atm
         if self.wavelengths is None or other.wavelengths is None:
             warnings.warn('One of the two DataCubes does not contain the'
                           ' wavelength information. Adding them will work,'
@@ -79,7 +83,8 @@ class DataCube(metaclass=TrackExecutionMeta):
                         name=self.name, notation=self.notation)
 
     def __len__(self) -> int:
-        """Magic Method for getting length of axis as int.
+        """
+        Magic Method for getting length of axis as int.
 
         :param axis: int for selection axis
         :return: length of DataCube for given axis
@@ -88,7 +93,8 @@ class DataCube(metaclass=TrackExecutionMeta):
         return self.shape[0] if self.cube is not None else 0
 
     def __getitem__(self, idx):
-        """Magic Method to get an item.
+        """
+        Magic Method to get an item.
 
         :param idx:
         :return:
@@ -97,7 +103,8 @@ class DataCube(metaclass=TrackExecutionMeta):
         return self.cube[idx]
 
     def __setitem__(self, idx, value) -> None:
-        """Magic Method to set an item.
+        """
+        Magic Method to set an item.
 
         :param idx:
         :param value:
@@ -106,7 +113,8 @@ class DataCube(metaclass=TrackExecutionMeta):
         self.cube[idx] = value
 
     def __iter__(self):
-        """Magic Method to iter ofer DataCube.
+        """
+        Magic Method to iter ofer DataCube.
 
         :return:
         """
@@ -114,7 +122,8 @@ class DataCube(metaclass=TrackExecutionMeta):
         return self
 
     def __next__(self):
-        """Magic Method for next.
+        """
+        Magic Method for next.
 
         :return:
         """
@@ -128,7 +137,8 @@ class DataCube(metaclass=TrackExecutionMeta):
     #   pass
 
     def __str__(self) -> str:
-        """Magic Method, print dc information.
+        """
+        Magic Method, print dc information.
 
         :return : string with dc information
         :rtype: str
@@ -147,7 +157,8 @@ class DataCube(metaclass=TrackExecutionMeta):
         return _str
 
     def execute_template(self, template_data) -> None:
-        """Execute Template.
+        """
+        Execute Template.
 
         :return:
         """
@@ -157,7 +168,8 @@ class DataCube(metaclass=TrackExecutionMeta):
 
     @decorators.check_load_dc
     def load(self, *args, **kwargs) -> None:
-        """Empty load Function to override.
+        """
+        Empty load Function to override.
 
         This is a template function. You can implemnt your own load functions.
 
@@ -168,7 +180,8 @@ class DataCube(metaclass=TrackExecutionMeta):
 
     def resize(self, x_new: int, y_new: int,
                interpolation: str = 'linear') -> None:
-        """Resize DataCube.cube.
+        """
+        Resize DataCube.cube.
 
         cv2.INTER_LINEAR 	The standard bilinear interpolation, ideal for
                             enlarged images.
@@ -218,7 +231,8 @@ class DataCube(metaclass=TrackExecutionMeta):
 
     # todo: implemnt
     def shift_layers(self, num_layer: int) -> None:
-        """Shift layers.
+        """
+        Shift layers.
 
         :return: None
         """
@@ -228,23 +242,32 @@ class DataCube(metaclass=TrackExecutionMeta):
         raise NotImplementedError('Sorry - Not Implemented')
 
     def set_wavelengths(self, wavelengths: np.array) -> None:
-        """Set wavelength data.
+        """
+        Set wavelength data.
 
         :return: None
         """
         if not isinstance(wavelengths, np.ndarray):
             try:
                 # todo: better error handling
-                self.wavelengths = np.array(wavelengths)
+                if np.array(wavelengths).ndim == 1:
+                    self.wavelengths = np.array(wavelengths)
+                else:
+                    raise AttributeError
             except AttributeError:
                 raise AttributeError('Your wavelengths didnt match an'
                                      '1d np.array')
 
         else:
-            self.wavelengths = wavelengths
+            if wavelengths.ndim == 1:
+                self.wavelengths = wavelengths
+            else:
+                raise AttributeError('Your wavelengths didnt match an'
+                                     '1d np.array')
 
     def set_cube(self, cube: np.array) -> None:
-        """Set cube data.
+        """
+        Set cube data.
 
         :return: None
         """
@@ -267,14 +290,16 @@ class DataCube(metaclass=TrackExecutionMeta):
         self.update_cube_shape()
 
     def update_cube_shape(self) -> None:
-        """Update cube shape.
+        """
+        Update cube shape.
 
         :return: None
         """
         self.shape = self.cube.shape
 
     def start_recording(self):
-        """Start Recoring.
+        """
+        Start Recording.
 
         :return: None
         """
@@ -282,7 +307,8 @@ class DataCube(metaclass=TrackExecutionMeta):
         TrackExecutionMeta.start_recording()
 
     def stop_recording(self) -> None:
-        """Stop Recoring.
+        """
+        Stop Recording.
 
         :return: None
         """
@@ -291,7 +317,8 @@ class DataCube(metaclass=TrackExecutionMeta):
 
     @staticmethod
     def save_template(filename) -> None:
-        """Save temlate from executed functions.
+        """
+        Save template from executed functions.
 
         :return: None
         """
@@ -301,7 +328,8 @@ class DataCube(metaclass=TrackExecutionMeta):
             pickle.dump(TrackExecutionMeta.recorded_methods, template_file)
 
     def load_template(self, filenmae) -> None:
-        """Load temlate and execute function.
+        """
+        Load template and execute function.
 
         :return: None
         """
