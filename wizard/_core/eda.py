@@ -1,61 +1,64 @@
-import os
-import sys
 import copy
-import argparse
-from pathlib import Path
-
-import re
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-from matplotlib.widgets import Slider, Button, TextBox
-
 from wizard import DataCube
 from .._utils.helper_functions import find_nex_smaller_wave
 
-import imageio
-
-from tqdm import tqdm
-
 try:
     from IPython import get_ipython
-    if "IPKernelApp" not in get_ipython().config:  # pragma: no cover
+    if "IPKernelApp" not in get_ipython().config:
         raise ImportError("console")
-except:
+except ImportError:
+    import matplotlib
     matplotlib.use('TkAgg')
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
 
 
 def normalize_layer(layer: np.array) -> np.array:
     """
-    deepcopy layer and scale form 0.0 / 1.0
-    :param layer:
-    :return:
+    Normalize a 2D or 3D numpy array (layer) by adjusting its values to a 0-1 range.
+
+    This function first checks if the maximum value in the layer is more than 10 times greater than the mean value and prints a warning if so. It then normalizes the layer by removing any offset and scaling the values to the range [0, 1]. The resulting layer is rounded and cast to `float16` for consistency.
+
+    :param layer: A numpy array representing the layer to be normalized.
+    :type layer: np.ndarray
+    :returns: The normalized layer as a numpy array with values scaled to the range [0, 1] and rounded to 10 decimal places.
+    :rtype: np.ndarray
+    :raises ValueError: If the input `layer` is not a numpy array.
     """
-    
     if layer.max() > layer.mean() * 10:
-        print(f'\033[93mThe layer max value is more then 10 times greater then the mean value.'
-              f' If you dont see anything try the spike removing tool.\033[0m')
+        print('\033[93mThe layer max value is more than 10 times greater than the mean value.'
+              ' If you don’t see anything, try the spike removing tool.\033[0m')
     
-    l = copy.deepcopy(layer)
+    layer_copy = copy.deepcopy(layer)
 
-    # remove offset
-    if l.min() != 0:
-        #todo: some errors?
-        l = l - layer.min()
+    if layer_copy.min() != 0:
+        layer_copy -= layer.min()
 
-    # scale to 1.0
-    if l.max() != 0:
-        l= l/l.max()
+    if layer_copy.max() != 0:
+        layer_copy /= layer_copy.max()
 
-    # some cleaning
-    l = np.round(l, decimals=10).astype('float16')
+    layer_copy = np.round(layer_copy, decimals=10).astype('float16')
 
-    return l
+    return layer_copy
+
 
 def plotter(dc: DataCube) -> None:
+    """
+    Interactive plotter for visualizing and analyzing data from a DataCube.
 
+    This function creates an interactive plot with two subplots: one for displaying an image layer from the DataCube and another for displaying a spectral plot. Users can interact with the plots to select different image layers and regions of interest, which updates both the image and spectral plot accordingly.
+
+    :param dc: A DataCube object containing the data to be visualized. The DataCube should have attributes `wavelengths` and `cube`, where `cube` is a 3D numpy array and `wavelengths` is a list or array of wavelength values corresponding to the layers of the cube.
+    :type dc: DataCube
+    :returns: None
+    :raises AttributeError: If the DataCube object does not have the required attributes (`wavelengths` and `cube`).
+    :raises ValueError: If the DataCube object does not have a `name` attribute, but the code assumes it exists.
+
+    Example usage:
+    >>> plotter(my_datacube)
+    """
     global layer_id
     global x_id
     global y_id
@@ -65,17 +68,12 @@ def plotter(dc: DataCube) -> None:
     y_id = 0
 
     def update_plot(val):
-        #imshow.set_cmap(build_cmap(int(slider_threshold.val)))
-
-        # new image
-        layer = dc.cube[np.where(dc.wavelengths == layer_id)[0][0]] # todo [0] or [0][0]
+        layer = dc.cube[np.where(dc.wavelengths == layer_id)[0][0]]
         layer = normalize_layer(layer)
         imshow.set_data(layer)
 
-
-        #new spec
         spec = dc.cube[:, x_id, y_id]
-        wave = range(0, dc.cube.shape[0]) if dc.wavelengths is None else dc.wavelengths
+        wave = range(dc.cube.shape[0]) if dc.wavelengths is None else dc.wavelengths
         s_plot.set_data(wave, spec)
         r = (spec.max() - spec.min()) * 0.1
         ax[1].set_ylim(spec.min() - r, spec.max() + r)
@@ -88,7 +86,6 @@ def plotter(dc: DataCube) -> None:
         global y_id
 
         if event.inaxes == ax[0]:
-            # todo : check whats wrong with axis x, y
             y_id = int(event.xdata)
             x_id = int(event.ydata)
             update_plot(event)
@@ -99,18 +96,15 @@ def plotter(dc: DataCube) -> None:
             if layer_id != -1:
                 update_plot(event)
 
-    # define subplots
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
     plt.subplots_adjust(bottom=0.25)
-    fig.suptitle('Datacube' if dc.name is None else dc.name )
+    fig.suptitle('Datacube' if dc.name is None else dc.name)
 
-    # image
     layer = normalize_layer(dc.cube[0])
     imshow = ax[0].imshow(layer)
 
-    # spec
     spec = dc.cube[:, 0, 0]
-    wave = range(0, dc.cube.shape[0]) if dc.wavelengths is None else dc.wavelengths
+    wave = range(dc.cube.shape[0]) if dc.wavelengths is None else dc.wavelengths
 
     line = ax[1].axvline(
         x=layer_id,
@@ -118,14 +112,9 @@ def plotter(dc: DataCube) -> None:
         linestyle='dashed',
     )
 
-
     s_plot, = ax[1].plot(wave, spec)
-    # add widgets
-    axcolor = 'lightgoldenrodyellow'
 
-    # connect clicked
     fig.canvas.mpl_connect("button_press_event", onclick_select)
 
     update_plot(None)
     plt.show()
-

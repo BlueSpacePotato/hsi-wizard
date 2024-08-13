@@ -8,7 +8,7 @@ import pandas as pd
 
 from tqdm import tqdm
 
-from specio import specread # import errors
+from specio import specread  # import errors
 
 from nptdms import TdmsFile
     
@@ -135,11 +135,16 @@ def load_npy(path) -> DataCube:
 
 def load(data) -> DataCube:
     """
-    Load function for existing data.
+    Function for loading existing data into a DataCube.
 
-    :param data:
-    :return:
+    This function initializes a DataCube object from the provided data. It supports both numpy arrays and lists as input data formats.
+
+    :param data: The data to be loaded into the DataCube. It can be either a numpy array or a list.
+    :type data: numpy.ndarray or list
+    :returns: A DataCube object initialized with the provided data, or None if the data format is unsupported.
+    :rtype: DataCube or None
     """
+
     _datacube = None
 
     if isinstance(data, np.ndarray):
@@ -162,24 +167,21 @@ def filter_image_files(files):
     - .bmp
     - .tiff
 
-    Parameters
-    ----------
-    :param files: List of filenames to be filtered.
+    :param files: A list of filenames to be filtered for image file extensions.
     :type files: list[str]
-
-    Returns
-    -------
-    :return: A list of filenames that have image file extensions.
+    :returns: A list of filenames that have image file extensions.
     :rtype: list[str]
 
-    Examples
-    --------
+    :Example:
+
     >>> files = ["image.jpg", "document.pdf", "photo.png", "archive.zip"]
     >>> image_files = filter_image_files(files)
     >>> print(image_files)  # Output: ['image.jpg', 'photo.png']
     """
+
     image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff"}
     return [file for file in files if any(file.lower().endswith(ext) for ext in image_extensions)]
+
 
 @check_path
 def images_from_folder_to_dc(path: str, **kwargs) -> DataCube:
@@ -229,17 +231,20 @@ def image_to_dc(path: str | list, **kwargs) -> DataCube:
     """
     Load image(s) into a DataCube.
 
+    This function loads one or more images into a DataCube. It supports both a single image file path or a list of image file paths. The images are processed based on the specified type, which determines the transpose operation applied to the data.
 
-    Parameters
-    ----------
-    :param path: Path to an image file or a list of image file paths.
+    :param path: Path to an image file or a list of image file paths. If a list is provided, images are loaded concurrently.
+    :type path: str or list[str]
     :param kwargs: Optional keyword arguments.
-        - type: 'default' or 'Pushbroom'. Determines the transpose operation.
-        
-    Returns
-    -------
-    :return: DataCube object.
+        - type: Specifies the transpose operation to apply to the data. Can be 'default' (default behavior) or 'pushbroom' (for pushbroom images).
+        - Other keyword arguments may be accepted depending on the implementation of `load_image`.
+
+    :returns: A DataCube object containing the image data.
+    :rtype: DataCube
+
+    :raises TypeError: If `path` is neither a string nor a list of strings.
     """
+
     type = kwargs.get('type', 'default')
 
     if isinstance(path, str):

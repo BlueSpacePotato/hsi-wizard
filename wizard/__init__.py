@@ -1,7 +1,6 @@
 # wizard/__init__.py
 
 
-
 # Import necessary submodules and classes/functions from them
 from ._core.datacube import DataCube
 from ._core.eda import plotter
@@ -20,10 +19,11 @@ __all__ = [
 __version__ = "0.0.1"
 __author__ = 'flx'
 
+
 # Optionally, define a function for package initialization or configuration
 def initialize():
     print("Initializing the wizard package")
 
+
 # Initialize the package
 initialize()
-
