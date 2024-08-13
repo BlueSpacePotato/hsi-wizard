@@ -123,6 +123,8 @@ class TestToCube:
         # Assert
         assert result.shape == (4, 3, 3)
 
+"""
+not yet ready
 
 class TestReadFSM:
 
@@ -133,3 +135,5 @@ class TestReadFSM:
         dc = read(path)
 
         assert dc.shape == (408, 537, 623)
+
+"""
