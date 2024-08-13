@@ -6,7 +6,6 @@ __pycache__/
 # C extensions
 *.so
 
-
 # jupyter
 *.ipynb
 notebooks/
@@ -137,8 +136,6 @@ venv.bak/
 # pip
 *.pypric
 
-# dont know what this is
-.idea
 
 # Test Folder
 testFolder/
@@ -214,3 +211,6 @@ yarn-error.log*
 */node_modules/*
 /src/ui/package-lock.json
 tmp/
+
+# some folder structures
+samples/

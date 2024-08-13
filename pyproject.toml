@@ -26,10 +26,12 @@ dependencies = [
     "matplotlib",
     "opencv-python",
     "rich",
-    "specio",
+    "specio@git+https://github.com/paris-saclay-cds/specio#egg=f1d063e",
     "nptdms",
     "pandas",
     "tqdm",
+    "imageio",
+    "IPython",
 ]
 
 [project.optional-dependencies]

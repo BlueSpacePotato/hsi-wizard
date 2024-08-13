@@ -1,5 +1,5 @@
 import numpy as np
-from wizard._utils.decorators import check_limits
+from .._utils.decorators import check_limits
 
 
 def extend_image(img: np.array, extend_x: int, extend_y: int) -> np.array:

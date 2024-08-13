@@ -8,18 +8,15 @@ import pandas as pd
 
 from tqdm import tqdm
 
-try:
-    from specio import specread # import errors
-except:
-    pass
+from specio import specread # import errors
 
 from nptdms import TdmsFile
-
+    
 from matplotlib import pyplot as plt
 
 from concurrent.futures import ThreadPoolExecutor
 
-from wizard.datacube import DataCube
+from .._core.datacube import DataCube
 
 from wizard._utils.decorators import check_path, add_method
 
@@ -84,13 +81,14 @@ def to_cube(data, len_x, len_y) -> np.array:
 
 @check_path
 @add_method(DataCube)
-def read(path: str, datatype: str = 'auto') -> DataCube:
+def read(path: str, datatype: str = 'auto', **kwargs) -> DataCube:
     """
     Read functions for importing data from different file types.
 
     :param path: data path to file
-    :param datatype:
-    :return:
+    :param datatype: data type of the file
+    :param kwargs: additional keyword arguments
+    :return: DataCube object
     """
     _datacube = None
 
@@ -100,22 +98,22 @@ def read(path: str, datatype: str = 'auto') -> DataCube:
         suffix = datatype
 
     if suffix == '.csv':
-        _datacube = __read_csv__(path)
+        _datacube = __read_csv__(path, **kwargs)
     elif suffix == '.xlsx':
-        _datacube = __read_xlsx__(path)
+        _datacube = __read_xlsx__(path, **kwargs)
     elif suffix == '.fsm':
-        _datacube = __read_fsm__(path)
+        _datacube = __read_fsm__(path, **kwargs)
     elif suffix == '.tdms':
-        sample, dark, wave = read_tdms(path)
+        sample, dark, wave = read_tdms(path, **kwargs)
         _datacube = DataCube(sample, wavelengths=wave)
     elif suffix == '.jpg':
-        _datacube = image_to_dc(path)
+        _datacube = image_to_dc(path, **kwargs)
     elif suffix == '.npy':
-        _datacube = load_npy(path)
+        _datacube = load_npy(path, **kwargs)
     elif os.listdir(path):
-        _datacube = images_from_folder_to_dc(path)
+        _datacube = images_from_folder_to_dc(path, **kwargs)
     else:
-        raise NotImplementedError(f'no loader for {suffix}, '
+        raise NotImplementedError(f'No loader for {suffix}, '
                                   f'please parse your data manually.')
 
     return _datacube
@@ -152,8 +150,39 @@ def load(data) -> DataCube:
     return _datacube
 
 
+def filter_image_files(files):
+    """
+    Filters a list of filenames, returning only those that have image file extensions.
+
+    The function checks for the following image file extensions (case-insensitive):
+    - .jpg
+    - .jpeg
+    - .png
+    - .gif
+    - .bmp
+    - .tiff
+
+    Parameters
+    ----------
+    :param files: List of filenames to be filtered.
+    :type files: list[str]
+
+    Returns
+    -------
+    :return: A list of filenames that have image file extensions.
+    :rtype: list[str]
+
+    Examples
+    --------
+    >>> files = ["image.jpg", "document.pdf", "photo.png", "archive.zip"]
+    >>> image_files = filter_image_files(files)
+    >>> print(image_files)  # Output: ['image.jpg', 'photo.png']
+    """
+    image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff"}
+    return [file for file in files if any(file.lower().endswith(ext) for ext in image_extensions)]
+
 @check_path
-def images_from_folder_to_dc(path: str) -> DataCube:
+def images_from_folder_to_dc(path: str, **kwargs) -> DataCube:
     """
     Load a folder of images into a DataCube.
 
@@ -163,8 +192,11 @@ def images_from_folder_to_dc(path: str) -> DataCube:
     :param path:
     :return:
     """
-    files = [os.path.join(path, f) for f in tqdm(os.listdir(path), desc='List Files')]
-    _dc = image_to_dc(files)
+    _files = [os.path.join(path, f) for f in tqdm(os.listdir(path), desc='List Files')]
+
+    _files_filtert = filter_image_files(_files)
+
+    _dc = image_to_dc(_files_filtert, **kwargs)
 
     # put data in DataCube and return
     return _dc
@@ -193,16 +225,27 @@ def load_image(path):
     return plt.imread(path)
 
 
-def image_to_dc(path: str | list) -> DataCube:
+def image_to_dc(path: str | list, **kwargs) -> DataCube:
     """
-    Load image into a DataCube.
+    Load image(s) into a DataCube.
 
-    :param path:
-    :return:
+
+    Parameters
+    ----------
+    :param path: Path to an image file or a list of image file paths.
+    :param kwargs: Optional keyword arguments.
+        - type: 'default' or 'Pushbroom'. Determines the transpose operation.
+        
+    Returns
+    -------
+    :return: DataCube object.
     """
+    type = kwargs.get('type', 'default')
+
     if isinstance(path, str):
         img = load_image(path)
         data = np.transpose(np.array(img), (2, 0, 1))
+        
     elif isinstance(path, list):
 
         def process_image(idx_file):
@@ -215,10 +258,14 @@ def image_to_dc(path: str | list) -> DataCube:
 
         data = np.array(results)
 
-        data = np.transpose(data, (2, 0, 1))
+        if type == 'pushbroom':
+            data = np.transpose(data, (1, 0, 2))
+        else:
+            data = np.transpose(data, (2, 0, 1))
 
     else:
         raise TypeError('Path must be string to a file or a list of files')
+    
     return DataCube(data)
 
 
