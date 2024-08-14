@@ -7,7 +7,7 @@ package-dir = {"" = "wizard"}
 
 [project]
 name = "hsi-wizard"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
     {name = "Felix Wuehler", email="f.wuehler@hs-mannheim.de"},
 ]
@@ -26,7 +26,6 @@ dependencies = [
     "matplotlib",
     "opencv-python",
     "rich",
-    "specio@git+https://github.com/hozeren/specio.git@develop",
     "nptdms",
     "pandas",
     "tqdm",

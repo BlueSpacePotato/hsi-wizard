@@ -8,7 +8,7 @@ import pandas as pd
 
 from tqdm import tqdm
 
-from specio import specread  # import errors
+from .fsm_reader import _read_fsm
 
 from nptdms import TdmsFile
     
@@ -306,18 +306,14 @@ def __read_fsm__(path: str) -> DataCube:
     """
     Read function for fsm-files from perkin elmer. Tested with FTIR-Data.
 
-    Based on the `specio` lib. -> https://github.com/paris-saclay-cds/specio
-
     ToDo: missing error handling if `path` is wrong.
 
     :param path: str, path to file
     :return:
     """
     # load data - load spectra from path
-    fsm_spectra = specread(path)
-
-    # load data - load additional meta data
-    fsm_meta = fsm_spectra.meta
+    # fsm_spectra = specread(path)
+    fsm_spectra, fsm_wave, fsm_meta = _read_fsm(path)
 
     # load data - load x&y lens
     fsm_len_x = fsm_meta['n_x']
@@ -329,17 +325,16 @@ def __read_fsm__(path: str) -> DataCube:
     # fsm_wave_end = fsm_meta['z_end']
 
     # load data - wavelength
-    fsm_wave = fsm_spectra.wavelength
     fsm_wave = fsm_wave.astype('int')
 
     # load data - data
-    fsm_data = fsm_spectra.amplitudes
+    # fsm_data = fsm_spectra.amplitudes
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # convert 2d df in 3d np.array
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    fsm_data_cube = to_cube(data=fsm_data.T, len_x=fsm_len_x, len_y=fsm_len_y)
+    fsm_data_cube = to_cube(data=fsm_spectra.T, len_x=fsm_len_x, len_y=fsm_len_y)
 
     # may return with transposed date
     _datacube = DataCube(fsm_data_cube, wavelengths=fsm_wave,
