@@ -26,7 +26,6 @@ dependencies = [
     "matplotlib",
     "opencv-python",
     "rich",
-    "specio@git+https://github.com/hozeren/specio.git@develop",
     "nptdms",
     "pandas",
     "tqdm",

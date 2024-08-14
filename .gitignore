@@ -213,4 +213,4 @@ yarn-error.log*
 tmp/
 
 # some folder structures
-samples/
+resources/samples/

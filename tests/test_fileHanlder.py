@@ -123,17 +123,16 @@ class TestToCube:
         # Assert
         assert result.shape == (4, 3, 3)
 
-"""
-not yet ready
 
+"""
 class TestReadFSM:
 
     def test_load(self):
 
-        path = '../resources/samples/2023_11_17_S.Epidermis_Slide1/SE_Slide1_Pos3 Markierung 1.fsm'
+        path = '../resources/samples/20232509_SE.fsm'
 
+        # spec = specread(path)
         dc = read(path)
 
-        assert dc.shape == (408, 537, 623)
-
+        assert dc.shape == (408, 381, 729)
 """
