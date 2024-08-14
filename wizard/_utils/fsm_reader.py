@@ -8,11 +8,13 @@ Original repository: https://github.com/paris-saclay-cds/specio
 import struct
 import numpy as np
 
+
 def _block_info(data):
     """Retrieve the information of the next block."""
     if len(data) != 6:
         raise ValueError(f"'data' should be 6 bytes. Got {len(data)} instead.")
     return struct.unpack('<Hi', data)
+
 
 def _decode_5100(data):
     """Read the block of data with ID 5100."""
@@ -24,6 +26,7 @@ def _decode_5100(data):
             'z_start': header_data[3], 'z_end': header_data[4], 'z_4d_start': header_data[5], 'z_4d_end': header_data[6],
             'x_init': header_data[7], 'y_init': header_data[8], 'z_init': header_data[9], 'n_x': header_data[10], 
             'n_y': header_data[11], 'n_z': header_data[12], 'resolution': header_data[17], 'transmission': header_data[19]}
+
 
 def _decode_5104(data):
     """Read the block of data with ID 5104."""
@@ -61,11 +64,14 @@ def _decode_5104(data):
 
     return text_dict
 
+
 def _decode_5105(data):
     """Read the block of data with ID 5105."""
     return np.frombuffer(data, dtype=np.float32)
 
+
 FUNC_DECODE = {5100: _decode_5100, 5104: _decode_5104, 5105: _decode_5105}
+
 
 def _read_fsm(fsm_file):
     """Read the FSM file and extract spectrum data."""

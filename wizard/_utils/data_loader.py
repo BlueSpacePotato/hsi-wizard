@@ -529,6 +529,3 @@ def common_members(a: list, b: list) -> set:
     a_set = set(a)
     b_set = set(b)
     return a_set & b_set
-
-
-
