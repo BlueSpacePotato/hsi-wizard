@@ -59,6 +59,7 @@ jobs:
           if [ "$coverage_percentage" -lt "$COVERAGE_THRESHOLD" ]; then
             echo "Code coverage is below the threshold ($coverage_percentage%), please improve."
             exit 1
+          fi
 
   merge-and-release:
     runs-on: ubuntu-latest
