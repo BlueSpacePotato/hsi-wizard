@@ -1,5 +1,3 @@
-# main.yml
-
 on:
   push:
     branches:
@@ -63,3 +61,45 @@ jobs:
             exit 1
           fi
 
+  merge-and-release:
+    runs-on: ubuntu-latest
+    needs: test-and-coverage
+    if: success()
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'actions@github.com'
+
+      - name: Checkout main branch
+        run: |
+          git fetch origin main:main
+          git checkout main
+
+      - name: Merge dev into main
+        run: |
+          git merge dev
+          git push origin main
+
+      - name: Increment version and create tag
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "Latest tag: $latest_tag"
+          IFS='.' read -ra ADDR <<< "$latest_tag"
+          new_version="${ADDR[0]}.$((${ADDR[1]}+1)).0"
+          echo "New version: $new_version"
+          git tag -a "$new_version" -m "Version $new_version"
+          git push origin "$new_version"
+
+      - name: Build and publish to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          python3 -m build 
+          twine upload dist/*

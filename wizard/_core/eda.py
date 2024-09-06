@@ -77,7 +77,7 @@ def plotter(dc: DataCube) -> None:
         s_plot.set_data(wave, spec)
         r = (spec.max() - spec.min()) * 0.1
         ax[1].set_ylim(spec.min() - r, spec.max() + r)
-        line.set_data(layer_id, (layer.min(), layer.max()))
+        line.set_data([layer_id], (layer.min(), layer.max()))
         fig.canvas.draw_idle()
 
     def onclick_select(event):

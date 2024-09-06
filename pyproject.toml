@@ -3,11 +3,16 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-package-dir = {"" = "wizard"}
+packages = { find = { include = ["wizard"] } }
+
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "no-local-version"
 
 [project]
 name = "hsi-wizard"
-version = "0.0.2"
+dynamic = ["version"]
 authors = [
     {name = "Felix Wuehler", email="f.wuehler@hs-mannheim.de"},
 ]
@@ -30,7 +35,7 @@ dependencies = [
     "pandas",
     "tqdm",
     "imageio",
-    "IPython",
+    "IPython"
 ]
 
 [project.optional-dependencies]
