@@ -246,6 +246,7 @@ def image_to_dc(path: str | list, **kwargs) -> DataCube:
     """
 
     type = kwargs.get('type', 'default')
+    name = kwargs.get('name', None)
 
     if isinstance(path, str):
         img = load_image(path)
@@ -271,7 +272,7 @@ def image_to_dc(path: str | list, **kwargs) -> DataCube:
     else:
         raise TypeError('Path must be string to a file or a list of files')
     
-    return DataCube(data)
+    return DataCube(data, name=name)
 
 
 # todo
