@@ -6,8 +6,6 @@ import pathlib
 import numpy as np
 import pandas as pd
 
-from tqdm import tqdm
-
 from .fsm_reader import _read_fsm
 
 from nptdms import TdmsFile
