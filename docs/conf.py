@@ -3,13 +3,17 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../wizard'))
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'hsi_wizard'
+project = 'hsi-wizard'
 copyright = '2024, Felix Wühler'
 author = 'Felix Wühler'
-release = '2024-01-18'
+release = '0.0.7'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -25,9 +29,7 @@ napoleon_numpy_docstring = True     # Turn on numpydoc strings
 napoleon_use_ivar = True            # For maths symbology
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-
+exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
