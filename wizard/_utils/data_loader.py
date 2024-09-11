@@ -194,7 +194,7 @@ def images_from_folder_to_dc(path: str, **kwargs) -> DataCube:
     :param path:
     :return:
     """
-    _files = [os.path.join(path, f) for f in tqdm(os.listdir(path), desc='List Files')]
+    _files = [os.path.join(path, f) for f in os.listdir(path)]
 
     _files_filtert = filter_image_files(_files)
 
@@ -260,7 +260,7 @@ def image_to_dc(path: str | list, **kwargs) -> DataCube:
             return _img
 
         with ThreadPoolExecutor() as executor:
-            results = list(tqdm(executor.map(process_image, enumerate(path)), total=len(path), desc='Load Images'))
+            results = list(executor.map(process_image, enumerate(path)))
 
         data = np.array(results)
 

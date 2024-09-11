@@ -22,7 +22,7 @@ __author__ = 'flx'
 
 # Optionally, define a function for package initialization or configuration
 def initialize():
-    print("Initializing the wizard package")
+    pass
 
 
 # Initialize the package

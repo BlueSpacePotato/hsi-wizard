@@ -3,13 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to hsi_wizard's documentation!
+Welcome to hsi-wizard's documentation!
 ======================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   Introduction
+   Installation
+   Usage
+   wizard
 
 
 Indices and tables
