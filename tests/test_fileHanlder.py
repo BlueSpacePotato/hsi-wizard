@@ -123,12 +123,27 @@ class TestToCube:
         # Assert
         assert result.shape == (4, 3, 3)
 
+<<<<<<< HEAD
+"""
+not yet ready
+
+=======
 
 """
+>>>>>>> dev
 class TestReadFSM:
 
     def test_load(self):
 
+<<<<<<< HEAD
+        path = '../resources/samples/2023_11_17_S.Epidermis_Slide1/SE_Slide1_Pos3 Markierung 1.fsm'
+
+        dc = read(path)
+
+        assert dc.shape == (408, 537, 623)
+
+"""
+=======
         path = '../resources/samples/20232509_SE.fsm'
 
         # spec = specread(path)
@@ -136,3 +151,4 @@ class TestReadFSM:
 
         assert dc.shape == (408, 381, 729)
 """
+>>>>>>> dev
