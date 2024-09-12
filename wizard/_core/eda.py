@@ -11,9 +11,6 @@ try:
 except ImportError:
     import matplotlib
     matplotlib.use('TkAgg')
-except Exception as e:
-    # print(f"An unexpected error occurred: {e}")
-    pass
 
 
 def normalize_layer(layer: np.array) -> np.array:
