@@ -1,14 +1,41 @@
+"""
+_exploaration/plotter.py
+===========
+
+.. module:: plotter
+   :platform: Unix
+    :synopsis: plotter method.
+
+Module Overview
+---------------
+
+This module contains helper functions for processing wave and cube values.
+
+Functions
+---------
+
+.. autofunction:: plotter
+.. autofunction:: normalize_layer
+
+"""
+
+
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from wizard import DataCube
-from .._utils.helper_functions import find_nex_smaller_wave
+from .._utils.helper import find_nex_smaller_wave
 
 try:
+    # Try importing IPython only if available
     from IPython import get_ipython
-    if "IPKernelApp" not in get_ipython().config:
-        raise ImportError("console")
-except ImportError:
+    ipython = get_ipython()
+    if ipython and 'IPKernelApp' in ipython.config:\
+        pass
+    else:
+        raise ImportError  # Not in Jupyter, fall back to console
+except (ImportError, AttributeError):
+    # Console-specific settings (e.g., TkAgg for matplotlib)
     import matplotlib
     matplotlib.use('TkAgg')
 

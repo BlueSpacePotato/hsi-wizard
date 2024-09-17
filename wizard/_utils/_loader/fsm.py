@@ -1,13 +1,43 @@
 """
-This code was inspired by the repository:
+_utils/_loader/fsm.py
+====================================
 
-Repository: specio
-Author/Organization: paris-saclay-cds
-Original repository: https://github.com/paris-saclay-cds/specio
+.. module:: fsm
+   :platform: Unix
+   :synopsis: Provides fsm reader and writer.
+
+Module Overview
+---------------
+
+This module includes reader and writer for .fsm-files.
+
+
+Functions
+---------
+
+.. autofunction:: _block_info
+.. autofunction:: _decode_5100
+.. autofunction:: _decode_5104
+.. autofunction:: _decode_5105
+.. autofunction:: _parse_fsm_file
+.. autofunction:: _read_fsm
+
+
+
+Credits
+-------
+This code was inspired by:
+- Repository: specio
+- Author/Organization: paris-saclay-cds
+- Original repository: https://github.com/paris-saclay-cds/specio
+
 """
+
 import struct
 import numpy as np
 
+from ._helper import to_cube
+from ..._core import DataCube
 
 def _block_info(data):
     """Retrieve the information of the next block."""
@@ -73,7 +103,7 @@ def _decode_5105(data):
 FUNC_DECODE = {5100: _decode_5100, 5104: _decode_5104, 5105: _decode_5105}
 
 
-def _read_fsm(fsm_file):
+def _parse_fsm_file(fsm_file):
     """Read the FSM file and extract spectrum data."""
     content = open(fsm_file, "rb").read()
     start_byte = 44
@@ -95,3 +125,34 @@ def _read_fsm(fsm_file):
 
     wavelength = np.arange(meta['z_start'], meta['z_end'] + meta['z_delta'], meta['z_delta'])
     return np.squeeze(spectrum), wavelength, meta
+
+
+
+def _read_fsm(path: str) -> DataCube:
+    """
+    Read function for fsm-files from perkin elmer. Tested with FTIR-Data.
+
+    ToDo: missing error handling if `path` is wrong.
+
+    :param path: str, path to file
+    :return:
+    """
+    
+    # read data from file
+    fsm_spectra, fsm_wave, fsm_meta = _parse_fsm_file(path)
+
+    # load data - load x&y lens
+    fsm_len_x = fsm_meta['n_x']
+    fsm_len_y = fsm_meta['n_y']
+
+    # load data - wavelength
+    fsm_wave = fsm_wave.astype('int')
+
+
+    # convert 2d df in 3d
+    fsm_data_cube = to_cube(data=fsm_spectra.T, len_x=fsm_len_x, len_y=fsm_len_y)
+
+    # may return with transposed date
+    _datacube = DataCube(fsm_data_cube, wavelengths=fsm_wave,
+                         name='.fsm', notation='cm-1')
+    return _datacube

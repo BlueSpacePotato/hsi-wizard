@@ -1,4 +1,26 @@
-"""DataCube Tracker to keep record of used methods and functions."""
+"""
+_utils/tracker.py
+===========
+
+.. module:: tracker
+   :platform: Unix
+    :synopsis: tracker Function
+
+Module Overview
+---------------
+
+This module contains a tracker functions for keep track of changes on the dc.
+
+
+Classes
+-------
+.. autoclass:: TrackExecutionMeta
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+"""
+
 exculted = ['stop_recording', 'save_template']
 
 

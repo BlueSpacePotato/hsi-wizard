@@ -1,4 +1,26 @@
-"""Decorators to handle behavier."""
+"""
+_utils/decorator.py
+===========
+
+.. module:: decorator
+   :platform: Unix
+    :synopsis: decorator Functions.
+
+Module Overview
+---------------
+
+This module contains decorator functions for processing wave and cube values.
+
+Functions
+---------
+
+.. autofunction:: check_load_dc
+.. autofunction:: check_path
+.. autofunction:: add_method
+.. autofunction:: track_execution_time
+
+"""
+
 import os
 import time
 

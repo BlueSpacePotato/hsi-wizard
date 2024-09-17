@@ -1,17 +1,46 @@
+"""
+_processing/image.py
+=========================
+
+.. module:: image
+   :platform: Unix
+   :synopsis: Provides various methods for image manipulation such as extension, filtering, and color conversions.
+
+Module Overview
+---------------
+
+This module contains functions to perform a variety of image processing tasks, including extending and decreasing image size,
+generating feature maps, and adjusting brightness and contrast. Functions for converting RGB images to grayscale are also provided.
+
+
+Functions
+---------
+
+.. autofunction:: extend_image
+.. autofunction:: decrease_image
+.. autofunction:: get_output_size
+.. autofunction:: feature_map
+.. autofunction:: rgb_to_grayscale_average
+.. autofunction:: rgb_to_grayscale_wight
+.. autofunction:: brightness
+.. autofunction:: contrast
+
+"""
+
 import numpy as np
 from .._utils.decorators import check_limits
 
 
 def extend_image(img: np.array, extend_x: int, extend_y: int) -> np.array:
     """
-    Extend image by 2 * extend_x and 2 * extend_y.
+    Extend the image by 2 * extend_x and 2 * extend_y.
 
-    Extend_x/y adds zero borders in the given size.
+    Adds zero-padding borders of specified size around the image.
 
     :param img: The input image.
     :param extend_x: The extension size along the x-axis.
     :param extend_y: The extension size along the y-axis.
-    :return: Extended image.
+    :return: The extended image.
     :rtype: np.array
     """
     x, y, z = img.shape
@@ -27,14 +56,14 @@ def extend_image(img: np.array, extend_x: int, extend_y: int) -> np.array:
 
 def decrease_image(img: np.array, decrease_x: int, decrease_y: int) -> np.array:
     """
-    Decrease image by 2 * decrease_x and 2 * decrease_y.
+    Decrease the image by 2 * decrease_x and 2 * decrease_y.
 
-    Decrease_x/y removes borders from the given size.
+    Removes borders of the specified size from the image.
 
     :param img: The input image.
-    :param decrease_x: The decrease size along the x-axis.
-    :param decrease_y: The decrease size along the y-axis.
-    :return: Decreased image.
+    :param decrease_x: The size to decrease along the x-axis.
+    :param decrease_y: The size to decrease along the y-axis.
+    :return: The decreased image.
     :rtype: np.array
     """
     return img[decrease_x:-decrease_x, decrease_y:-decrease_y]
@@ -42,18 +71,18 @@ def decrease_image(img: np.array, decrease_x: int, decrease_y: int) -> np.array:
 
 def get_output_size(image_lengths: int, filter_lengths: int, stride: int) -> int:
     """
-    Calculate length of the feature map.
+    Calculate the length of the feature map.
 
-    The function should return an integer value.
-    If the math is not possible, the function returns 0.
+    This function computes the output size when applying a filter to an image with a specific stride.
+    If the computation results in a non-integer value, it returns 0.
 
     :param image_lengths: The length of one image side.
     :type image_lengths: int
     :param filter_lengths: The length of one side of the filter.
     :type filter_lengths: int
-    :param stride: Filter stride.
+    :param stride: The stride length of the filter.
     :type stride: int
-    :return: Feature lengths as an integer.
+    :return: The feature map length or 0 if the computation is invalid.
     :rtype: int
 
     >>> get_output_size(10, 2, 1)
@@ -68,19 +97,20 @@ def get_output_size(image_lengths: int, filter_lengths: int, stride: int) -> int
 
 def feature_map(img: np.array, filter: np.array, padding: str = 'const', stride_x: int = 1, stride_y: int = 1):
     """
-    Generate a feature map by stepping over the image with a given filter function.
+    Generate a feature map by applying a filter across the image with a specific stride.
 
     :param img: The input image.
-    :param filter: The filter to apply.
-    :param padding: Padding type.
-    :param stride_x: Stride along the x-axis.
-    :param stride_y: Stride along the y-axis.
-    :return: Feature map.
+    :param filter: The filter to apply to the image.
+    :param padding: The type of padding to apply (currently not implemented).
+    :param stride_x: The stride along the x-axis.
+    :param stride_y: The stride along the y-axis.
+    :return: The resulting feature map.
+    :rtype: np.array
     """
     if stride_x == 0:
-        raise ValueError('step_x cant be 0 (zero)')
+        raise ValueError('stride_x cannot be 0')
     elif stride_y == 0:
-        raise ValueError('step_y cant be 0 (zero)')
+        raise ValueError('stride_y cannot be 0')
 
     feature_map_len_x = get_output_size(img.shape[0], filter.shape[0], stride_x)
     feature_map_len_y = get_output_size(img.shape[1], filter.shape[1], stride_y)
@@ -122,12 +152,13 @@ def feature_map(img: np.array, filter: np.array, padding: str = 'const', stride_
 @check_limits
 def rgb_to_grayscale_average(image: np.array) -> np.array:
     """
-    Convert RGB image to grayscale using average values.
+    Convert an RGB image to grayscale by averaging the color channels.
 
-    Color/3 to avoid conflicts with uint8 images.
+    Each pixel's value is computed as the average of the red, green, and blue channels.
 
-    :param image: The RGB image.
-    :return: Grayscale image.
+    :param image: The input RGB image.
+    :return: The grayscale image.
+    :rtype: np.array
     """
     return image[:, :, 0] / 3 + image[:, :, 1] / 3 + image[:, :, 2] / 3
 
@@ -136,13 +167,14 @@ def rgb_to_grayscale_average(image: np.array) -> np.array:
 def rgb_to_grayscale_wight(image: np.array, r_weight: float = 0.299, g_weight: float = 0.587,
                            b_weight: float = 0.114) -> np.array:
     """
-    Convert RGB image to grayscale using weighted average.
+    Convert an RGB image to grayscale using weighted color channel values.
 
-    :param image: The RGB image.
-    :param r_weight: Weight for adjusting red color.
-    :param g_weight: Weight for adjusting green color.
-    :param b_weight: Weight for adjusting blue value.
-    :return: Grayscale image.
+    :param image: The input RGB image.
+    :param r_weight: Weight for the red channel.
+    :param g_weight: Weight for the green channel.
+    :param b_weight: Weight for the blue channel.
+    :return: The grayscale image.
+    :rtype: np.array
     """
     return image[:, :, 0] * r_weight + image[:, :, 1] * g_weight + image[:, :, 2] * b_weight
 
@@ -150,11 +182,12 @@ def rgb_to_grayscale_wight(image: np.array, r_weight: float = 0.299, g_weight: f
 @check_limits
 def brightness(image: np.array, delta: int) -> np.array:
     """
-    Adjust brightness of an image.
+    Adjust the brightness of an image by adding a delta value.
 
     :param image: The input image.
-    :param delta: The delta value for brightness adjustment.
-    :return: Brightness adjusted image.
+    :param delta: The value to adjust the brightness.
+    :return: The brightness-adjusted image.
+    :rtype: np.array
     """
     tmp = image + delta
     tmp[tmp < delta] = 255
@@ -164,11 +197,14 @@ def brightness(image: np.array, delta: int) -> np.array:
 @check_limits
 def contrast(image: np.array, beta: int) -> np.array:
     """
-    Adjust contrast of an image.
+    Adjust the contrast of an image by applying a beta value.
+
+    The contrast is adjusted by altering the pixel values relative to the mean brightness of the image.
 
     :param image: The input image.
-    :param beta: The beta value for contrast adjustment.
-    :return: Contrast adjusted image.
+    :param beta: The contrast adjustment factor.
+    :return: The contrast-adjusted image.
+    :rtype: np.array
     """
     u = np.mean(image, axis=2)
     u_mean = u.mean()

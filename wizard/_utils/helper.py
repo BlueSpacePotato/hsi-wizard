@@ -1,8 +1,30 @@
+"""
+_utils/helper.py
+===========
+
+.. module:: helper
+   :platform: Unix
+    :synopsis: Helper Functions.
+
+Module Overview
+---------------
+
+This module contains helper functions for processing wave and cube values.
+
+Functions
+---------
+
+.. autofunction:: find_nex_greater_wave
+.. autofunction:: find_nex_smaller_wave
+
+"""
+
 def find_nex_greater_wave(waves, wave_1: int, maximum_deviation: int = 5):
     """
     Finds the next greater wave value in a list of waves within a specified deviation.
 
-    Given a list of wave values, this function identifies the smallest wave value greater than the specified wave_1 within the range defined by maximum_deviation. If no such value exists within the range, it returns -1.
+    Given a list of wave values, this function identifies the smallest wave value greater than the specified wave_1 within the range defined by maximum_deviation.
+    If no such value exists within the range, it returns -1.
 
     :param waves: A list of integers representing the available wave values.
     :type waves: list[int]
@@ -29,9 +51,10 @@ def find_nex_greater_wave(waves, wave_1: int, maximum_deviation: int = 5):
 def find_nex_smaller_wave(waves, wave_1: int, maximum_deviation: int = 5):
     """
     Finds the next smaller wave value in a list of waves within a specified deviation.
-    
-    Given a list of wave values, this function identifies the largest wave value smaller than the specified wave_1 within the range defined by maximum_deviation. If no such value exists within the range, it returns -1.
-    
+        
+    Given a list of wave values, this function identifies the largest wave value smaller than the specified wave_1 within the range defined by maximum_deviation.
+    If no such value exists within the range, it returns -1.
+        
     :param waves: A list of integers representing the available wave values.
     :type waves: list[int]
     :param wave_1: The starting wave value to find the next smaller wave for.
@@ -41,7 +64,7 @@ def find_nex_smaller_wave(waves, wave_1: int, maximum_deviation: int = 5):
     :returns: The next smaller wave value within the deviation range, or -1 if no such value exists.
     :rtype: int
     """
-
+    
     wave_next = -1
 
     for n in range(maximum_deviation):
