@@ -33,8 +33,13 @@ def merge_cubes(cube1: DataCube, cube2: DataCube) -> DataCube:
     """
     c1 = cube1.cube
     c2 = cube2.cube
-    if c1.shape[:2] == c2.shape[:2]:
-        c3 = np.concatenate(c1, c2)
+    if c1 is None:
+        raise ValueError('Dc.cube 1 is not set.')
+    elif c2 is None:
+        raise ValueError('Dc.cube 2 is not set.')
+
+    if c1.shape[1:] == c2.shape[1:]:
+        c3 = np.concatenate((c1, c2))
     else:
         c3 = None
         raise NotImplementedError('Sorry - '
@@ -55,15 +60,7 @@ def merge_waves(wave1: list, wave2: list) -> list:
     :return: merged waves
     :rtype: list
     """
-    def common_members(a: list, b: list) -> set:
-        """
-        Check for comon members between two lists.
-    
-        :param a: list a
-        :param b: list to compare to a
-        :return: return a set of common members
-        :rtype: set
-        """
+
     # check for coman memebers in sets
     if set(wave1) & set(wave2):
         raise NotImplementedError('Sorry - your wavelengths are overlapping,'

@@ -45,6 +45,8 @@ def extend_image(img: np.array, extend_x: int, extend_y: int) -> np.array:
     """
     x, y, z = img.shape
 
+    if x == 0 or y == 0:
+        raise ValueError('x and y cant be 0.')
     new_img = np.zeros(
         shape=(x + extend_x * 2, y + extend_y * 2, z),
         dtype=img.dtype
@@ -66,7 +68,10 @@ def decrease_image(img: np.array, decrease_x: int, decrease_y: int) -> np.array:
     :return: The decreased image.
     :rtype: np.array
     """
-    return img[decrease_x:-decrease_x, decrease_y:-decrease_y]
+    shape = img.shape
+    if decrease_x > shape [0] or decrease_y > shape[1]:
+        raise ValueError('Decrease value is greater then the image shape.')
+    return img[decrease_x:shape[0]-decrease_x, decrease_y:shape[1]-decrease_y]
 
 
 def get_output_size(image_lengths: int, filter_lengths: int, stride: int) -> int:

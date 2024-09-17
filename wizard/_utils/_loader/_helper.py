@@ -81,7 +81,7 @@ def make_path_absolute(path: str) -> str:
     :rtype: str
     :raises ValueError: If the input path is not a string or is invalid.
     """
-    if isinstance(path, str):
+    if isinstance(path, str) and path:
         if not os.path.isabs(path):
             path = os.path.abspath(path)
         return path.lower()
