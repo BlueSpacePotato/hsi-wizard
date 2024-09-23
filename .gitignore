@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# some old stuff
+archiv/
+
 # jupyter
 *.ipynb
 notebooks/

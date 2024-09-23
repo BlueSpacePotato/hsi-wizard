@@ -1,4 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/hsi-wizard/badge/?version=latest)](https://hsi-wizard.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/hsi-wizard/badge/?version=latest)](https://hsi-wizard.readthedocs.io)
 
 <br/>
 <center style="font-size: 18px; font-weight: bold ">
@@ -51,7 +51,7 @@ pip install --no-build-isolation --editable .            # compile and install h
 
 ## Documentation
 
-### [Click here for Docs!](https://hsi-wizard.readthedocs.io/en/latest/)
+### [Click here for Docs!](https://hsi-wizard.readthedocs.io)
 
 The Documentation is available as readthedocs project. Build with `sphinx` and the `sphinx_rtd_theme`.
 
@@ -117,6 +117,16 @@ Based on an Idea from [DOI](www.doi.org/10.1007/s40010-017-0433-y)
 - [ ] merge function for multiple specs
 - [ ] spec appending function
 - [ ] save file as nrrd
+- [ ] Data Normalization
+- [ ] Gaussian Filter
+- [ ] Refelctance $I_{ref} = \frac{I_{raw} - I_{dark}}{I_{white} - I_{dark}}$
+- [ ] Optical density $I_{abs} = -\log{\frac{I_{raw}}{I_{ref}}}$
+- [ ] PCA
+- [ ] Classification
+  - [ ]  SVM
+
+
+
 
 ---
 
@@ -124,7 +134,7 @@ Based on an Idea from [DOI](www.doi.org/10.1007/s40010-017-0433-y)
 The changelog will be added if the beta version is fine and runs stable
 
 ---
-# Acknolagement
+# Acknowledgement
 
 Thanks to [shopify](https://www.shopify.com/de) providing a free logo build with the free [hatchful](https://www.shopify.com/de/tools/logo-maker) logo-generator.
 

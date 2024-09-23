@@ -34,17 +34,15 @@ Here is an example of how to use this module:
 
 """
 
-
-
+import inspect
 import warnings
 
-import cv2
 from rich import print
 import numpy as np
-import pickle
+import yaml
 
-from .._utils import decorators
-from .._utils.tracker import TrackExecutionMeta
+from wizard._utils import decorators
+from wizard._utils.tracker import TrackExecutionMeta
 
 
 class DataCube(metaclass=TrackExecutionMeta):
@@ -52,39 +50,42 @@ class DataCube(metaclass=TrackExecutionMeta):
     The `DataCube` class stores hyperspectral imaging (HSI) data as a 3D array.
 
     The cube is a 3D array of shape (v, x, y):
+
     - `x` and `y` represent the pixel coordinates.
     - `v` represents measured values, such as counts, channels, or wavelengths.
 
     In most cases, the data cube contains wavelength information, which can be in units such as nm or cm⁻¹.
     The `notation` parameter allows you to specify this information.
 
-    Attributes:
-    -----------
-    - `cube`: 3D numpy array storing the actual data.
-    - `wavelengths`: 1D numpy array representing the wavelengths.
-    - `name`: Optional name for the data cube.
-    - `notation`: Specifies whether the wavelength data is in nm or cm⁻¹.
+    Attributes
+    ----------
+    cube : np.ndarray
+        3D numpy array storing the actual data.
+    wavelengths : np.ndarray
+        1D numpy array representing the wavelengths.
+    name : str, optional
+        Optional name for the data cube.
+    notation : str, optional
+        Specifies whether the wavelength data is in nm or cm⁻¹.
     """
-
-
 
     def __init__(self, cube=None, wavelengths=None, name=None, notation=None, record: bool = False) -> None:
         """
         Initialize a new `DataCube` instance.
 
-        :param cube: 3D numpy array representing the data cube. Default is None.
-        :type cube: np.ndarray, optional
-        :param wavelengths: List of wavelengths corresponding to the `v` axis of the data cube.
-        :type wavelengths: list, optional
-        :param name: Name of the data cube. Default is None.
-        :type name: str, optional
-        :param notation: Specifies whether the wavelength data is in nm or cm⁻¹. Default is None.
-        :type notation: str, optional
-        :param record: If True, execution of the methods will be recorded. Default is False.
-        :type record: bool
-        :rtype: None
+        Parameters
+        ----------
+        cube : np.ndarray, optional
+            3D numpy array representing the data cube. Default is None.
+        wavelengths : list, optional
+            List of wavelengths corresponding to the `v` axis of the data cube.
+        name : str, optional
+            Name of the data cube. Default is None.
+        notation : str, optional
+            Specifies whether the wavelength data is in nm or cm⁻¹. Default is None.
+        record : bool, optional
+            If True, execution of the methods will be recorded. Default is False.
         """
-
         self.name = name  # name of the dc
         self.shape = None if cube is None else cube.shape  # shape of the dc
         self.dim = None  # get dimension of the dc 2d, 3d, 4d ...
@@ -104,14 +105,26 @@ class DataCube(metaclass=TrackExecutionMeta):
 
         This method concatenates the cubes along the `v` axis. The x and y dimensions of both cubes must match.
 
-        :param other: Another `DataCube` instance to add.
-        :type other: DataCube
-        :raises ValueError: If the x and y dimensions of the cubes do not match or if the cube contains None values.
-        :rtype: DataCube
-        """
+        Parameters
+        ----------
+        other : DataCube
+            Another `DataCube` instance to add.
 
+        Raises
+        ------
+        ValueError
+            If the x and y dimensions of the cubes do not match or if the cube contains None values.
+
+        Returns
+        -------
+        DataCube
+            New `DataCube` instance with combined data.
+        """
         if not isinstance(other, DataCube):
             raise ValueError('Cant add DataCube and none DataCube.')
+
+        if self.cube is None or other.cube is None:
+            raise ValueError("Cannot add DataCubes with None values.")
 
         new_wavelengths = None
 
@@ -122,7 +135,6 @@ class DataCube(metaclass=TrackExecutionMeta):
                 f'You can use the DataCube.resize function to adjust the cubes'
             )
 
-        # wavelengths cant be empty atm
         if self.wavelengths is None or other.wavelengths is None:
             warnings.warn('One of the two DataCubes does not contain the'
                           ' wavelength information. Adding them will work,'
@@ -130,8 +142,6 @@ class DataCube(metaclass=TrackExecutionMeta):
         else:
             new_wavelengths = self.wavelengths + other.wavelengths
 
-        if self.cube is None or other.cube is None:
-            raise ValueError("Cannot add DataCubes with None values.")
         new_cube = np.concatenate((self.cube, other.cube), axis=0)
         return DataCube(cube=new_cube, wavelengths=new_wavelengths,
                         name=self.name, notation=self.notation)
@@ -140,45 +150,67 @@ class DataCube(metaclass=TrackExecutionMeta):
         """
         Return the number of layers (v dimension) in the data cube.
 
-        :rtype: int
+        Returns
+        -------
+        int
+            Number of layers in the data cube.
         """
-
         return self.shape[0] if self.cube is not None else 0
 
     def __getitem__(self, idx):
         """
-        Magic Method to get an item.
+        Get an item from the data cube.
 
-        :param idx:
-        :return:
+        Parameters
+        ----------
+        idx : int
+            Index of the item to retrieve.
 
+        Returns
+        -------
+        np.ndarray
+            Selected item from the data cube.
         """
         return self.cube[idx]
 
     def __setitem__(self, idx, value) -> None:
         """
-        Magic Method to set an item.
+        Set an item in the data cube.
 
-        :param idx:
-        :param value:
-        :return: None
+        Parameters
+        ----------
+        idx : int
+            Index where the value should be set.
+        value : np.ndarray
+            Value to be set at the given index.
         """
         self.cube[idx] = value
 
     def __iter__(self):
         """
-        Magic Method to iter ofer DataCube.
+        Return an iterator for the data cube.
 
-        :return:
+        Returns
+        -------
+        DataCube
+            Iterator for the data cube.
         """
         self.idx = 0
         return self
 
     def __next__(self):
         """
-        Magic Method for next.
+        Return the next item in the data cube during iteration.
 
-        :return:
+        Returns
+        -------
+        tuple
+            Next cube layer and corresponding wavelength.
+
+        Raises
+        ------
+        StopIteration
+            If no more items are available in the data cube.
         """
         if self.idx >= len(self.cube):
             raise StopIteration
@@ -186,15 +218,14 @@ class DataCube(metaclass=TrackExecutionMeta):
             self.idx += 1
             return self.cube[self.idx - 1], self.wavelengths[self.idx - 1]
 
-    # def __sizeof__(self):
-    #   pass
-
     def __str__(self) -> str:
         """
-        Magic Method, print dc information.
+        Return a string representation of the `DataCube`.
 
-        :return : string with dc information
-        :rtype: str
+        Returns
+        -------
+        str
+            String containing information about the data cube.
         """
         n = '\n'
         _str = ''
@@ -205,100 +236,36 @@ class DataCube(metaclass=TrackExecutionMeta):
             _str += f'Num: {len(self.wavelengths)}' + n
             _str += f'From: {self.wavelengths.min()}' + n
             _str += f'To: {self.wavelengths.max()}' + n
-        _str += 'Cube:' + n
-        _str += f'{self.cube}' + n
         return _str
-
-    def execute_template(self, template_data) -> None:
-        """
-        Execute Template.
-
-        :return:
-        """
-        for method_name, args, kwargs in template_data:
-            method = getattr(self, method_name)
-            method(*args, **kwargs)
 
     @decorators.check_load_dc
     def load(self, *args, **kwargs) -> None:
         """
-        Empty load Function to override.
+        Placeholder method to load data into the `DataCube`.
 
-        This is a template function. You can implemnt your own load functions.
-
-        :return:
+        Raises
+        ------
+        NotImplementedError
+            This method must be implemented by subclasses.
         """
         raise NotImplementedError('Subclasses must implement the `load` method')
 
-    def resize(self, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
+    def set_wavelengths(self, wavelengths: np.ndarray) -> None:
         """
-        Resize the data cube to new dimensions using the specified interpolation method.
+        Set wavelength data for the `DataCube`.
 
-        Interpolation methods:
-        - `cv2.INTER_LINEAR`: Standard bilinear interpolation (ideal for enlarging).
-        - `cv2.INTER_NEAREST`: Nearest neighbor interpolation (fast but blocky).
-        - `cv2.INTER_AREA`: Pixel area interpolation (ideal for downscaling).
-        - `cv2.INTER_CUBIC`: Bicubic interpolation (high quality, slower).
-        - `cv2.INTER_LANCZOS4`: Lanczos interpolation (highest quality, slowest).
+        Parameters
+        ----------
+        wavelengths : np.ndarray
+            1D numpy array of wavelength data.
 
-        :param interpolation: The interpolation method to use (e.g., 'linear', 'nearest').
-        :type interpolation: str
-        :param x_new: The new width (x-dimension) of the cube.
-        :type x_new: int
-        :param y_new: The new height (y-dimension) of the cube.
-        :type y_new: int
-        :rtype: None
-        """
-
-        mode = None
-
-        shape = self.cube.shape
-
-        if shape[1] > x_new:
-            print('\033[93mx_new is smaller then the exising cube,'
-                  'you lose information\033[0m')
-        if shape[2] > y_new:
-            print('\033[93my_new is smaller then the exising cube,'
-                  'you lose information\033[0m')
-
-        if interpolation == 'linear':
-            mode = cv2.INTER_LINEAR
-        elif interpolation == 'nearest':
-            mode = cv2.INTER_NEAREST
-        elif interpolation == 'area':
-            mode = cv2.INTER_AREA
-        elif interpolation == 'cubic':
-            mode = cv2.INTER_CUBIC
-        elif interpolation == 'Lanczos':
-            mode = cv2.INTER_LANCZOS4
-
-        _cube = np.empty(shape=(shape[0], y_new, x_new))
-        for idx, layer in enumerate(self.cube):
-            _cube[idx] = cv2.resize(layer, (x_new, y_new), interpolation=mode)
-        self.cube = _cube
-        self.update_cube_shape()
-
-    # todo: implemnt
-    def shift_layers(self, num_layer: int) -> None:
-        """
-        Shift layers.
-
-        :return: None
-        """
-        if num_layer > self.shape[0]:
-            raise ValueError(f'`Num_layer` {num_layer} must me <= then the'
-                             'layer deeps of the DataCube {self.shape[0]}')
-        raise NotImplementedError('Sorry - Not Implemented')
-
-    def set_wavelengths(self, wavelengths: np.array) -> None:
-        """
-        Set wavelength data.
-
-        :return: None
+        Raises
+        ------
+        AttributeError
+            If the input wavelengths do not match the expected format.
         """
         if not isinstance(wavelengths, np.ndarray):
             try:
-                # todo: better error handling
                 if np.array(wavelengths).ndim == 1:
                     self.wavelengths = np.array(wavelengths)
                 else:
@@ -306,7 +273,6 @@ class DataCube(metaclass=TrackExecutionMeta):
             except AttributeError:
                 raise AttributeError('Your wavelengths didnt match an'
                                      '1d np.array')
-
         else:
             if wavelengths.ndim == 1:
                 self.wavelengths = wavelengths
@@ -314,15 +280,22 @@ class DataCube(metaclass=TrackExecutionMeta):
                 raise AttributeError('Your wavelengths didnt match an'
                                      '1d np.array')
 
-    def set_cube(self, cube: np.array) -> None:
+    def set_cube(self, cube: np.ndarray) -> None:
         """
-        Set cube data.
+        Set data for the `DataCube`.
 
-        :return: None
+        Parameters
+        ----------
+        cube : np.ndarray
+            2D, 3D, or 4D numpy array of data.
+
+        Raises
+        ------
+        AttributeError
+            If the input cube is not a valid numpy array.
         """
         if not isinstance(cube, np.ndarray):
             try:
-                # todo: better error handling
                 cube = np.array(cube)
             except AttributeError:
                 raise AttributeError('Your cube is not convertable to a'
@@ -336,52 +309,143 @@ class DataCube(metaclass=TrackExecutionMeta):
             print(f'\033[93mYour cube got forced to {self.cube.shape}\033[0m')
         else:
             raise AttributeError('Cube Data is not ndim 2,3 or 4')
-        self.update_cube_shape()
+        self.set_cube_shape()
 
-    def update_cube_shape(self) -> None:
+    def set_cube_shape(self) -> None:
         """
-        Update cube shape.
+        Update the shape of the data cube.
 
-        :return: None
         """
         self.shape = self.cube.shape
 
     def start_recording(self):
         """
-        Start Recording.
+        Start recording method execution for the `DataCube`.
 
-        :return: None
         """
         self.record = True
         TrackExecutionMeta.start_recording()
 
     def stop_recording(self) -> None:
         """
-        Stop Recording.
+        Stop recording method execution for the `DataCube`.
 
-        :return: None
         """
         self.record = False
         TrackExecutionMeta.stop_recording()
 
-    @staticmethod
-    def save_template(filename) -> None:
+    def save_template(self, filename) -> None:
         """
-        Save template from executed functions.
+        Save a template of recorded methods to a YAML file.
 
-        :return: None
-        """
-        if not filename.endswith('.pickle'):
-            filename = filename + '.pickle'
-        with open(filename, 'wb') as template_file:
-            pickle.dump(TrackExecutionMeta.recorded_methods, template_file)
+        Parameters
+        ----------
+        filename : str
+            Name of the file where the template will be saved.
 
-    def load_template(self, filenmae) -> None:
+        Raises
+        ------
+        AttributeError
+            If the filename is None or not a string.
         """
-        Load template and execute function.
+        if not filename:
+            raise AttributeError('Filename can\'t be none')
+        elif not isinstance(filename, str):
+            t = type(filename)
+            raise AttributeError(f'Filename must be string not {t}')
 
-        :return: None
+        if not filename.endswith('.yml'):
+            filename = filename + '.yml'
+
+        cleaned_data = self._clean_data(TrackExecutionMeta.recorded_methods)
+        y = yaml.dump(cleaned_data,default_flow_style=False, sort_keys=False)
+        with open(filename, 'w') as template_file:
+            template_file.write(y)
+
+    def _map_args_to_kwargs(sef, func, args, kwargs):
         """
-        with open(filenmae, 'rb') as template_file:
-            template_data = pickle.load(template_file)
-        self.execute_template(template_data)
+        Map positional arguments (args) to keyword arguments (kwargs)
+        based on the function signature.
+
+        Parameters
+        ----------
+        func : function
+            Function to be analyzed.
+        args : tuple
+            Positional arguments passed to the function.
+        kwargs : dict
+            Keyword arguments passed to the function.
+
+        Returns
+        -------
+        dict
+            Combined keyword arguments.
+        """
+        sig = inspect.signature(func)
+        params = list(sig.parameters.values())
+
+        new_kwargs = kwargs.copy()  # Start with the provided kwargs
+        for i, arg in enumerate(args):
+            if i < len(params):
+                param_name = params[i].name
+                new_kwargs[param_name] = arg
+
+        return new_kwargs
+
+    def _clean_data(self, recorded_methods):
+        """
+        Clean recorded method data by removing unnecessary entries.
+
+        Parameters
+        ----------
+        recorded_methods : list
+            List of recorded methods and their arguments.
+
+        Returns
+        -------
+        list
+            Cleaned method data for template saving.
+        """
+        cleaned_data = []
+
+        for method_name, args, kwargs in recorded_methods:
+            # Clean out DataCube instances from the arguments
+            cleaned_args = [arg for arg in args if not isinstance(arg, DataCube)]
+
+            # Get the actual function object from the DataCube class
+            func = getattr(DataCube, method_name, None)
+
+            if func is not None:
+                # Map positional args to kwargs using cleaned args
+                full_kwargs = self._map_args_to_kwargs(func, cleaned_args, kwargs)
+            else:
+                print(f"Warning: Method {method_name} not found in DataCube.")
+                full_kwargs = kwargs
+
+            cleaned_entry = {
+                'method': method_name,
+                'kwargs': full_kwargs
+            }
+
+            cleaned_data.append(cleaned_entry)
+
+        return cleaned_data
+
+    def execute_template(self, filename) -> None:
+        """
+        Load a template and execute the corresponding methods.
+
+        Parameters
+        ----------
+        filename : str
+            Name of the YAML file containing the template.
+
+        """
+        with open(filename, 'rb') as template_file:
+            template_data = yaml.safe_load(template_file)
+
+        for i in range(len(template_data)):
+            method = getattr(self, template_data[i]['method'])
+            kwargs = template_data[i]['kwargs']
+            method(**kwargs)
+
