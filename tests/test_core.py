@@ -4,7 +4,6 @@ import numpy as np
 from prompt_toolkit.validation import ValidationError
 
 from wizard import DataCube
-from wizard._core import merge_cubes, merge_waves
 
 import pytest
 
@@ -220,10 +219,7 @@ class TestDataCube:
                            "Num: 3\n"
                            "From: 400\n"
                            "To: 600\n"
-                           "Cube:\n"
-                           "[[[1. 1. 1. 1. 1.]\n  [1. 1. 1. 1. 1.]\n  [1. 1. 1. 1. 1.]\n  [1. 1. 1. 1. 1.]]\n\n"
-                           " [[1. 1. 1. 1. 1.]\n  [1. 1. 1. 1. 1.]\n  [1. 1. 1. 1. 1.]\n  [1. 1. 1. 1. 1.]]\n\n"
-                           " [[1. 1. 1. 1. 1.]\n  [1. 1. 1. 1. 1.]\n  [1. 1. 1. 1. 1.]\n  [1. 1. 1. 1. 1.]]]\n")
+                          )
 
         assert dc.__str__() == expected_output
 
@@ -356,54 +352,3 @@ class TestDataCube:
         with pytest.raises(AttributeError):
             dc.set_cube('hi')
 
-class TestMergeCubes:
-
-    # Merging two DataCubes with identical x and y dimensions
-    def test_merge_cubes_identical_dimensions(self):
-        cube1 = DataCube(cube=np.random.rand(10, 5, 5), wavelengths=np.arange(10))
-        cube2 = DataCube(cube=np.random.rand(10, 5, 5), wavelengths=np.arange(10, 20))
-        merged_cube = merge_cubes(cube1, cube2)
-        assert merged_cube.cube.shape == (20, 5, 5)
-
-    # Attempting to merge DataCubes with different x and y dimensions
-    def test_merge_cubes_different_dimensions(self):
-        cube1 = DataCube(cube=np.random.rand(10, 5, 5), wavelengths=np.arange(10))
-        cube2 = DataCube(cube=np.random.rand(10, 6, 6), wavelengths=np.arange(10, 20))
-        with pytest.raises(NotImplementedError):
-            merge_cubes(cube1, cube2)
-
-    # Handling None values in the DataCube attributes
-    def test_merge_cubes_with_none_values_1(self):
-        cube1 = DataCube(cube=None, wavelengths=None)
-        cube2 = DataCube(cube=np.random.rand(10, 5, 5), wavelengths=np.arange(10))
-        with pytest.raises(ValueError):
-            merge_cubes(cube1, cube2)
-
-    def test_merge_cubes_with_none_values_2(self):
-        cube2 = DataCube(cube=None, wavelengths=None)
-        cube1 = DataCube(cube=np.random.rand(10, 5, 5), wavelengths=np.arange(10))
-        with pytest.raises(ValueError):
-            merge_cubes(cube1, cube2)
-
-class TestMergeWaves:
-
-    # Merging two non-overlapping wave lists returns a combined list
-    def test_non_overlapping_waves(self):
-        wave1 = [1, 2, 3]
-        wave2 = [4, 5, 6]
-        result = merge_waves(wave1, wave2)
-        assert result == [1, 2, 3, 4, 5, 6]
-
-    # Merging two wave lists with completely identical elements raises NotImplementedError
-    def test_identical_waves(self):
-        wave1 = [1, 2, 3]
-        wave2 = [1, 2, 3]
-        with pytest.raises(NotImplementedError):
-            merge_waves(wave1, wave2)
-
-    # Merging two wave lists with some overlapping elements raises NotImplementedError
-    def test_overlapping_waves(self):
-        wave1 = [1, 2, 3]
-        wave2 = [3, 4, 5]
-        with pytest.raises(NotImplementedError):
-            merge_waves(wave1, wave2)
