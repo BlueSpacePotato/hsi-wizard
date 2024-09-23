@@ -187,14 +187,3 @@ If you would like to contribute to this project, feel free to fork the repositor
 Thanks to [Shopify](https://www.shopify.com) for providing a free logo-building tool via [Hatchful](https://www.shopify.com/tools/logo-maker).
 
 Icons made by [Good Ware](https://www.flaticon.com/authors/good-ware) from [Flaticon](https://www.flaticon.com).
-```
-
-### Key Updates:
-1. **Combined Features**: The combined `Features` section now reflects a more comprehensive overview of both simple and advanced functionalities.
-2. **Improved Installation**: Clarified steps for installation via `pip` and compiling from source.
-3. **Usage Examples**: Updated the example with appropriate DataCube usage.
-4. **Git Structure & Code Philosophy**: Clarified the structure and philosophy to give contributors a clear understanding.
-5. **To-Do List**: Integrated the tasks with links to relevant GitHub projects for hyperparameter tuning and R-support.
-6. **Acknowledgements & Documentation**: Added references to documentation, changelogs, and attributions.
-
-This structure provides a user-friendly and professional overview of your project. Let me know if you'd like further adjustments!
