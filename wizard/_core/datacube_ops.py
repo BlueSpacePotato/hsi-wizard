@@ -174,3 +174,24 @@ def resize(dc, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
         _cube[idx] = cv2.resize(layer, (x_new, y_new), interpolation=mode)
     dc.cube = _cube
     dc.set_cube_shape()
+
+
+def baseline_als(dc: DataCube = None, lam: float = 1000000, p: float = 0.01,
+                      niter: int = 10) -> DataCube:
+    """
+
+    :param dc:
+    :param lam:
+    :param p:
+    :param niter:
+    :return:
+    """
+    for x in range(dc.shape[1]):
+        for y in range(dc.shape[2]):
+            dc.cube[:, x, y] -= spec_baseline_als(
+                spectrum=dc.cube[:, x, y],
+                lam=lam,
+                p=p,
+                niter=niter
+            )
+    return dc

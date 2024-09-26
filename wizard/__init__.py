@@ -25,6 +25,8 @@ This module imports essential submodules and classes/functions, including:
 # Import necessary submodules and classes/functions from them
 from ._core.datacube import DataCube
 from ._exploration.plotter import plotter
+from ._exploration.roi_inspector import roi
+from ._exploration.surface import plot_surface
 from ._utils._loader import read
 
 # Define what should be accessible when using 'from wizard import *'

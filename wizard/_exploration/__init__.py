@@ -20,8 +20,3 @@ plotter : function
 
 """
 
-from .plotter import plotter
-
-__all__ = [
-    'plotter'
-]

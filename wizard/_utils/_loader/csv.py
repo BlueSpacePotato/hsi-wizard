@@ -42,17 +42,17 @@ def _read_csv(filepath: str) -> DataCube:
     wave_data = []
 
     with open(filepath, mode='r') as file:
-        reader = csv.reader(file)
+        reader = csv.reader(file, delimiter=';')
 
         # Skip header row
-        headers = next(reader)  
+        headers = [h.replace(',', '.') for h in next(reader)]
 
         for row in reader:
+            row = [r.replace(',', '.') for r in row]
             if len(row) < 3:
-                raise ValueError("CSV file format is incorrect: "
-                                 "expected at least three columns.")
-            x = int(row[0])
-            y = int(row[1])
+                raise ValueError("CSV file format is incorrect: expected at least three columns.")
+            x = row[0]
+            y = row[1]
 
             # All columns after x, y are waves
             waves = [int(wave_value) for wave_value in row[2:]]  
