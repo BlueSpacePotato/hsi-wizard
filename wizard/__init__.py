@@ -1,29 +1,43 @@
-# wizard/__init__.py
+"""
+__init__.py
+============
 
+.. module:: __init__
+   :platform: Unix
+   :synopsis: Initialization module for the hsi-wizard package.
+
+Module Overview
+---------------
+
+This module initializes the `hsi-wizard` package, making key components
+accessible for users.
+
+Importing
+---------
+
+This module imports essential submodules and classes/functions, including:
+
+- `DataCube` from the `_core.datacube` module
+- `plotter` from the `_exploration.plotter` module
+- `read` from the `_utils._loader` module
+"""
 
 # Import necessary submodules and classes/functions from them
 from ._core.datacube import DataCube
-from ._core.eda import plotter
-
-from ._utils.data_loader import read
-# from ._utils.utils_module1 import UtilityClass1, util_function1
-# from ._utils.utils_module2 import UtilityClass2, util_function2
+from ._exploration.plotter import plotter
+from ._exploration.roi_inspector import roi
+from ._exploration.surface import plot_surface
+from ._utils._loader import read
 
 # Define what should be accessible when using 'from wizard import *'
-__all__ = [
-    'DataCube',
-    'read'
-]
+#__all__ = [
+#    'DataCube',
+#    'read',
+#    'plotter'
+#]
+
 
 # Example of setting package metadata
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 __author__ = 'flx'
 
-
-# Optionally, define a function for package initialization or configuration
-def initialize():
-    pass
-
-
-# Initialize the package
-initialize()

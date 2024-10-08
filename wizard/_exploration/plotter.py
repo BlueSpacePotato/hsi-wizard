@@ -1,14 +1,41 @@
+"""
+_exploration/plotter.py
+========================
+
+.. module:: plotter
+   :platform: Unix
+   :synopsis: Functions for visualizing and analyzing data from DataCube.
+
+Module Overview
+---------------
+
+This module contains helper functions for processing wave and cube values, specifically for
+visualizing data from a `DataCube` object. It includes normalization and plotting functionalities.
+
+Functions
+---------
+
+.. autofunction:: plotter
+.. autofunction:: normalize_layer
+
+"""
+
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from wizard import DataCube
-from .._utils.helper_functions import find_nex_smaller_wave
+from .._utils.helper import find_nex_smaller_wave
 
 try:
+    # Try importing IPython only if available
     from IPython import get_ipython
-    if "IPKernelApp" not in get_ipython().config:
-        raise ImportError("console")
-except ImportError:
+    ipython = get_ipython()
+    if ipython and 'IPKernelApp' in ipython.config:
+        pass
+    else:
+        raise ImportError  # Not in Jupyter, fall back to console
+except (ImportError, AttributeError):
+    # Console-specific settings (e.g., TkAgg for matplotlib)
     import matplotlib
     matplotlib.use('TkAgg')
 
@@ -17,11 +44,14 @@ def normalize_layer(layer: np.array) -> np.array:
     """
     Normalize a 2D or 3D numpy array (layer) by adjusting its values to a 0-1 range.
 
-    This function first checks if the maximum value in the layer is more than 10 times greater than the mean value and prints a warning if so. It then normalizes the layer by removing any offset and scaling the values to the range [0, 1]. The resulting layer is rounded and cast to `float16` for consistency.
+    This function first checks if the maximum value in the layer is more than 10 times greater
+    than the mean value and prints a warning if so. It then normalizes the layer by removing
+    any offset and scaling the values to the range [0, 1]. The resulting layer is rounded and
+    cast to `float16` for consistency.
 
     :param layer: A numpy array representing the layer to be normalized.
     :type layer: np.ndarray
-    :returns: The normalized layer as a numpy array with values scaled to the range [0, 1] and rounded to 10 decimal places.
+    :returns: The normalized layer as a numpy array with values scaled to the range [0, 1].
     :rtype: np.ndarray
     :raises ValueError: If the input `layer` is not a numpy array.
     """
@@ -46,13 +76,21 @@ def plotter(dc: DataCube) -> None:
     """
     Interactive plotter for visualizing and analyzing data from a DataCube.
 
-    This function creates an interactive plot with two subplots: one for displaying an image layer from the DataCube and another for displaying a spectral plot. Users can interact with the plots to select different image layers and regions of interest, which updates both the image and spectral plot accordingly.
+    This function creates an interactive plot with two subplots: one for displaying an image
+    layer from the DataCube and another for displaying a spectral plot. Users can interact
+    with the plots to select different image layers and regions of interest, which updates both
+    the image and spectral plot accordingly.
 
-    :param dc: A DataCube object containing the data to be visualized. The DataCube should have attributes `wavelengths` and `cube`, where `cube` is a 3D numpy array and `wavelengths` is a list or array of wavelength values corresponding to the layers of the cube.
+    :param dc: A DataCube object containing the data to be visualized. The DataCube should
+               have attributes `wavelengths` and `cube`, where `cube` is a 3D numpy array
+               and `wavelengths` is a list or array of wavelength values corresponding to the
+               layers of the cube.
     :type dc: DataCube
     :returns: None
-    :raises AttributeError: If the DataCube object does not have the required attributes (`wavelengths` and `cube`).
-    :raises ValueError: If the DataCube object does not have a `name` attribute, but the code assumes it exists.
+    :raises AttributeError: If the DataCube object does not have the required attributes
+                            (`wavelengths` and `cube`).
+    :raises ValueError: If the DataCube object does not have a `name` attribute, but the
+                        code assumes it exists.
 
     Example usage:
     >>> plotter(my_datacube)
