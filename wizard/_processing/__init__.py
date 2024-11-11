@@ -11,4 +11,5 @@ Module Overview
 
 This module initializes the exploration functions of the `hsi-wizard`.
 
+:no-index:
 """

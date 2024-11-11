@@ -98,7 +98,7 @@ def remove_spikes(dc, threshold: int = 6500, window: int = 3):
     spikes = abs(z_spectrum) > threshold
     cube_out = dc.cube.copy()
 
-    spikes_flat = spikes.reshape(dc.cube.shape[0] - 1, -1)
+    spikes_flat = spikes.reshape(dc.cube.shape[0], -1)
     spec_out_flat = cube_out.reshape(cube_out.shape[0], -1)
 
     results = Parallel(n_jobs=-1)(
@@ -149,13 +149,14 @@ def resize(dc, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
 
     mode = None
 
-    shape = dc.cube.shape
-
-    if shape[1] > x_new:
+    # Some Warning ;)
+    if dc.shape[1] > x_new:
         print('\033[93mx_new is smaller than the existing cube, you will lose information\033[0m')
-    if shape[2] > y_new:
+
+    if dc.shape[2] > y_new:
         print('\033[93my_new is smaller than the existing cube, you will lose information\033[0m')
 
+    # choose interpolation mode
     if interpolation == 'linear':
         mode = cv2.INTER_LINEAR
     elif interpolation == 'nearest':
@@ -169,11 +170,13 @@ def resize(dc, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
     else:
         raise ValueError(f'Interpolation method `{interpolation}` not recognized.')
 
-    _cube = np.empty(shape=(shape[0], y_new, x_new))
+    # loop over layers
+    _cube = np.empty(shape=(dc.shape[0], x_new, y_new))
     for idx, layer in enumerate(dc.cube):
-        _cube[idx] = cv2.resize(layer, (x_new, y_new), interpolation=mode)
-    dc.cube = _cube
-    dc.set_cube_shape()
+        _cube[idx] = cv2.resize(layer, (y_new, x_new), interpolation=mode)
+
+    # set cube and update shape
+    dc.set_cube(_cube)
 
 
 def baseline_als(dc: DataCube = None, lam: float = 1000000, p: float = 0.01,

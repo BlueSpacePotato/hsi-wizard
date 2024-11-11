@@ -1,156 +1,170 @@
-"""
-_exploration/plotter.py
-========================
-
-.. module:: plotter
-   :platform: Unix
-   :synopsis: Functions for visualizing and analyzing data from DataCube.
-
-Module Overview
----------------
-
-This module contains helper functions for processing wave and cube values, specifically for
-visualizing data from a `DataCube` object. It includes normalization and plotting functionalities.
-
-Functions
----------
-
-.. autofunction:: plotter
-.. autofunction:: normalize_layer
-
-"""
-
-import copy
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Button, CheckButtons, RectangleSelector
+from matplotlib.gridspec import GridSpec
+
 from wizard import DataCube
 from .._utils.helper import find_nex_smaller_wave
 
-try:
-    # Try importing IPython only if available
-    from IPython import get_ipython
-    ipython = get_ipython()
-    if ipython and 'IPKernelApp' in ipython.config:
-        pass
-    else:
-        raise ImportError  # Not in Jupyter, fall back to console
-except (ImportError, AttributeError):
-    # Console-specific settings (e.g., TkAgg for matplotlib)
-    import matplotlib
-    matplotlib.use('TkAgg')
+# State dictionary to manage the global variables locally
+state = {
+    'layer_id': 0,
+    'normalize_flag': False
+}
 
+saved_plots = []  # To hold saved plot data (wave and spec)
+saved_lines = []  # To hold the actual line objects for plotting
 
-def normalize_layer(layer: np.array) -> np.array:
-    """
-    Normalize a 2D or 3D numpy array (layer) by adjusting its values to a 0-1 range.
+def normalize(spec):
+    """Normalize the spectrum to the range 0-1 if needed."""
+    spec_min, spec_max = spec.min(), spec.max()
+    return np.clip((spec - spec_min) / (spec_max - spec_min), 0, 1) if spec_max > spec_min else spec
 
-    This function first checks if the maximum value in the layer is more than 10 times greater
-    than the mean value and prints a warning if so. It then normalizes the layer by removing
-    any offset and scaling the values to the range [0, 1]. The resulting layer is rounded and
-    cast to `float16` for consistency.
+def plotter(dc):
+    state['layer_id'] = dc.wavelengths[0]  # Initialize layer ID
 
-    :param layer: A numpy array representing the layer to be normalized.
-    :type layer: np.ndarray
-    :returns: The normalized layer as a numpy array with values scaled to the range [0, 1].
-    :rtype: np.ndarray
-    :raises ValueError: If the input `layer` is not a numpy array.
-    """
-    if layer.max() > layer.mean() * 10:
-        print('\033[93mThe layer max value is more than 10 times greater than the mean value.'
-              ' If you don’t see anything, try the spike removing tool.\033[0m')
+    # Initialize ROI coordinates
+    roi_x_start, roi_x_end = 0, dc.cube.shape[2]
+    roi_y_start, roi_y_end = 0, dc.cube.shape[1]
     
-    layer_copy = copy.deepcopy(layer)
-
-    if layer_copy.min() != 0:
-        layer_copy -= layer.min()
-
-    if layer_copy.max() != 0:
-        layer_copy /= layer_copy.max()
-
-    layer_copy = np.round(layer_copy, decimals=10).astype('float16')
-
-    return layer_copy
-
-
-def plotter(dc: DataCube) -> None:
-    """
-    Interactive plotter for visualizing and analyzing data from a DataCube.
-
-    This function creates an interactive plot with two subplots: one for displaying an image
-    layer from the DataCube and another for displaying a spectral plot. Users can interact
-    with the plots to select different image layers and regions of interest, which updates both
-    the image and spectral plot accordingly.
-
-    :param dc: A DataCube object containing the data to be visualized. The DataCube should
-               have attributes `wavelengths` and `cube`, where `cube` is a 3D numpy array
-               and `wavelengths` is a list or array of wavelength values corresponding to the
-               layers of the cube.
-    :type dc: DataCube
-    :returns: None
-    :raises AttributeError: If the DataCube object does not have the required attributes
-                            (`wavelengths` and `cube`).
-    :raises ValueError: If the DataCube object does not have a `name` attribute, but the
-                        code assumes it exists.
-
-    Example usage:
-    >>> plotter(my_datacube)
-    """
-    global layer_id
-    global x_id
-    global y_id
-
-    layer_id = dc.wavelengths[0]
-    x_id = 0
-    y_id = 0
-
-    def update_plot(val):
-        layer = dc.cube[np.where(dc.wavelengths == layer_id)[0][0]]
-        layer = normalize_layer(layer)
+    def update_plot(_=None):
+        """Update the main plot with current state."""
+        layer_index = np.where(dc.wavelengths == state['layer_id'])[0][0]
+        layer = dc.cube[layer_index]
         imshow.set_data(layer)
+        ax[0].set_title(f'Image @{dc.wavelengths[state["layer_id"]]}{dc.notation or ""}')
 
-        spec = dc.cube[:, x_id, y_id]
-        wave = range(dc.cube.shape[0]) if dc.wavelengths is None else dc.wavelengths
-        s_plot.set_data(wave, spec)
-        r = (spec.max() - spec.min()) * 0.1
-        ax[1].set_ylim(spec.min() - r, spec.max() + r)
-        line.set_data([layer_id], (layer.min(), layer.max()))
+        # Update ROI mean plot
+        update_roi_mean()
+
+        # Update saved plots without re-adding lines
+        for i, sp in enumerate(saved_plots):
+            saved_spec = sp['spec']
+            if state['normalize_flag']:
+                saved_spec = normalize(saved_spec)
+            saved_lines[i].set_data(sp['wave'], saved_spec)
+
         fig.canvas.draw_idle()
 
+    def save_plot(_):
+        """Save the current spectrum data to saved_plots."""
+        roi_data = dc.cube[:, roi_y_start:roi_y_end, roi_x_start:roi_x_end]
+        mean_spec = np.mean(roi_data, axis=(1, 2))
+        if state['normalize_flag']:
+            mean_spec = normalize(mean_spec)
+        saved_plots.append({
+            'wave': dc.wavelengths,
+            'spec': mean_spec
+        })
+        saved_line, = ax[1].plot(saved_plots[-1]['wave'], saved_plots[-1]['spec'], 'lightgrey', alpha=0.3)
+        saved_lines.append(saved_line)
+        update_plot()
+
+    def remove_last_plot(_):
+        """Remove the last saved plot."""
+        if saved_plots:
+            saved_plots.pop()
+            saved_lines.pop().remove()
+            update_plot()
+
+    def toggle_normalization(_):
+        state['normalize_flag'] = not state['normalize_flag']
+        update_plot()
+
+    def update_roi_mean():
+        """Compute and plot the mean spectrum over the selected ROI."""
+        roi_data = dc.cube[:, roi_y_start:roi_y_end, roi_x_start:roi_x_end]
+        mean_spec = np.mean(roi_data, axis=(1, 2))
+        if state['normalize_flag']:
+            mean_spec = normalize(mean_spec)
+
+        # Define r based on the range of mean_spec
+        r = (mean_spec.max() - mean_spec.min()) * 0.1
+        ax[1].set_ylim(0 if state['normalize_flag'] else mean_spec.min() - r,
+                       1 if state['normalize_flag'] else mean_spec.max() + r)
+        roi_line.set_data(dc.wavelengths, mean_spec)
+        line.set_data([state['layer_id']], [layer.min(), layer.max()])
+
+
+    def on_roi_change(eclick, erelease):
+        """Handle rectangle selector change to update ROI coordinates."""
+        nonlocal roi_x_start, roi_x_end, roi_y_start, roi_y_end
+
+        roi_x_start, roi_y_start = int(eclick.xdata), int(eclick.ydata)
+        roi_x_end, roi_y_end = int(erelease.xdata), int(erelease.ydata)
+
+        if roi_x_start - roi_x_end == 0:
+            roi_x_end +=1
+
+        if roi_y_start - roi_y_end == 0:
+            roi_y_end +=1
+
+        # Update the ROI mean plot
+        update_plot()
+
     def onclick_select(event):
-        global layer_id
-        global x_id
-        global y_id
-
+        """Handle rectangle selector change to update ROI coordinates."""
+        nonlocal roi_x_start, roi_x_end, roi_y_start, roi_y_end
         if event.inaxes == ax[0]:
-            y_id = int(event.xdata)
-            x_id = int(event.ydata)
-            update_plot(event)
+            roi_x, roi_y = int(event.xdata), int(event.ydata)
 
+            roi_x_start = roi_x
+            roi_x_end = roi_x +1
+
+            roi_y_start = roi_y
+            roi_y_end = roi_y +1
+
+            update_plot()
         elif event.inaxes == ax[1]:
-            tmp_id = int(event.xdata)
-            layer_id = find_nex_smaller_wave(dc.wavelengths, tmp_id, 10)
-            if layer_id != -1:
-                update_plot(event)
+            state['layer_id'] = find_nex_smaller_wave(dc.wavelengths, int(event.xdata), 10)
+            update_plot()
 
-    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
-    plt.subplots_adjust(bottom=0.25)
-    fig.suptitle('Datacube' if dc.name is None else dc.name)
+    # Create main figure and layout with GridSpec
+    fig = plt.figure(figsize=(14, 8))
+    gs = GridSpec(2, 2, width_ratios=[4, 4], height_ratios=[4, 1])
 
-    layer = normalize_layer(dc.cube[0])
+    # Main plotting area (image and spectrum)
+    ax_image = fig.add_subplot(gs[0, 0])
+
+    # ax_image.set_title(f'Image @{dc.wavelengths[state["layer_id"]]}{dc.notation or ""}')
+
+    ax_spectrum = fig.add_subplot(gs[0, 1])
+    ax_spectrum.set_title('Spectrum')
+    ax = [ax_image, ax_spectrum]
+
+    # Control panel for buttons and checkbox
+    ax_control = fig.add_subplot(gs[1, :])
+    ax_control.axis("off")  # Hide control panel axes
+
+    # Set up the initial plots
+    layer = dc.cube[0]
     imshow = ax[0].imshow(layer)
-
     spec = dc.cube[:, 0, 0]
-    wave = range(dc.cube.shape[0]) if dc.wavelengths is None else dc.wavelengths
+    line = ax[1].axvline(x=state['layer_id'], color='lightgrey', linestyle='dashed')
 
-    line = ax[1].axvline(
-        x=layer_id,
-        color='lightgrey',
-        linestyle='dashed',
-    )
+    # ROI mean line
+    roi_line, = ax[1].plot(dc.wavelengths, spec, label="ROI Mean")
 
-    s_plot, = ax[1].plot(wave, spec)
+    # Buttons and checkbox in the control panel
+    ax_save = fig.add_axes([0.05, 0.1, 0.15, 0.075])
+    btn_save = Button(ax_save, 'Save Plot')
+    btn_save.on_clicked(save_plot)
 
+    ax_remove = fig.add_axes([0.25, 0.1, 0.15, 0.075])
+    btn_remove = Button(ax_remove, 'Remove Plot')
+    btn_remove.on_clicked(remove_last_plot)
+
+    ax_checkbox = fig.add_axes([0.45, 0.1, 0.15, 0.075])
+    check = CheckButtons(ax_checkbox, ['Normalize Y (0-1)'], [False])
+    check.on_clicked(toggle_normalization)
+
+    # ROI selection
+    rect_selector = RectangleSelector(ax[0], on_roi_change, useblit=True, button=[1], minspanx=5, minspany=5, spancoords='pixels', interactive=True)
     fig.canvas.mpl_connect("button_press_event", onclick_select)
 
-    update_plot(None)
+    update_plot()
+
+
+
+    plt.tight_layout(rect=[0, 0, .95, 1])
     plt.show()

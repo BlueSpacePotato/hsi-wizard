@@ -40,6 +40,7 @@ import warnings
 from rich import print
 import numpy as np
 import yaml
+# from traitlets import ValidateHandler
 
 from wizard._utils import decorators
 from wizard._utils.tracker import TrackExecutionMeta
@@ -59,14 +60,16 @@ class DataCube(metaclass=TrackExecutionMeta):
 
     Attributes
     ----------
-    cube : np.ndarray
-        3D numpy array storing the actual data.
-    wavelengths : np.ndarray
-        1D numpy array representing the wavelengths.
+    cube : np.ndarray, optional
+        3D numpy array representing the data cube. Default is None.
+    wavelengths : list | np.ndarray, optional
+        List of wavelengths corresponding to the `v` axis of the data cube.
     name : str, optional
-        Optional name for the data cube.
+        Name of the data cube. Default is None.
     notation : str, optional
-        Specifies whether the wavelength data is in nm or cm⁻¹.
+        Specifies whether the wavelength data is in nm or cm⁻¹. Default is None.
+    record : bool, optional
+        If True, execution of the methods will be recorded. Default is False.
     """
 
     def __init__(self, cube=None, wavelengths=None, name=None, notation=None, record: bool = False) -> None:
@@ -77,7 +80,7 @@ class DataCube(metaclass=TrackExecutionMeta):
         ----------
         cube : np.ndarray, optional
             3D numpy array representing the data cube. Default is None.
-        wavelengths : list, optional
+        wavelengths : list | np.ndarray, optional
             List of wavelengths corresponding to the `v` axis of the data cube.
         name : str, optional
             Name of the data cube. Default is None.
@@ -232,37 +235,69 @@ class DataCube(metaclass=TrackExecutionMeta):
         _str += f'Name: {self.name}' + n
         _str += f'Shape: {self.shape}' + n
         if self.wavelengths is not None:
-            _str += 'Wavelengths' + n
-            _str += f'Num: {len(self.wavelengths)}' + n
-            _str += f'From: {self.wavelengths.min()}' + n
-            _str += f'To: {self.wavelengths.max()}' + n
+            _str += 'Wavelengths:' + n
+            _str += f'\tLen: {len(self.wavelengths)}' + n
+            _str += f'\tFrom: {self.wavelengths.min()}' + n
+            _str += f'\tTo: {self.wavelengths.max()}' + n
+        if self.notation is not None:
+            _str += 'Notaion:' + self.notation
         return _str
 
-    @decorators.check_load_dc
-    def load(self, *args, **kwargs) -> None:
+    def custom_read(self, *args, **kwargs) -> None:
         """
-        Placeholder method to load data into the `DataCube`.
+        Placeholder method to read data into the `DataCube`.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments for future extension.
+        **kwargs : dict
+            Keyword arguments for future extension.
 
         Raises
         ------
         NotImplementedError
             This method must be implemented by subclasses.
         """
-        raise NotImplementedError('Subclasses must implement the `load` method')
+        if hasattr(self, 'reading_func'):
+            _dc = self.reading_func(*args, **kwargs)
 
+            # stupid but easly readble, mapping would be overkill...
+            self.set_cube(_dc.cube)
+            if _dc.wavelengths is not None:
+                self.set_wavelengths(_dc.wavelengths)
+            if _dc.notation is not None:
+                self.set_notation(_dc.notation)
+            if _dc.name is not None:
+                self.set_name(_dc.name)
+        else:
+            raise NotImplementedError('You need to implement a `custom_read` method and set it with `set_custom_read(fuc).')
+
+    def set_custom_reader(self, reading_func):
+        """
+        Set a custom reading function for loading data.
+        :param reading_func: A callable that takes a path as input and returns the loaded data.
+        """
+        self.reading_func = reading_func
+
+    def set_name(self, name:str) -> None:
+            if name and isinstance(name, str):
+                self.name = name
+            else:
+                raise AttributeError('Name musste be a string.')
     def set_wavelengths(self, wavelengths: np.ndarray) -> None:
         """
-        Set wavelength data for the `DataCube`.
+       Set wavelength data for the `DataCube`.
 
         Parameters
         ----------
-        wavelengths : np.ndarray
-            1D numpy array of wavelength data.
+        wavelengths : np.ndarray or list
+            1D numpy array or list of wavelength data. If a list is provided, it will be converted to a numpy array.
 
         Raises
         ------
         AttributeError
-            If the input wavelengths do not match the expected format.
+            If the input wavelengths are not a 1D array or list.
         """
         if not isinstance(wavelengths, np.ndarray):
             try:
@@ -287,12 +322,13 @@ class DataCube(metaclass=TrackExecutionMeta):
         Parameters
         ----------
         cube : np.ndarray
-            2D, 3D, or 4D numpy array of data.
+            2D, 3D, or 4D numpy array of data. If a 2D array is provided, it will be expanded to 3D.
 
         Raises
         ------
         AttributeError
-            If the input cube is not a valid numpy array.
+            If the input cube is not a numpy array or cannot be converted to one,
+            or if its dimensionality is not 2, 3, or 4.
         """
         if not isinstance(cube, np.ndarray):
             try:
@@ -309,16 +345,29 @@ class DataCube(metaclass=TrackExecutionMeta):
             print(f'\033[93mYour cube got forced to {self.cube.shape}\033[0m')
         else:
             raise AttributeError('Cube Data is not ndim 2,3 or 4')
-        self.set_cube_shape()
+        self._set_cube_shape()
 
-    def set_cube_shape(self) -> None:
+    def _set_cube_shape(self) -> None:
         """
         Update the shape of the data cube.
 
         """
         self.shape = self.cube.shape
 
-    def start_recording(self):
+    def set_notation(self, notation:str) -> None:
+        """
+        Update the notation for the DataCube.
+
+        Parameters
+        ----------
+        notation : str
+            The notation describing the units for wavelength data, such as 'nm' for nanometers
+            or 'cm⁻¹' for inverse centimeters.
+        """
+
+        self.notation = notation
+
+    def start_recording(self) -> None:
         """
         Start recording method execution for the `DataCube`.
 
@@ -341,7 +390,8 @@ class DataCube(metaclass=TrackExecutionMeta):
         Parameters
         ----------
         filename : str
-            Name of the file where the template will be saved.
+            Name of the YAML file where the template will be saved. If the filename does not
+            end with `.yml`, it will automatically be appended.
 
         Raises
         ------
@@ -349,7 +399,7 @@ class DataCube(metaclass=TrackExecutionMeta):
             If the filename is None or not a string.
         """
         if not filename:
-            raise AttributeError('Filename can\'t be none')
+            raise AttributeError('Filename can\'t be `None`')
         elif not isinstance(filename, str):
             t = type(filename)
             raise AttributeError(f'Filename must be string not {t}')
@@ -361,6 +411,7 @@ class DataCube(metaclass=TrackExecutionMeta):
         y = yaml.dump(cleaned_data,default_flow_style=False, sort_keys=False)
         with open(filename, 'w') as template_file:
             template_file.write(y)
+        print(f'Saved templated: {filename}')
 
     def _map_args_to_kwargs(sef, func, args, kwargs):
         """

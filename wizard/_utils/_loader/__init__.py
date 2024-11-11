@@ -76,6 +76,7 @@ def load_all_loaders():
         "xlsx",
         "tdms",
         "fsm",
+        "images",
     ]
 
     for module_name in loader_modules:

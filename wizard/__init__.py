@@ -20,6 +20,8 @@ This module imports essential submodules and classes/functions, including:
 - `DataCube` from the `_core.datacube` module
 - `plotter` from the `_exploration.plotter` module
 - `read` from the `_utils._loader` module
+
+:no-index:
 """
 
 # Import necessary submodules and classes/functions from them
@@ -36,8 +38,7 @@ from ._utils._loader import read
 #    'plotter'
 #]
 
-
-# Example of setting package metadata
+# Meta Data
 __version__ = "0.1.0"
 __author__ = 'flx'
 

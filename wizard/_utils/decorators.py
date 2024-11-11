@@ -29,6 +29,9 @@ import time
 from functools import wraps
 import numpy as np
 
+import wizard
+
+
 def check_load_dc(func) -> np.array:
     """
     Check if the loading function is correctly defined.
@@ -37,18 +40,19 @@ def check_load_dc(func) -> np.array:
     :return: The wrapped function.
     :rtype: method
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        cube = func(*args, **kwargs)
+        dc = func(*args, **kwargs)
 
-        if cube != 'no implementation':
-            if not isinstance(cube, np.ndarray):
-                raise ValueError('Loading function should return a numpy array.')
+        if dc != 'no implementation':
+            if not isinstance(dc, wizard.DataCube):
+                raise ValueError('Loading function should return a DataCube')
 
-            if not (2 < len(cube.shape) <= 3):
+            if not (2 < len(dc.cube.shape) <= 3):
                 raise ValueError('The return shape should be (v|x|y).')
         else:
-            cube = None
-        return cube
+            dc = None
+        return dc
     return wrapper
 
 
@@ -59,6 +63,7 @@ def check_path(func):
     :param func: The function to be decorated.
     :return: The wrapped function.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         path = args[0] if kwargs.get('path') is None else kwargs.get('path')
 
@@ -116,6 +121,7 @@ def add_to_workflow(func):
     :param func: The function to be added.
     :return: The wrapped function.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         print(*args, **kwargs)
         return func(*args, **kwargs)
@@ -129,6 +135,7 @@ def check_limits(func) -> np.array:
     :param func: The function to be decorated.
     :return: The wrapped function with clipped image.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         dtype = args[0].dtype
         image = func(*args, **kwargs)

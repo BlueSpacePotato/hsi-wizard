@@ -20,6 +20,7 @@ Functions
 .. autofunction:: attach_datacube_operations
 .. autofunction:: func_as_method
 
+:no-index:
 """
 
 import multiprocessing

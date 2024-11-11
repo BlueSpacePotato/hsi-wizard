@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.widgets import Slider, Button, TextBox
 from matplotlib import cm
 
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
 
 
 def dc_cut_by_value(dc: DataCube, val: int, type: str) -> DataCube:
