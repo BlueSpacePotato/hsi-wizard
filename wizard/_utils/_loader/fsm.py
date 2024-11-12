@@ -37,11 +37,13 @@ import numpy as np
 from ._helper import to_cube
 from ..._core import DataCube
 
+
 def _block_info(data):
     """Retrieve the information of the next block."""
     if len(data) != 6:
         raise ValueError(f"'data' should be 6 bytes. Got {len(data)} instead.")
     return struct.unpack('<Hi', data)
+
 
 def _decode_5100(data):
     """Read the block of data with ID 5100."""
@@ -67,6 +69,7 @@ def _decode_5100(data):
         'resolution': header_data[17],
         'transmission': header_data[19]
     }
+
 
 def _decode_5104(data):
     """Read the block of data with ID 5104."""
@@ -103,11 +106,14 @@ def _decode_5104(data):
     
     return {key: (text[i] if i < len(text) else None) for i, key in enumerate(keys)}
 
+
 def _decode_5105(data):
     """Read the block of data with ID 5105."""
     return np.frombuffer(data, dtype=np.float32)
 
+
 FUNC_DECODE = {5100: _decode_5100, 5104: _decode_5104, 5105: _decode_5105}
+
 
 def _parse_fsm_file(fsm_file):
     """Read the FSM file and extract spectrum data."""
@@ -137,6 +143,7 @@ def _parse_fsm_file(fsm_file):
 
     wavelength = np.arange(meta['z_start'], meta['z_end'] + meta['z_delta'], meta['z_delta'])
     return np.squeeze(spectrum), wavelength, meta
+
 
 def _read_fsm(path: str) -> DataCube:
     """

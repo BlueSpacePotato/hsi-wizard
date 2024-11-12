@@ -1,51 +1,29 @@
 
 from wizard import DataCube
 import numpy as np
-import matplotlib
 from matplotlib import pyplot as plt
-from matplotlib.widgets import Slider, Button, TextBox
 from matplotlib import cm
-
-# matplotlib.use('TkAgg')
 
 
 def dc_cut_by_value(dc: DataCube, val: int, type: str) -> DataCube:
     """
-    cut cube by value
+    Cut cube by defined value.
 
-    :param dc:
-    :param val:
+    :param dc: DataCube
+    :param val: Value
     :return:
     """
     dc.cube[dc.cube <= val] = 0
     return dc
 
 
-def plotting(dc: DataCube):
-    """
-
-    :param dc:
-    :return:
-    """
-    color_map = plt.get_cmap('spring')
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(111, projection='3d')
-    x, y, z = dc.cube.nonzero()
-    view = ax.scatter(x, y, z, cmap=cm.coolwarm, c=z)
-    plt.show()
-
-"""
 def get_z_surface(cube, v):
-    z = np.empty(shape=(cube.shape[1], cube.shape[2]))
-    
-    for y in range(cube.shape[1]):
-        for x in range(cube.shape[2]):
-                if cube[v , y, x] > 0:
-                    z[y, x] =  cube[v , y, x]
-    return z
-"""
+    """
+    Calculate the Surface for the Plot.
 
-def get_z_surface(cube, v):
+    :param cube: DataCube.cube data
+    :param v: slice value
+    """
     # Create an empty array for z with the same shape as the 2D slice of the cube
     z = np.zeros((cube.shape[1], cube.shape[2]))
     
@@ -60,7 +38,14 @@ def get_z_surface(cube, v):
     
     return z
 
+
 def plot_surface(dc: DataCube, v:int):
+    """
+    Plot a surface from a DataCube Slice
+
+    :param dc: DataCube with beatuifull data
+    :param v: Index Value for the DataCube Slice
+    """
 
     z = get_z_surface(dc.cube, 250)
     z = (z - z.min()) / (z.max() - z.min())

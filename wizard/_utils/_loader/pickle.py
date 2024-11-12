@@ -22,6 +22,7 @@ Functions
 import numpy as np
 from ..._core import DataCube
 
+
 def _read_pickle(path: str) -> DataCube:
     """
     Load a pickled NumPy array and convert it into a DataCube.

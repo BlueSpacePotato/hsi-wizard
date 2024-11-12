@@ -19,4 +19,3 @@ plotter : function
     The primary plotting function for visualizing data in the `hsi-wizard`.
 
 """
-

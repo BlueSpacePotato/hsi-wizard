@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button, CheckButtons, RectangleSelector
 from matplotlib.gridspec import GridSpec
+import random
 
-from wizard import DataCube
 from .._utils.helper import find_nex_smaller_wave
 
 # State dictionary to manage the global variables locally
@@ -12,15 +12,23 @@ state = {
     'normalize_flag': False
 }
 
-saved_plots = []  # To hold saved plot data (wave and spec)
+saved_plots = []  # To hold saved plot data (wave, spec, roi info, color)
 saved_lines = []  # To hold the actual line objects for plotting
+saved_rois = []  # To hold ROI rectangles for display
+
 
 def normalize(spec):
     """Normalize the spectrum to the range 0-1 if needed."""
     spec_min, spec_max = spec.min(), spec.max()
     return np.clip((spec - spec_min) / (spec_max - spec_min), 0, 1) if spec_max > spec_min else spec
 
+
 def plotter(dc):
+    """
+    Plotter function to explore the DataCube.
+
+    :param dc: DataCube with beatuifull data
+    """
     state['layer_id'] = dc.wavelengths[0]  # Initialize layer ID
 
     # Initialize ROI coordinates
@@ -34,6 +42,9 @@ def plotter(dc):
         imshow.set_data(layer)
         ax[0].set_title(f'Image @{dc.wavelengths[state["layer_id"]]}{dc.notation or ""}')
 
+        # Update the vertical line to the current wavelength layer
+        line.set_xdata([dc.wavelengths[state['layer_id']]])
+
         # Update ROI mean plot
         update_roi_mean()
 
@@ -43,28 +54,49 @@ def plotter(dc):
             if state['normalize_flag']:
                 saved_spec = normalize(saved_spec)
             saved_lines[i].set_data(sp['wave'], saved_spec)
+            saved_lines[i].set_color(sp['color'])  # Use saved color
 
         fig.canvas.draw_idle()
 
     def save_plot(_):
-        """Save the current spectrum data to saved_plots."""
+        """Save the current spectrum data and ROI coordinates to saved_plots."""
         roi_data = dc.cube[:, roi_y_start:roi_y_end, roi_x_start:roi_x_end]
         mean_spec = np.mean(roi_data, axis=(1, 2))
         if state['normalize_flag']:
             mean_spec = normalize(mean_spec)
+
+        # Generate a random color for this ROI and save it with the plot
+        color = (random.random(), random.random(), random.random())  # Random RGB color
         saved_plots.append({
             'wave': dc.wavelengths,
-            'spec': mean_spec
+            'spec': mean_spec,
+            'roi': (roi_x_start, roi_x_end, roi_y_start, roi_y_end),  # Save ROI coordinates
+            'color': color
         })
-        saved_line, = ax[1].plot(saved_plots[-1]['wave'], saved_plots[-1]['spec'], 'lightgrey', alpha=0.3)
+
+        # Plot with the specific color for the saved ROI
+        saved_line, = ax[1].plot(saved_plots[-1]['wave'], saved_plots[-1]['spec'], color=color, alpha=0.4)
         saved_lines.append(saved_line)
+
+        # Draw the rectangle on the image to represent the ROI and save it
+        roi_rect = plt.Rectangle((roi_x_start, roi_y_start), roi_x_end - roi_x_start, roi_y_end - roi_y_start,
+                                 linewidth=2, edgecolor=color, facecolor=color, alpha=0.4)
+        ax[0].add_patch(roi_rect)
+        saved_rois.append(roi_rect)  # Store the rectangle so we can manage it later
+
         update_plot()
 
     def remove_last_plot(_):
-        """Remove the last saved plot."""
+        """Remove the last saved plot and its corresponding ROI rectangle."""
         if saved_plots:
             saved_plots.pop()
             saved_lines.pop().remove()
+
+            # Remove the corresponding ROI rectangle
+            if saved_rois:
+                roi_rect = saved_rois.pop()
+                roi_rect.remove()
+
             update_plot()
 
     def toggle_normalization(_):
@@ -78,13 +110,11 @@ def plotter(dc):
         if state['normalize_flag']:
             mean_spec = normalize(mean_spec)
 
-        # Define r based on the range of mean_spec
+        # Define range padding
         r = (mean_spec.max() - mean_spec.min()) * 0.1
         ax[1].set_ylim(0 if state['normalize_flag'] else mean_spec.min() - r,
                        1 if state['normalize_flag'] else mean_spec.max() + r)
         roi_line.set_data(dc.wavelengths, mean_spec)
-        line.set_data([state['layer_id']], [layer.min(), layer.max()])
-
 
     def on_roi_change(eclick, erelease):
         """Handle rectangle selector change to update ROI coordinates."""
@@ -94,12 +124,10 @@ def plotter(dc):
         roi_x_end, roi_y_end = int(erelease.xdata), int(erelease.ydata)
 
         if roi_x_start - roi_x_end == 0:
-            roi_x_end +=1
-
+            roi_x_end += 1
         if roi_y_start - roi_y_end == 0:
-            roi_y_end +=1
+            roi_y_end += 1
 
-        # Update the ROI mean plot
         update_plot()
 
     def onclick_select(event):
@@ -107,13 +135,8 @@ def plotter(dc):
         nonlocal roi_x_start, roi_x_end, roi_y_start, roi_y_end
         if event.inaxes == ax[0]:
             roi_x, roi_y = int(event.xdata), int(event.ydata)
-
-            roi_x_start = roi_x
-            roi_x_end = roi_x +1
-
-            roi_y_start = roi_y
-            roi_y_end = roi_y +1
-
+            roi_x_start, roi_x_end = roi_x, roi_x + 1
+            roi_y_start, roi_y_end = roi_y, roi_y + 1
             update_plot()
         elif event.inaxes == ax[1]:
             state['layer_id'] = find_nex_smaller_wave(dc.wavelengths, int(event.xdata), 10)
@@ -125,16 +148,13 @@ def plotter(dc):
 
     # Main plotting area (image and spectrum)
     ax_image = fig.add_subplot(gs[0, 0])
-
-    # ax_image.set_title(f'Image @{dc.wavelengths[state["layer_id"]]}{dc.notation or ""}')
-
     ax_spectrum = fig.add_subplot(gs[0, 1])
     ax_spectrum.set_title('Spectrum')
     ax = [ax_image, ax_spectrum]
 
     # Control panel for buttons and checkbox
     ax_control = fig.add_subplot(gs[1, :])
-    ax_control.axis("off")  # Hide control panel axes
+    ax_control.axis("off")
 
     # Set up the initial plots
     layer = dc.cube[0]
@@ -159,12 +179,11 @@ def plotter(dc):
     check.on_clicked(toggle_normalization)
 
     # ROI selection
-    rect_selector = RectangleSelector(ax[0], on_roi_change, useblit=True, button=[1], minspanx=5, minspany=5, spancoords='pixels', interactive=True)
+    #  _ = is nessasary, otherwise the roi selctor wouldn't wrok 
+    _ = RectangleSelector(ax[0], on_roi_change, useblit=True, button=[1], minspanx=5, minspany=5, spancoords='pixels', interactive=True)
     fig.canvas.mpl_connect("button_press_event", onclick_select)
 
     update_plot()
-
-
 
     plt.tight_layout(rect=[0, 0, .95, 1])
     plt.show()

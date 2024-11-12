@@ -19,6 +19,7 @@ Functions
 
 """
 
+
 def find_nex_greater_wave(waves, wave_1: int, maximum_deviation: int = 5) -> int:
     """
     Finds the next greater wave value in a list of waves within a specified deviation.

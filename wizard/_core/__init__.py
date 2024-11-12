@@ -31,6 +31,7 @@ from wizard._utils.tracker import TrackExecutionMeta
 
 __all__ = ['DataCube']
 
+
 def func_as_method(func):
     """
     Converts a standalone function into a method that can be dynamically attached to a class.
@@ -56,7 +57,9 @@ def func_as_method(func):
     method.__is_dynamic__ = True
     return method
 
+
 _dynamic_methods_attached = False  # Global flag to prevent repeated attachments
+
 
 def attach_datacube_operations():
     """
@@ -90,6 +93,7 @@ def attach_datacube_operations():
                     wrapped_func = TrackExecutionMeta.record_method(func_as_method(func))
                     setattr(DataCube, name, wrapped_func)  # Attach the wrapped function
             _dynamic_methods_attached = True  # Set flag after the first call
+
 
 # Attach methods to the DataCube class on import
 attach_datacube_operations()

@@ -20,10 +20,9 @@ Functions
 
 """
 
-import os
 import nrrd
-import numpy as np
 from ..._core import DataCube
+
 
 def _read_nrrd(path: str) -> DataCube:
     """
@@ -35,12 +34,7 @@ def _read_nrrd(path: str) -> DataCube:
     :rtype: DataCube
 
     :raises FileNotFoundError: If the specified file does not exist.
-    :raises ValueError: If the NRRD file does not contain the expected metadata.
-
-    :Example:
-
-    >>> dc = _read_nrrd('path/to/file.nrrd')
-    >>> print(dc.shape)  # Output: shape of the data cube
+    :raises ValueError: If the NRRD file does not contain the expected metadata. 
     """
     file = nrrd.read(filename=path)
 
@@ -63,11 +57,6 @@ def _write_nrrd(dc: DataCube, path: str) -> None:
     :return: None
 
     :raises ValueError: If the DataCube is empty or does not contain valid data.
-
-    :Example:
-
-    >>> dc = DataCube(cube=np.random.rand(10, 20, 30), wavelengths=[400, 500, 600], name='Sample Data')
-    >>> _write_nrrd(dc, 'path/to/output.nrrd')
     """
     if dc.cube.size == 0:
         raise ValueError("The DataCube is empty. Cannot write to file.")

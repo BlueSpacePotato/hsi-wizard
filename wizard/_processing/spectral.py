@@ -20,8 +20,6 @@ from scipy.signal import savgol_filter, butter, filtfilt
 from scipy import sparse
 from scipy.sparse.linalg import spsolve
 
-from wizard._core import DataCube
-from wizard._utils import helper
 
 def smooth_savgol(spectrum, window_length: int = 11, polyorder: int = 2):
     """
@@ -74,21 +72,7 @@ def smooth_butter_lowpass(spectrum, cutoff: float = .1, fs: float = 1., order: i
     return filtfilt(b, a, spectrum)
 
 
-def baseline_savgol(spectrum: np.array = None) -> np.array:
-    """
-    Perform baseline correction on a spectrum using Savitzky-Golay derivatives.
-
-    :param spectrum: Input spectrum for baseline correction.
-    :type spectrum: numpy.ndarray
-    :return: Baseline corrected spectrum.
-    :rtype: numpy.ndarray
-    """
-    dev1 = savgol_filter(spectrum, window_length=51, polyorder=2)
-    dev2 = savgol_filter(dev1, window_length=51, polyorder=3)
-    return spectrum
-
-
-def baseline_als(spectrum: np.array, lam: float, p: float, niter: int = 10) -> np.array:
+def spec_baseline_als(spectrum: np.array, lam: float, p: float, niter: int = 10) -> np.array:
     """
     Perform baseline correction using Asymmetric Least Squares Smoothing.
 
@@ -124,6 +108,7 @@ def calculate_modified_z_score(spectrum: np.array):
     :rtype: numpy.ndarray
     """
     return np.diff(spectrum)
+
 
 def get_ratio_two_specs(spectrum: np.array, waves: np.array, wave_1: int, wave_2: int) -> np.array:
     """

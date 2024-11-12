@@ -25,6 +25,7 @@ import os
 import glob
 import numpy as np
 
+
 def to_cube(data: np.array, len_x: int, len_y: int) -> np.array:
     """
     Transform a 1D numpy array into a 3D data cube-like array.
@@ -42,6 +43,7 @@ def to_cube(data: np.array, len_x: int, len_y: int) -> np.array:
     :rtype: np.ndarray
     """
     return data.reshape(-1, len_x, len_y, order='F')
+
 
 def get_files_by_extension(path: str, extension: str) -> list:
     """
@@ -64,6 +66,7 @@ def get_files_by_extension(path: str, extension: str) -> list:
         extension = '.' + extension
 
     return sorted(glob.glob(os.path.join(path, '*' + extension.lower())))
+
 
 def make_path_absolute(path: str) -> str:
     """

@@ -42,7 +42,6 @@ import numpy as np
 import yaml
 # from traitlets import ValidateHandler
 
-from wizard._utils import decorators
 from wizard._utils.tracker import TrackExecutionMeta
 
 
@@ -281,13 +280,19 @@ class DataCube(metaclass=TrackExecutionMeta):
         self.reading_func = reading_func
 
     def set_name(self, name:str) -> None:
-            if name and isinstance(name, str):
-                self.name = name
-            else:
-                raise AttributeError('Name musste be a string.')
+        """
+        Set a name for the DataCube.
+
+        :param name: Name as string.
+        """
+        if name and isinstance(name, str):
+            self.name = name
+        else:
+            raise AttributeError('Name musste be a string.')
+        
     def set_wavelengths(self, wavelengths: np.ndarray) -> None:
         """
-       Set wavelength data for the `DataCube`.
+        Set wavelength data for the `DataCube`.
 
         Parameters
         ----------
@@ -348,10 +353,7 @@ class DataCube(metaclass=TrackExecutionMeta):
         self._set_cube_shape()
 
     def _set_cube_shape(self) -> None:
-        """
-        Update the shape of the data cube.
-
-        """
+        """Update the shape of the data cube."""
         self.shape = self.cube.shape
 
     def set_notation(self, notation:str) -> None:
@@ -368,18 +370,12 @@ class DataCube(metaclass=TrackExecutionMeta):
         self.notation = notation
 
     def start_recording(self) -> None:
-        """
-        Start recording method execution for the `DataCube`.
-
-        """
+        """Start recording method execution for the `DataCube`."""
         self.record = True
         TrackExecutionMeta.start_recording()
 
     def stop_recording(self) -> None:
-        """
-        Stop recording method execution for the `DataCube`.
-
-        """
+        """Stop recording method execution for the `DataCube`."""
         self.record = False
         TrackExecutionMeta.stop_recording()
 
@@ -499,4 +495,3 @@ class DataCube(metaclass=TrackExecutionMeta):
             method = getattr(self, template_data[i]['method'])
             kwargs = template_data[i]['kwargs']
             method(**kwargs)
-

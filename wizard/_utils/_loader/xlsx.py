@@ -27,6 +27,7 @@ from openpyxl import load_workbook
 from ._helper import to_cube
 from ..._core import DataCube
 
+
 def _read_xlsx(filepath: str) -> DataCube:
     """
     Read a .xlsx file and convert its contents into a DataCube.

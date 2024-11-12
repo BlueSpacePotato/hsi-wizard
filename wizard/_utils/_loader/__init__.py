@@ -28,6 +28,7 @@ LOADER_REGISTRY = {}
 # Populate __all__ to control the public API
 __all__ = ['read']
 
+
 def register_loader(extension, function_name):
     """
     Register a new loader for a specific file extension.
@@ -38,6 +39,7 @@ def register_loader(extension, function_name):
     :type function_name: callable
     """
     LOADER_REGISTRY[extension] = function_name
+
 
 def read(path: str, datatype: str = 'auto', **kwargs):
     """
@@ -65,6 +67,7 @@ def read(path: str, datatype: str = 'auto', **kwargs):
     else:
         raise NotImplementedError(f'No loader for {suffix} files; please use the custom loader class of the DataCube.')
 
+
 def load_all_loaders():
     """
     Automatically discover and import loaders from the wizard._utils._loader package.
@@ -87,6 +90,7 @@ def load_all_loaders():
                 extension = '.' + attr_name.split('_')[-1]  # e.g., 'read_csv' -> '.csv'
                 loader_function = getattr(module, attr_name)
                 register_loader(extension, loader_function)
+
 
 # Load all loaders dynamically
 load_all_loaders()

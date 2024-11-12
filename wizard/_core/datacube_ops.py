@@ -26,7 +26,8 @@ from joblib import Parallel, delayed
 
 from . import DataCube
 
-from .._processing.spectral import calculate_modified_z_score
+from .._processing.spectral import calculate_modified_z_score, spec_baseline_als
+
 
 def _process_slice(spec_out_flat, spikes_flat, idx, window):
     """
@@ -179,8 +180,7 @@ def resize(dc, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
     dc.set_cube(_cube)
 
 
-def baseline_als(dc: DataCube = None, lam: float = 1000000, p: float = 0.01,
-                      niter: int = 10) -> DataCube:
+def baseline_als(dc: DataCube = None, lam: float = 1000000, p: float = 0.01, niter: int = 10) -> DataCube:
     """
 
     :param dc:

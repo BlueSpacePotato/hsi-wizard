@@ -26,6 +26,7 @@ from nptdms import TdmsFile
 from ._helper import to_cube
 from ..._core import DataCube
 
+
 def _read_tdms(path: str) -> DataCube:
     """
     Read a .tdms file and convert its contents into a DataCube.

@@ -23,6 +23,7 @@ import csv
 from ..._core import DataCube
 from ._helper import to_cube
 
+
 def _read_csv(filepath: str) -> DataCube:
     """
     Read a CSV file and convert it into a DataCube.

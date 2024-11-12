@@ -29,6 +29,7 @@ from concurrent.futures import ThreadPoolExecutor
 from ..decorators import check_path
 from ..._core import DataCube
 
+
 def filter_image_files(files):
     """
     Filters a list of filenames, returning only those that have image file extensions.
@@ -55,6 +56,7 @@ def filter_image_files(files):
     image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff"}
     return [file for file in files if any(file.lower().endswith(ext) for ext in image_extensions)]
 
+
 @check_path
 def _read_folder(path: str, **kwargs) -> DataCube:
     """
@@ -80,6 +82,7 @@ def _read_folder(path: str, **kwargs) -> DataCube:
 
     return _dc
 
+
 def load_image(path):
     """
     Load an image from a specified file path.
@@ -96,6 +99,7 @@ def load_image(path):
     >>> plt.show()
     """
     return plt.imread(path)
+
 
 def image_to_dc(path: str | list, **kwargs) -> DataCube:
     """
