@@ -20,25 +20,24 @@ This module imports essential submodules and classes/functions, including:
 - `DataCube` from the `_core.datacube` module
 - `plotter` from the `_exploration.plotter` module
 - `read` from the `_utils._loader` module
-
-:no-index:
 """
 
 # Import necessary submodules and classes/functions from them
 from ._core.datacube import DataCube
 from ._exploration.plotter import plotter
+from ._exploration.roi_inspector import roi
 from ._exploration.surface import plot_surface
 from ._utils._loader import read
 
+# Define what should be accessible when using 'from wizard import *'
+#__all__ = [
+#    'DataCube',
+#    'read',
+#    'plotter'
+#]
 
-#  Define what should be accessible when using 'from wizard import *'
-# __all__ = [
-#     'DataCube',
-#     'read',
-#     'plotter'
-# ]
 
-
-# Meta Data
+# Example of setting package metadata
 __version__ = "0.1.0"
 __author__ = 'flx'
+

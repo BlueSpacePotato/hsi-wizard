@@ -7,7 +7,8 @@ from wizard._processing.spectral import (
     smooth_savgol,
     smooth_moving_average,
     smooth_butter_lowpass,
-    spec_baseline_als,
+    baseline_savgol,
+    baseline_als,
     calculate_modified_z_score,
     get_ratio_two_specs,
     get_sub_tow_specs,
@@ -44,6 +45,12 @@ def test_smooth_moving_average(sample_spectrum):
 def test_smooth_butter_lowpass(sample_spectrum):
     filtered = smooth_butter_lowpass(sample_spectrum, cutoff=0.1, fs=1, order=3)
     assert len(filtered) == len(sample_spectrum), "Length of filtered spectrum should match input length."
+
+
+def test_baseline_savgol(sample_baseline_spectrum):
+    corrected = baseline_savgol(sample_baseline_spectrum)
+    assert len(corrected) == len(sample_baseline_spectrum)
+
 
 
 def test_calculate_modified_z_score(sample_spectrum):

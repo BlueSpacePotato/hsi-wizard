@@ -20,7 +20,6 @@ Functions
 .. autofunction:: attach_datacube_operations
 .. autofunction:: func_as_method
 
-:no-index:
 """
 
 import multiprocessing
@@ -30,7 +29,6 @@ from .datacube import DataCube
 from wizard._utils.tracker import TrackExecutionMeta
 
 __all__ = ['DataCube']
-
 
 def func_as_method(func):
     """
@@ -57,9 +55,7 @@ def func_as_method(func):
     method.__is_dynamic__ = True
     return method
 
-
 _dynamic_methods_attached = False  # Global flag to prevent repeated attachments
-
 
 def attach_datacube_operations():
     """

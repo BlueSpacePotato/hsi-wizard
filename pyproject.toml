@@ -36,9 +36,6 @@ dependencies = [
     "tqdm",
     "imageio",
     "openpyxl",
-    "PyYAML",
-    "joblib",
-    "scipy",
 ]
 
 [project.optional-dependencies]
