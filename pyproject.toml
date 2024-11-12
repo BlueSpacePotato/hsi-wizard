@@ -37,7 +37,8 @@ dependencies = [
     "imageio",
     "openpyxl",
     "PyYAML",
-    "joblib"
+    "joblib",
+    "scipy",
 ]
 
 [project.optional-dependencies]
