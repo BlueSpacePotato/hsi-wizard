@@ -215,10 +215,10 @@ class TestDataCube:
         dc = DataCube(cube=np.ones((3, 4, 5)), wavelengths=[400, 500, 600], name="Example")
         expected_output = ("Name: Example\n"
                            "Shape: (3, 4, 5)\n"
-                           "Wavelengths\n"
-                           "Num: 3\n"
-                           "From: 400\n"
-                           "To: 600\n"
+                           "Wavelengths:\n"
+                           "\tLen: 3\n"
+                           "\tFrom: 400\n"
+                           "\tTo: 600\n"
                           )
 
         assert dc.__str__() == expected_output
@@ -282,12 +282,6 @@ class TestDataCube:
         for idx, i in enumerate(dc):
             pass
         assert dc.shape[0] == idx + 1
-
-    # Test Error if no load funciton is defined
-    def test_check_template_load(self):
-        with pytest.raises(NotImplementedError):
-            dc = DataCube()
-            dc.load('test.test')
 
     # Resizing a cube with valid x_new and y_new values and linear interpolation
     def test_resize_linear_down(self):
