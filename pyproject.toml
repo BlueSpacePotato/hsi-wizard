@@ -42,7 +42,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pydocstyle", "flake8", "pytest", "coverage"]
+dev = ["pydocstyle", "flake8", "pytest", "pytest-cov"]
 tests = ["pytest", "pytest-cov"]
 build = ['twine']
 
