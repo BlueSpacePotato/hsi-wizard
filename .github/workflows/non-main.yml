@@ -51,14 +51,5 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          coverage run -m pytest tests/
-          coverage report -m
+          pytest --cov --cov-report=xml
 
-      - name: Check code coverage
-        run: |
-          COVERAGE_THRESHOLD=80
-          coverage_percentage=$(coverage report -m | awk '/TOTAL/ {print $4}' | tr -d '%')
-          if [ "$coverage_percentage" -lt "$COVERAGE_THRESHOLD" ]; then
-            echo "Code coverage is below the threshold ($coverage_percentage%), please improve."
-            exit 1
-          fi

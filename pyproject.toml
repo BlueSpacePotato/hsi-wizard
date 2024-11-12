@@ -40,7 +40,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pydocstyle", "flake8", "pytest", "coverage"]
-tests = ["pytest", "coverage"]
+tests = ["pytest", "pytest-cov"]
 build = ['twine']
 
 [project.urls]
