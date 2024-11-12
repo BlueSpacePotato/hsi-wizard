@@ -1,17 +1,11 @@
 [![Documentation Status](https://readthedocs.org/projects/hsi-wizard/badge/?version=latest)](https://hsi-wizard.readthedocs.io)
+[![codecov](https://codecov.io/gh/BlueSpacePotato/hsi-wizard/graph/badge.svg?token=85ASSSF2ZN)](https://codecov.io/gh/BlueSpacePotato/hsi-wizard)
 
-<center style="font-size: 36px; font-weight: bold">
-HSI Wizard
-</center>
+# HSI Wizard
 
-<br/>
-<center style="font-size: 18px; font-weight: bold ">
 See Beyond the Visible: The Magic of Hyperspectral Imaging
-</center>
-<br/>
+
 <img src="./resources/imgs/logo/linkedin_banner_image_2.png" alt="">
-<br/>
-<br/>
 
 HSI Wizard is a Python package designed to create a streamlined environment for hyperspectral imaging (HSI) analysis, from basic spectral analysis to advanced AI methods.
 
