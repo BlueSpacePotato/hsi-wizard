@@ -40,7 +40,7 @@ def get_z_surface(cube, v):
     return z
 
 
-def plot_surface(dc: DataCube, index:int=0):
+def plot_surface(dc: DataCube, index:int = 0):
     """
     Plot a surface from a DataCube Slice
 

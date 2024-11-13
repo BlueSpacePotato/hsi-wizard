@@ -20,8 +20,6 @@ Functions
 """
 
 import pickle
-import numpy as np
-from pytest_cov.plugin import pytest_load_initial_conftests
 
 import wizard
 from ..._core import DataCube
