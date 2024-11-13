@@ -43,8 +43,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pydocstyle", "flake8", "pytest", "pytest-cov",  "pytest-mock", "tempfile"]
-tests = ["pytest", "pytest-cov", "pytest-mock", "tempfile"]
+dev = ["pydocstyle", "flake8"]
+tests = ["pytest", "pytest-cov", "pytest-mock"]
 build = ['twine']
 
 [project.urls]
