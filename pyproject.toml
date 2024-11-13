@@ -39,11 +39,12 @@ dependencies = [
     "PyYAML",
     "joblib",
     "scipy",
+    "pynrrd",
 ]
 
 [project.optional-dependencies]
-dev = ["pydocstyle", "flake8", "pytest", "pytest-cov"]
-tests = ["pytest", "pytest-cov"]
+dev = ["pydocstyle", "flake8", "pytest", "pytest-cov",  "pytest-mock", "tempfile"]
+tests = ["pytest", "pytest-cov", "pytest-mock", "tempfile"]
 build = ['twine']
 
 [project.urls]

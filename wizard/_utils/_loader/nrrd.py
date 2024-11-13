@@ -19,8 +19,9 @@ Functions
 .. autofunction:: _write_nrrd
 
 """
+import os.path
 
-import nrrd
+import nrrd as _nrrd
 from ..._core import DataCube
 
 
@@ -36,7 +37,11 @@ def _read_nrrd(path: str) -> DataCube:
     :raises FileNotFoundError: If the specified file does not exist.
     :raises ValueError: If the NRRD file does not contain the expected metadata. 
     """
-    file = nrrd.read(filename=path)
+
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f'File not found or path is not valid, `{path}`.')
+
+    file = _nrrd.read(filename=path)
 
     wavelengths = list(map(int, file[1]['wavelengths'].strip('[]').split()))
 
@@ -68,4 +73,4 @@ def _write_nrrd(dc: DataCube, path: str) -> None:
         'record': dc.record
     }
 
-    nrrd.write(file=path, data=dc.cube, header=header)
+    _nrrd.write(file=path, data=dc.cube, header=header)

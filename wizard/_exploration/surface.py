@@ -27,6 +27,7 @@ def get_z_surface(cube, v):
     # Create an empty array for z with the same shape as the 2D slice of the cube
     z = np.zeros((cube.shape[1], cube.shape[2]))
     
+    print(cube.shape, v)
     # Extract the v-th slice
     slice_v = cube[v, :, :]
     
@@ -39,20 +40,23 @@ def get_z_surface(cube, v):
     return z
 
 
-def plot_surface(dc: DataCube, v:int):
+def plot_surface(dc: DataCube, index:int=0):
     """
     Plot a surface from a DataCube Slice
 
     :param dc: DataCube with beatuifull data
-    :param v: Index Value for the DataCube Slice
+    :param index: Index Value for the DataCube Slice
     """
 
-    z = get_z_surface(dc.cube, 250)
+    z = get_z_surface(dc.cube, index)
     z = (z - z.min()) / (z.max() - z.min())
     X = range(dc.shape[1])
     Y = range(dc.shape[2])
     x, y = np.meshgrid(X, Y)
+
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.plot_surface(x, y, z.T, cmap=cm.coolwarm)
+    ax.set_title(f'{'' if dc.name is None else dc.name + ' '}@{index} {'' if dc.notation is None else dc.notation}')
+    ax.set(xlabel='x', ylabel='y', zlabel='counts')
     plt.show()

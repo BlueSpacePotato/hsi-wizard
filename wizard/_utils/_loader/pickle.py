@@ -19,7 +19,11 @@ Functions
 
 """
 
+import pickle
 import numpy as np
+from pytest_cov.plugin import pytest_load_initial_conftests
+
+import wizard
 from ..._core import DataCube
 
 
@@ -40,10 +44,39 @@ def _read_pickle(path: str) -> DataCube:
     >>> dc = _read_pickle('path/to/file.pkl')
     >>> print(dc.shape)  # Output: shape of the DataCube
     """
-    data = np.load(path, allow_pickle=True)
+    file = open(path,'rb')
+    data = pickle.load(file)
 
-    if not isinstance(data, np.ndarray):
-        raise ValueError("Loaded data is not a NumPy array.")
+    if not isinstance(data, wizard.DataCube):
+        raise ValueError("Loaded data is not a DataCube")
 
     # Create and return the DataCube
     return DataCube(data)
+
+
+def _write_pickle(data: DataCube, path: str) -> None:
+    """
+    Save a DataCube object to a pickle file.
+
+    :param data: The DataCube object to be saved.
+    :type data: DataCube
+    :param path: The file path where the DataCube will be saved.
+    :type path: str
+    :return: None
+
+    :raises TypeError: If the data cannot be pickled.
+    :raises IOError: If there is an error writing to the file.
+
+    :Example:
+
+    >>> dc = DataCube(np.array([1, 2, 3]))
+    >>> _write_pickle(dc, 'path/to/file.pkl')
+    """
+
+    try:
+        with open(path, 'wb') as file:
+            pickle.dump(data, file)
+    except TypeError as e:
+        raise TypeError(f"Data cannot be pickled: {e}")
+    except IOError as e:
+        raise IOError(f"Error writing file: {e}")

@@ -80,6 +80,7 @@ def load_all_loaders():
         "tdms",
         "fsm",
         "images",
+        "nrrd",
     ]
 
     for module_name in loader_modules:

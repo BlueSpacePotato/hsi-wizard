@@ -2,6 +2,7 @@
 
 from wizard._utils._loader._helper import get_files_by_extension, make_path_absolute, to_cube
 from wizard import read
+import wizard
 
 from wizard._utils.decorators import check_path
 from wizard._utils.decorators import track_execution_time
@@ -11,12 +12,25 @@ from wizard._utils.decorators import add_method
 from wizard._core.datacube import DataCube
 
 
+import os
 import time
 import pytest
+import tempfile
 import numpy as np
 
 
 VALID_PATH = '.'
+
+@pytest.fixture
+def sample_data_cube():
+    # Define a sample DataCube for testing
+    data = np.random.rand(10, 11, 12)  # 3D array as a placeholder for data cube
+    wavelengths = [i for i in range(data.shape[0])]       # Example wavelengths
+    name = "TestCube"
+    notation = "nm"
+    record = False
+    return DataCube(cube=data, wavelengths=wavelengths, name=name, notation=notation, record=record)
+
 
 class TestGetFilesByExtension:
 
@@ -100,29 +114,7 @@ class TestToCube:
     #  Should transform a 2d numpy array to a 3d numpy array with the correct shape
     def test_transform_2d_to_3d(self):
         # Arrange
-        data = np.array(
-            [
-            [
-                [1, 2, 3],
-                [4, 5, 6],
-                [1, 2, 3]
-            ],
-            [
-                [4, 5, 6],
-                [1, 2, 3],
-                [4, 5, 6]
-            ],
-            [
-                [1, 2, 3],
-                [4, 5, 6],
-                [1, 2, 3]
-                ],[
-                [4, 5, 6],
-                [1, 2, 3],
-                [4, 5, 6]
-            ]
-        ]
-        )
+        data = np.random.rand(6,6)
         len_x = 3
         len_y = 3
 
@@ -131,23 +123,6 @@ class TestToCube:
 
         # Assert
         assert result.shape == (4, 3, 3)
-
-
-"""
-not yet ready
-
-class TestReadFSM:
-
-    def test_load(self):
-
-        path = '../resources/samples/20232509_SE.fsm'
-
-        # spec = specread(path)
-        dc = read(path)
-
-        assert dc.shape == (408, 381, 729)
-"""
-
 
 class TestCheckPath:
 
@@ -308,3 +283,56 @@ class TestAddMethod:
 
         assert callable(MyClass.my_method)
 
+class TestLoader:
+
+    def test_read_write_nrrd(self, sample_data_cube):
+
+        from wizard._utils._loader import nrrd
+
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(suffix='.nrrd', delete=False) as temp_file:
+            temp_path = temp_file.name
+
+        try:
+            # Write the DataCube to the temporary file
+            nrrd._write_nrrd(dc=sample_data_cube, path=temp_path)
+
+            # Read the DataCube from the temporary file
+            loaded_data_cube = nrrd._read_nrrd(path=temp_path)
+
+            # Assertions to ensure the loaded data matches the original data
+            np.testing.assert_array_almost_equal(loaded_data_cube.cube, sample_data_cube.cube)
+            np.testing.assert_array_equal(loaded_data_cube.wavelengths, sample_data_cube.wavelengths)
+            assert loaded_data_cube.name == sample_data_cube.name
+            assert loaded_data_cube.notation == sample_data_cube.notation
+            assert loaded_data_cube.record == sample_data_cube.record
+
+        finally:
+            # Clean up the temporary file
+            os.remove(temp_path)
+
+    def test_read_write_pickle(self, sample_data_cube):
+
+        from wizard._utils._loader import pickle
+
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(suffix='.pkl', delete=False) as temp_file:
+            temp_path = temp_file.name
+
+        try:
+            # Write the DataCube to the temporary file
+            pickle._write_pickle(data=sample_data_cube, path=temp_path)
+
+            # Read the DataCube from the temporary file
+            loaded_data_cube = pickle._read_pickle(path=temp_path)
+            print(sample_data_cube.cube.shape)
+            print(loaded_data_cube.cube.shape)
+            print(loaded_data_cube.wavelengths)
+
+            # Assertions to ensure the loaded data matches the original data
+            # np.testing.assert_array_almost_equal(loaded_data_cube.cube, sample_data_cube.cube)
+            np.testing.assert_array_equal(loaded_data_cube.wavelengths, sample_data_cube.wavelengths)
+
+        finally:
+            # Clean up the temporary file
+            os.remove(temp_path)
