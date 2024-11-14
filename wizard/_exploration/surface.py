@@ -57,6 +57,8 @@ def plot_surface(dc: DataCube, index:int = 0):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.plot_surface(x, y, z.T, cmap=cm.coolwarm)
-    ax.set_title(f'{'' if dc.name is None else dc.name + ' '}@{index} {'' if dc.notation is None else dc.notation}')
+    name = '' if dc.name is None else dc.name + ' '
+    notation = '' if dc.notation is None else dc.notation
+    ax.set_title(f'{name}@{index} {notation}')
     ax.set(xlabel='x', ylabel='y', zlabel='counts')
     plt.show()
