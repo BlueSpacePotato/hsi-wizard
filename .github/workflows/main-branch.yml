@@ -56,8 +56,8 @@ jobs:
 
       - name: Checkout main branch
         run: |
-          git fetch origin main:main
-          git checkout main
+          git fetch origin main
+          git checkout FETCH_HEAD
 
       - name: Increment version and create tag
         run: |
