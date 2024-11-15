@@ -31,6 +31,15 @@ def sample_data_cube():
     record = False
     return DataCube(cube=data, wavelengths=wavelengths, name=name, notation=notation, record=record)
 
+# Simulate the content of an FSM file
+@pytest.fixture
+def mock_fsm_file():
+    fsm_file_content = b'\x00\x00\x00\x00Description of FSM file'  # Simulated header
+    fsm_file_content += b'\x00\x00\x00\x00'  # Simulated metadata
+    fsm_file_content += b'\x00\x00\x00\x00'  # Simulated block with size 0
+    fsm_file_content += b'\x00\x00\x00\x00'  # Simulated block with size 0
+    fsm_file_content += b'\x00\x00\x00\x00'  # More data or spectrum
+    return fsm_file_content
 
 class TestGetFilesByExtension:
 
@@ -335,7 +344,8 @@ class TestLoader:
 
         finally:
             # Clean up the temporary file
-            os.remove(temp_path)
+            os.remove(temp_path) 
+
 
 class TestHelper:
     def test_find_nex_greater_wave_within_deviation(self):

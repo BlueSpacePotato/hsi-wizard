@@ -40,9 +40,9 @@ def plotter(dc):
         layer_index = state['layer_id']
         layer = dc.cube[layer_index]
         imshow.set_data(layer)
-        l = dc.wavelengths[state["layer_id"]]
-        n = dc.notation or ""
-        ax[0].set_title(f'Image @{l}{n}')
+        layer_id = dc.wavelengths[state["layer_id"]]
+        notation = dc.notation or ""
+        ax[0].set_title(f'Image @{notation}{layer_id}')
 
         # Update the vertical line to the current wavelength layer
         line.set_xdata([dc.wavelengths[state['layer_id']]])
