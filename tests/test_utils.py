@@ -338,5 +338,56 @@ class TestLoader:
             os.remove(temp_path)
 
 class TestHelper:
+    def test_find_nex_greater_wave_within_deviation(self):
+        waves = [100, 102, 104, 108]
+        wave_1 = 101
+        maximum_deviation = 5
+        result = wizard._utils.helper.find_nex_greater_wave(waves, wave_1, maximum_deviation)
+        assert result == 102, f"Expected 102, got {result}"
+
+    def test_find_nex_greater_wave_outside_deviation(self):
+        waves = [100, 102, 104, 108]
+        wave_1 = 101
+        maximum_deviation = 1
+        result = wizard._utils.helper.find_nex_greater_wave(waves, wave_1, maximum_deviation)
+        assert result == -1, f"Expected -1, got {result}"
+
+    def test_find_nex_greater_wave_exact_match(self):
+        waves = [100, 101, 102]
+        wave_1 = 101
+        result = wizard._utils.helper.find_nex_greater_wave(waves, wave_1)
+        assert result == 101, f"Expected 101, got {result}"
+
+    def test_find_nex_greater_wave_no_valid_wave(self):
+        waves = [100, 102, 104, 106]
+        wave_1 = 110
+        result = wizard._utils.helper.find_nex_greater_wave(waves, wave_1)
+        assert result == -1, f"Expected -1, got {result}"
+
+    def test_find_nex_smaller_wave_within_deviation(self):
+        waves = [100, 102, 104, 108]
+        wave_1 = 105
+        maximum_deviation = 5
+        result = wizard._utils.helper.find_nex_smaller_wave(waves, wave_1, maximum_deviation)
+        assert result == 104, f"Expected 104, got {result}"
+
+    def test_find_nex_smaller_wave_outside_deviation(self):
+        waves = [100, 102, 104, 108]
+        wave_1 = 103
+        maximum_deviation = 1
+        result = wizard._utils.helper.find_nex_smaller_wave(waves, wave_1, maximum_deviation)
+        assert result == -1, f"Expected -1, got {result}"
+
+    def test_find_nex_smaller_wave_exact_match(self):
+        waves = [99, 101, 103]
+        wave_1 = 101
+        result = wizard._utils.helper.find_nex_smaller_wave(waves, wave_1)
+        assert result == 101, f"Expected 101, got {result}"
+
+    def test_find_nex_smaller_wave_no_valid_wave(self):
+        waves = [100, 102, 104, 108]
+        wave_1 = 90
+        result = wizard._utils.helper.find_nex_smaller_wave(waves, wave_1)
+        assert result == -1, f"Expected -1, got {result}"
 
     
