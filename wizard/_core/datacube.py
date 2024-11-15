@@ -239,7 +239,7 @@ class DataCube(metaclass=TrackExecutionMeta):
             _str += f'\tFrom: {self.wavelengths.min()}' + n
             _str += f'\tTo: {self.wavelengths.max()}' + n
         if self.notation is not None:
-            _str += 'Notaion:' + self.notation
+            _str += 'Notaion: ' + self.notation
         return _str
 
     def custom_read(self, *args, **kwargs) -> None:
@@ -338,9 +338,10 @@ class DataCube(metaclass=TrackExecutionMeta):
         if not isinstance(cube, np.ndarray):
             try:
                 cube = np.array(cube)
-            except AttributeError:
-                raise AttributeError('Your cube is not convertable to a'
-                                     'np.array')
+            except ValueError:
+                print('oh no')
+                raise ValueError('Your cube is not convertable to a `np.array`')
+
         if 3 <= cube.ndim <= 4:
             self.cube = cube
         elif cube.ndim == 2:
@@ -400,8 +401,8 @@ class DataCube(metaclass=TrackExecutionMeta):
             t = type(filename)
             raise AttributeError(f'Filename must be string not {t}')
 
-        if not filename.endswith('.yml'):
-            filename = filename + '.yml'
+        if not (filename.endswith('.yml') or filename.endswith('yaml')):
+            filename = filename + '.yaml'
 
         cleaned_data = self._clean_data(TrackExecutionMeta.recorded_methods)
         y = yaml.dump(cleaned_data,default_flow_style=False, sort_keys=False)
