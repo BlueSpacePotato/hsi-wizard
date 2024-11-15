@@ -29,7 +29,7 @@ def plotter(dc):
 
     :param dc: DataCube with beatuifull data
     """
-    state['layer_id'] = dc.wavelengths[0]  # Initialize layer ID
+    state['layer_id'] = 0  # Initialize layer ID
 
     # Initialize ROI coordinates
     roi_x_start, roi_x_end = 0, dc.cube.shape[2]
@@ -37,10 +37,12 @@ def plotter(dc):
     
     def update_plot(_=None):
         """Update the main plot with current state."""
-        layer_index = np.where(dc.wavelengths == state['layer_id'])[0][0]
+        layer_index = state['layer_id']
         layer = dc.cube[layer_index]
         imshow.set_data(layer)
-        ax[0].set_title(f'Image @{dc.wavelengths[state["layer_id"]]}{dc.notation or ""}')
+        l = dc.wavelengths[state["layer_id"]]
+        n = dc.notation or ""
+        ax[0].set_title(f'Image @{l}{n}')
 
         # Update the vertical line to the current wavelength layer
         line.set_xdata([dc.wavelengths[state['layer_id']]])
@@ -139,7 +141,10 @@ def plotter(dc):
             roi_y_start, roi_y_end = roi_y, roi_y + 1
             update_plot()
         elif event.inaxes == ax[1]:
-            state['layer_id'] = find_nex_smaller_wave(dc.wavelengths, int(event.xdata), 10)
+            try:
+                state['layer_id'] = np.where(dc.wavelengths == find_nex_smaller_wave(dc.wavelengths, int(event.xdata), 10))[0][0]
+            except IndexError:
+                return
             update_plot()
 
     # Create main figure and layout with GridSpec
@@ -164,6 +169,9 @@ def plotter(dc):
 
     # ROI mean line
     roi_line, = ax[1].plot(dc.wavelengths, spec, label="ROI Mean")
+    ax[1].set_xlabel(f'{dc.notation}')
+    ax[1].set_ylabel('Counts')
+    ax[1].set_xlim(dc.wavelengths.min(), dc.wavelengths.max())
 
     # Buttons and checkbox in the control panel
     ax_save = fig.add_axes([0.05, 0.1, 0.15, 0.075])
