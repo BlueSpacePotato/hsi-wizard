@@ -38,7 +38,7 @@ jobs:
     needs: test-and-coverage
 
     steps:
-      - name: Checkout Repository
+      name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -111,10 +111,13 @@ jobs:
           git push origin "$new_version"
 
 
-      - name: Build and publish to PyPI
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      - name: Build package
         run: |
-          python3 -m build 
-          twine upload dist/*
+          python setup.py sdist bdist_wheel
+
+      - name: Publish package to PyPI
+        env:
+          TWINE_USERNAME: "__token__"
+          TWINE_PASSWORD: ${{ secrets.PYPI }}
+        run: |
+          python -m twine upload dist/*

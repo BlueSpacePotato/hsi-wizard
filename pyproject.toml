@@ -44,7 +44,7 @@ dependencies = [
 
 [project.optional-dependencies]
 tests = ["pydocstyle", "flake8", "pytest", "pytest-cov", "pytest-mock"]
-build = ['twine']
+build = ["twine", "build"]
 
 [project.urls]
 Homepage = "https://github.com/BlueSpacePotato/hsi-wizard"
