@@ -61,14 +61,55 @@ jobs:
 
       - name: Increment version and create tag
         run: |
+          # Fetch existing tags
           git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+
+          # Get the latest tag
+          latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
           echo "Latest tag: $latest_tag"
-          IFS='.' read -ra ADDR <<< "$latest_tag"
-          new_version="${ADDR[0]}.$((${ADDR[1]}+1)).0"
+
+          # Default to patch increment
+          increment="patch"
+
+          # Check for keywords
+          if [[ $* == *"--major"* ]]; then
+            increment="major"
+          elif [[ $* == *"--minor"* ]]; then
+            increment="minor"
+          fi
+
+          echo "Increment type: $increment"
+
+          # Parse the latest tag into components (strip 'v')
+          version=${latest_tag#v}
+          IFS='.' read -ra ADDR <<< "$version"
+
+          major=${ADDR[0]}
+          minor=${ADDR[1]}
+          patch=${ADDR[2]}
+
+          # Increment based on the type
+          if [[ $increment == "major" ]]; then
+            major=$((major + 1))
+            minor=0
+            patch=0
+          elif [[ $increment == "minor" ]]; then
+            minor=$((minor + 1))
+            patch=0
+          else
+            patch=$((patch + 1))
+          fi
+
+          # Construct the new version
+          new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
+
+          # Configure git and create the tag
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
           git tag -a "$new_version" -m "Version $new_version"
           git push origin "$new_version"
+
 
       - name: Build and publish to PyPI
         env:
