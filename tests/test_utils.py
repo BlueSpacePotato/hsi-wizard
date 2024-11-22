@@ -400,4 +400,118 @@ class TestHelper:
         result = wizard._utils.helper.find_nex_smaller_wave(waves, wave_1)
         assert result == -1, f"Expected -1, got {result}"
 
-    
+class TestDecorators:
+
+    def test_check_load_dc_valid(self, sample_data_cube):
+        from wizard._utils.decorators import check_load_dc
+
+        @check_load_dc
+        def mock_loader():
+            return sample_data_cube
+
+        result = mock_loader()
+        assert isinstance(result, DataCube)
+        assert result.cube.shape == (10, 11, 12)
+
+    def test_check_load_dc_invalid_return_type(self):
+        from wizard._utils.decorators import check_load_dc
+
+        @check_load_dc
+        def mock_loader():
+            return "invalid return type"
+
+        with pytest.raises(ValueError, match='Loading function should return a DataCube'):
+            mock_loader()
+
+    def test_check_load_dc_invalid_shape(self):
+        from wizard._utils.decorators import check_load_dc
+
+        @check_load_dc
+        def mock_loader():
+            data = np.random.rand(1, 100)  # Invalid shape
+            return DataCube(cube=data, wavelengths=[], name="InvalidCube", notation="nm", record=False)
+
+        with pytest.raises(ValueError, match='The return shape should be \\(v\\|x\\|y\\).'):
+            mock_loader()
+
+    def test_check_path_valid_path(self, tmp_path):
+        from wizard._utils.decorators import check_path
+
+        valid_path = tmp_path / "test.txt"
+        valid_path.touch()  # Create the file
+
+        @check_path
+        def mock_function(path):
+            return path
+
+        assert mock_function(path=str(valid_path)) == str(valid_path)
+
+    def test_check_path_no_path_provided(self):
+        from wizard._utils.decorators import check_path
+
+        @check_path
+        def mock_function(path=None):
+            return path
+
+        with pytest.raises(ValueError, match='No path provided.'):
+            mock_function()
+
+    def test_check_path_invalid_path(self):
+        from wizard._utils.decorators import check_path
+
+        @check_path
+        def mock_function(path):
+            return path
+
+        with pytest.raises(FileNotFoundError, match='Invalid path: .*'):
+            mock_function(path="nonexistent_path.txt")
+
+    def test_add_method(self):
+        from wizard._utils.decorators import add_method
+
+        class MyClass:
+            pass
+
+        @add_method(MyClass)
+        def new_method(self):
+            return "method added"
+
+        instance = MyClass()
+        assert instance.new_method() == "method added"
+
+    def test_track_execution_time(self, capsys):
+        from wizard._utils.decorators import track_execution_time
+
+        @track_execution_time
+        def slow_function():
+            time.sleep(0.1)
+            return "done"
+
+        result = slow_function()
+        captured = capsys.readouterr()
+        assert "Function 'slow_function' executed in" in captured.out
+        assert result == "done"
+
+    def test_check_limits_clips_values(self):
+        from wizard._utils.decorators import check_limits
+
+        @check_limits
+        def process_image(image):
+            return image * 2  # Exaggerate to go beyond limits
+
+        image = np.array([0.5, 0.7, 1.5, -0.5], dtype=np.float32)
+        result = process_image(image)
+        np.testing.assert_array_equal(result, np.clip(image, 0, 1))
+
+    def test_add_to_workflow(self, capsys):
+        from wizard._utils.decorators import add_to_workflow
+
+        @add_to_workflow
+        def sample_function(arg1, arg2):
+            print(f"{arg1}, {arg2}")
+            return "workflow added"
+
+        result = sample_function("arg1_value", "arg2_value")
+        captured = capsys.readouterr()
+        assert "arg1_value, arg2_value" in captured.out
+        assert result == "workflow added"

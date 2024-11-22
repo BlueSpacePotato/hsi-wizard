@@ -1,6 +1,5 @@
 """
 _core/datacube_ops.py
-=====================
 
 .. module:: datacube_ops
     :platform: Unix
@@ -9,8 +8,7 @@ _core/datacube_ops.py
 Module Overview
 ---------------
 
-This module contains functions for processing and manipulating `DataCube` instances, including
-operations like removing spikes, resizing cubes, and merging cubes or wavelengths.
+This module contains operation function for processing datacubes.
 
 Functions
 ---------
@@ -99,7 +97,7 @@ def remove_spikes(dc, threshold: int = 6500, window: int = 3):
     spikes = abs(z_spectrum) > threshold
     cube_out = dc.cube.copy()
 
-    spikes_flat = spikes.reshape(dc.cube.shape[0], -1)
+    spikes_flat = spikes.reshape(dc.cube.shape[0] - 1, -1)
     spec_out_flat = cube_out.reshape(cube_out.shape[0], -1)
 
     results = Parallel(n_jobs=-1)(
@@ -150,14 +148,13 @@ def resize(dc, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
 
     mode = None
 
-    # Some Warning ;)
-    if dc.shape[1] > x_new:
-        print('\033[93mx_new is smaller than the existing cube, you will lose information\033[0m')
+    shape = dc.cube.shape
 
-    if dc.shape[2] > y_new:
+    if shape[1] > x_new:
+        print('\033[93mx_new is smaller than the existing cube, you will lose information\033[0m')
+    if shape[2] > y_new:
         print('\033[93my_new is smaller than the existing cube, you will lose information\033[0m')
 
-    # choose interpolation mode
     if interpolation == 'linear':
         mode = cv2.INTER_LINEAR
     elif interpolation == 'nearest':
@@ -171,13 +168,11 @@ def resize(dc, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
     else:
         raise ValueError(f'Interpolation method `{interpolation}` not recognized.')
 
-    # loop over layers
-    _cube = np.empty(shape=(dc.shape[0], x_new, y_new))
+    _cube = np.empty(shape=(shape[0], y_new, x_new))
     for idx, layer in enumerate(dc.cube):
-        _cube[idx] = cv2.resize(layer, (y_new, x_new), interpolation=mode)
-
-    # set cube and update shape
-    dc.set_cube(_cube)
+        _cube[idx] = cv2.resize(layer, (x_new, y_new), interpolation=mode)
+    dc.cube = _cube
+    dc.set_cube_shape()
 
 
 def baseline_als(dc: DataCube = None, lam: float = 1000000, p: float = 0.01, niter: int = 10) -> DataCube:
@@ -198,3 +193,52 @@ def baseline_als(dc: DataCube = None, lam: float = 1000000, p: float = 0.01, nit
                 niter=niter
             )
     return dc
+
+
+def merge_cubes(cube1: DataCube, cube2: DataCube) -> DataCube:
+    """
+    Merge to datacubes to a new one.
+
+    :param cube1:
+    :param cube2:
+    :return:
+    """
+    c1 = cube1.cube
+    c2 = cube2.cube
+    if c1.shape[:2] == c2.shape[:2]:
+        c3 = np.concatenate(c1, c2)
+    else:
+        c3 = None
+        raise NotImplementedError('Sorry - '
+                                  'This function is not implemented yet.'
+                                  'At the moment you just can merge cubes'
+                                  ' with the same size x,y.')
+    return DataCube(c3)
+
+
+def merge_waves(wave1: list, wave2: list) -> list:
+    """
+    Merge two wave lists.
+
+    todo: better merge algorithms
+
+    :param wave1: first list with waves
+    :param wave2: second list with waves
+    :return: merged waves
+    :rtype: list
+    """
+    def common_members(a: list, b: list) -> set:
+        """
+        Check for comon members between two lists.
+
+        :param a: list a
+        :param b: list to compare to a
+        :return: return a set of common members
+        :rtype: set
+        """
+    # check for coman memebers in sets
+    if set(wave1) & set(wave2):
+        raise NotImplementedError('Sorry - your wavelengths are overlapping,'
+                                  ' we working on a solution')
+
+    return wave1 + wave2
