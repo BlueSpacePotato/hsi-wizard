@@ -9,7 +9,10 @@ if pydocstyle wizard; then
   flake8 wizard
 else
     echo "pydocstyle check failed, skipping flake8."
+    break
 fi
+
+pytest --cov=wizard --cov-report=term-missing
 
 # Deactivate the virtual environment
 deactivate
