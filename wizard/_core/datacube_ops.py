@@ -172,7 +172,7 @@ def resize(dc, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
     for idx, layer in enumerate(dc.cube):
         _cube[idx] = cv2.resize(layer, (x_new, y_new), interpolation=mode)
     dc.cube = _cube
-    dc.set_cube_shape()
+    dc._set_cube_shape()
 
 
 def baseline_als(dc: DataCube = None, lam: float = 1000000, p: float = 0.01, niter: int = 10) -> DataCube:

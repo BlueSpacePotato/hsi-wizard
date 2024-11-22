@@ -141,8 +141,6 @@ def image_to_dc(path: str | list, **kwargs) -> DataCube:
 
         if type == 'pushbroom':
             data = np.transpose(data, (1, 0, 2))
-        else:
-            data = np.transpose(data, (2, 0, 1))
 
     else:
         raise TypeError('Path must be a string to a file or a list of files')

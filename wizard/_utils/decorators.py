@@ -30,6 +30,7 @@ from functools import wraps
 import numpy as np
 
 import wizard
+import warnings
 
 
 def check_load_dc(func) -> np.array:
@@ -65,7 +66,11 @@ def check_path(func):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        path = args[0] if kwargs.get('path') is None else kwargs.get('path')
+
+        if not kwargs.get('path', None):
+            path = args[0] if len(args) > 0 else None
+        else:
+            path = kwargs.get('path')
 
         if not path:
             raise ValueError('No path provided.')
@@ -141,7 +146,8 @@ def check_limits(func) -> np.array:
         image = func(*args, **kwargs)
 
         if dtype in ['float32', 'float64']:
+            _max, _min = image.max(), image.min()
+            warnings.warn(f'Image values needs to be between 0 and 1. The provided data with min `{_min}` and max `{_max}` gets clipped to 0 an 1. You lose some informations.')
             image = np.clip(image, 0, 1).astype(dtype)
-
         return image
     return wrapper

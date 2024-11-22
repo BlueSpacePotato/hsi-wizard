@@ -21,6 +21,7 @@ Functions
 
 import pathlib
 import importlib
+import os
 
 # Dictionary to register loaders based on file extensions
 LOADER_REGISTRY = {}
@@ -55,7 +56,10 @@ def read(path: str, datatype: str = 'auto', **kwargs):
     :raises NotImplementedError: If no loader is registered for the specified file type.
     """
     if datatype == 'auto':
-        suffix = pathlib.Path(path).suffix
+        if os.path.isdir(path):
+            suffix = '.folder'
+        else:
+            suffix = pathlib.Path(path).suffix
     else:
         suffix = datatype
 
@@ -79,7 +83,7 @@ def load_all_loaders():
         "xlsx",
         "tdms",
         "fsm",
-        "images",
+        "folder",
         "nrrd",
     ]
 

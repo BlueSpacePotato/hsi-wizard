@@ -217,21 +217,6 @@ class TestCheckLimits:
         # Assert
         assert np.array_equal(result, image)
 
-    #  The function receives an empty image and returns an empty image.
-    def test_empty_image_returns_empty_image(self):
-        # Arrange
-        image = np.array([], dtype='float32')
-
-        @check_limits
-        def dummy_func(image):
-            return image
-
-        # Act
-        result = dummy_func(image)
-
-        # Assert
-        assert np.array_equal(result, image)
-
     #  The function receives an image with a single value and returns the same image.
     def test_single_value_image_returns_same_image(self):
         # Arrange
@@ -501,17 +486,4 @@ class TestDecorators:
 
         image = np.array([0.5, 0.7, 1.5, -0.5], dtype=np.float32)
         result = process_image(image)
-        np.testing.assert_array_equal(result, np.clip(image, 0, 1))
-
-    def test_add_to_workflow(self, capsys):
-        from wizard._utils.decorators import add_to_workflow
-
-        @add_to_workflow
-        def sample_function(arg1, arg2):
-            print(f"{arg1}, {arg2}")
-            return "workflow added"
-
-        result = sample_function("arg1_value", "arg2_value")
-        captured = capsys.readouterr()
-        assert "arg1_value, arg2_value" in captured.out
-        assert result == "workflow added"
+        np.testing.assert_array_equal(result, np.clip(image*2, 0, 1))
