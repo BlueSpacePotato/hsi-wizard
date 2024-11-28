@@ -40,6 +40,7 @@ def plotter(dc):
         layer_index = state['layer_id']
         layer = dc.cube[layer_index]
         imshow.set_data(layer)
+        imshow.set_clim(vmin=layer.min(), vmax=layer.max())
         layer_id = dc.wavelengths[state["layer_id"]]
         notation = dc.notation or ""
         ax[0].set_title(f'Image @{notation}{layer_id}')
