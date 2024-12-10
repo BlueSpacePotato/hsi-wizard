@@ -97,7 +97,7 @@ def remove_spikes(dc, threshold: int = 6500, window: int = 3):
     spikes = abs(z_spectrum) > threshold
     cube_out = dc.cube.copy()
 
-    spikes_flat = spikes.reshape(dc.cube.shape[0] - 1, -1)
+    spikes_flat = spikes.reshape(dc.shape[0], -1)
     spec_out_flat = cube_out.reshape(cube_out.shape[0], -1)
 
     results = Parallel(n_jobs=-1)(

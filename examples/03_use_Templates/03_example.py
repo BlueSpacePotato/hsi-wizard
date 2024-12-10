@@ -1,6 +1,7 @@
 import wizard
 import numpy as np
 
+
 # create a dc
 dc = wizard.DataCube(np.random.rand(20, 640, 460))
 
