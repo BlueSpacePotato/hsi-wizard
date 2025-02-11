@@ -12,7 +12,7 @@ This module provides the `DataCube` class, which is designed to store and manage
 
 The `DataCube` class offers methods for manipulating and interacting with hyperspectral data, including arithmetic operations between cubes, data access, and wavelength management. Additionally, the class can track method executions and save them as reusable templates
 
-
+<>
 Class
 *****
 

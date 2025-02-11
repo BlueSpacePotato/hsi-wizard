@@ -31,7 +31,7 @@ If you're new here, the best place to start is the :ref:`wizard <wizard>` page, 
    :caption: Examples
    :titlesonly:
 
-   examples
+   examples/index
 
 About
 =====

@@ -70,7 +70,7 @@ def _process_slice(spec_out_flat, spikes_flat, idx, window):
     return idx, tmp
 
 
-def remove_spikes(dc, threshold: int = 6500, window: int = 3):
+def remove_spikes(dc, threshold: int = 6500, window: int = 5):
     """
     Remove cosmic spikes from the data cube based on a z-score threshold and a smoothing window.
 
@@ -92,21 +92,21 @@ def remove_spikes(dc, threshold: int = 6500, window: int = 3):
     DataCube
         The `DataCube` with spikes removed.
     """
-
-    z_spectrum = calculate_modified_z_score(dc.cube)
+    z_spectrum = calculate_modified_z_score(dc.cube.reshape(dc.shape[0], -1))
     spikes = abs(z_spectrum) > threshold
+
     cube_out = dc.cube.copy()
 
-    spikes_flat = spikes.reshape(dc.shape[0], -1)
     spec_out_flat = cube_out.reshape(cube_out.shape[0], -1)
 
     results = Parallel(n_jobs=-1)(
-        delayed(_process_slice)(spec_out_flat, spikes_flat, idx, window) for idx in range(spikes_flat.shape[0]))
+        delayed(_process_slice)(spec_out_flat, spikes, idx, window) for idx in range(spikes.shape[0]))
 
     for idx, tmp in results:
         spec_out_flat[idx] = tmp
 
-    dc.set_cube(spec_out_flat.reshape(cube_out.shape))
+    dc.set_cube(spec_out_flat.reshape(dc.shape))
+
     return dc
 
 
@@ -195,50 +195,35 @@ def baseline_als(dc: DataCube = None, lam: float = 1000000, p: float = 0.01, nit
     return dc
 
 
-def merge_cubes(cube1: DataCube, cube2: DataCube) -> DataCube:
+def merge_cubes(dc1: DataCube, dc2: DataCube) -> DataCube:
     """
     Merge to datacubes to a new one.
 
-    :param cube1:
-    :param cube2:
+    :param dc1:
+    :param dc2:
     :return:
     """
-    c1 = cube1.cube
-    c2 = cube2.cube
+    c1 = dc1.cube
+    c2 = dc2.cube
+    wave1 = dc1.wavelengths
+    wave2 = dc2.wavelengths
+
     if c1.shape[:2] == c2.shape[:2]:
-        c3 = np.concatenate(c1, c2)
+        c3 = np.concatenate([c1, c2])
     else:
-        c3 = None
         raise NotImplementedError('Sorry - '
                                   'This function is not implemented yet.'
                                   'At the moment you just can merge cubes'
                                   ' with the same size x,y.')
-    return DataCube(c3)
 
-
-def merge_waves(wave1: list, wave2: list) -> list:
-    """
-    Merge two wave lists.
-
-    todo: better merge algorithms
-
-    :param wave1: first list with waves
-    :param wave2: second list with waves
-    :return: merged waves
-    :rtype: list
-    """
-    def common_members(a: list, b: list) -> set:
-        """
-        Check for comon members between two lists.
-
-        :param a: list a
-        :param b: list to compare to a
-        :return: return a set of common members
-        :rtype: set
-        """
     # check for coman memebers in sets
     if set(wave1) & set(wave2):
         raise NotImplementedError('Sorry - your wavelengths are overlapping,'
                                   ' we working on a solution')
+    else:
+        wave3 =  np.concatenate((wave1, wave2))
 
-    return wave1 + wave2
+    dc1.set_cube(c3)
+    dc1.set_wavelengths(wave3)
+    return dc1
+

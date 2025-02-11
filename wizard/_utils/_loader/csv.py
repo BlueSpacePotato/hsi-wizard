@@ -18,47 +18,72 @@ Functions
 
 """
 
+import pandas as pd
+import numpy as np
+
 import csv
 
 from ..._core import DataCube
-from ._helper import to_cube
-
 
 def _read_csv(filepath: str) -> DataCube:
     """
-    Read a CSV file and convert it into a DataCube.
+Read a CSV file and convert it into a DataCube.
 
-    The CSV file is expected to have the following format:
-    - The first two columns contain integer values representing
-      the dimensions (x, y) of the data.
-    - Subsequent columns contain wave values.
+The CSV file should have:
+- 'x' and 'y' as the first two columns (integer values representing spatial coordinates).
+- The remaining columns as spectral data with corresponding wavelengths in the header.
 
-    :param filepath: Path to the CSV file.
-    :type filepath: str
-    :return: A DataCube object containing the data from the CSV.
-    :rtype: DataCube
-    :raises FileNotFoundError: If the specified file does not exist.
-    :raises ValueError: If the CSV format is incorrect.
+:param filepath: Path to the CSV file.
+:type filepath: str
+:return: A DataCube containing the parsed data.
+:rtype: DataCube
     """
-    wave_data = []
+    df = pd.read_csv(filepath, delimiter=';')
 
-    with open(filepath, mode='r') as file:
-        reader = csv.reader(file, delimiter=';')
+    x = df['x'].values.astype('int32')
+    y = df['y'].values.astype('int32')
+    spectral_data = df.iloc[:, 2:].values  # Extract spectral values
+    wavelengths = list(df.columns[2:].astype('int32'))
 
-        # Skip header row
-        headers = [h.replace(',', '.') for h in next(reader)]
+    max_x = x.max() + 1
+    max_y = y.max() + 1
 
-        for row in reader:
-            row = [r.replace(',', '.') for r in row]
-            if len(row) < 3:
-                raise ValueError("CSV file format is incorrect: expected at least three columns.")
-            x = row[0]
-            y = row[1]
+    cube = np.zeros((len(wavelengths), max_x, max_y))
+    for i in range(len(x)):
+        cube[:, x[i], y[i]] = spectral_data[i]
 
-            # All columns after x, y are waves
-            waves = [int(wave_value) for wave_value in row[2:]]  
-            wave_data.append(waves)
+    return DataCube(cube, wavelengths=wavelengths)
 
-    cube = to_cube(wave_data, len_x=x, len_y=y)
+def _write_csv(dc: DataCube, filename: str) -> None:
+    """
+Write a DataCube to a CSV file.
 
-    return DataCube(cube, wavelengths=headers[2:])
+The output CSV file will have:
+- 'x' and 'y' as the first two columns.
+- The remaining columns containing spectral data.
+
+:param dc: The DataCube to be written.
+:type dc: DataCube
+:param filename: Name of the output CSV file.
+:type filename: str
+    """
+    shape = dc.shape
+    df = pd.DataFrame()
+
+    cols = [str(wavelength) for wavelength in dc.wavelengths]
+    y = []
+    x = []
+
+    for _x in range(shape[1]):
+        for _y in range(shape[2]):
+            spec_ = dc.cube[:, _x, _y]
+            df_tmp = pd.DataFrame(spec_).T
+            df = pd.concat([df, df_tmp])
+            y.append(_y)
+            x.append(_x)
+
+    df.columns = cols
+    df.insert(0, column='y', value=y)
+    df.insert(0, column='x', value=x)
+
+    df.to_csv(filename, index=False, sep=';')

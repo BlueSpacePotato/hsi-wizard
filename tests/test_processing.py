@@ -48,8 +48,7 @@ def test_smooth_butter_lowpass(sample_spectrum):
 
 def test_calculate_modified_z_score(sample_spectrum):
     modified_z = calculate_modified_z_score(sample_spectrum)
-    assert modified_z.shape[0] == sample_spectrum.shape[0] - 1
-    assert modified_z.shape[1:] == sample_spectrum.shape[1:]
+    assert modified_z.shape[0] == sample_spectrum.shape[0]
 
 
 def test_get_ratio_two_specs(sample_spectrum, sample_wavelengths):

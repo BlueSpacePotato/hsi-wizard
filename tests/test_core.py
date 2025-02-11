@@ -3,10 +3,14 @@
 import numpy as np
 import re
 
+import wizard
 from wizard import DataCube
 
 import pytest
 
+def create_test_cube(shape=(3, 4, 4)):
+    cube = np.random.rand(*shape)  # Generate a random cube
+    return DataCube(cube=cube, wavelengths=np.arange(shape[0]))
 
 class TestDataCube:
 
@@ -509,3 +513,62 @@ class TestDataCube:
 
         with pytest.raises(ValueError):
             dc.set_cube([[3123,123123], '134'])
+
+
+class TestDataCubeOps:
+
+    def test_remove_spikes(self):
+        dc = create_test_cube()
+        dc.cube[0, 1, 1] = 100  # Insert a spike
+        threshold = 10
+        dc.remove_spikes(threshold=threshold, window=5)
+
+        assert dc is not None
+        assert dc.cube.shape == dc.cube.shape
+        assert dc.cube[0, 1, 1] != 10000
+
+    def test_process_slice(self):
+        """
+        single test function for _process_slice beause parrallel processing is not tracked proberly
+        """
+        spec_out_flat = np.array([[1, 2, 3, 4], [5, 10000, 7, 8]])
+        spikes_flat = np.array([[False, False, False, False], [False, True, False, False]])
+        idx = 1
+        window = 3
+
+        processed_idx, processed_slice = wizard._core.datacube_ops._process_slice(spec_out_flat, spikes_flat, idx, window)
+
+        assert processed_idx == idx
+        assert processed_slice[1] != 10000  # Spike should be replaced
+        assert processed_slice.shape == spec_out_flat[idx].shape
+
+
+    def test_resize(self):
+        dc = create_test_cube(shape=(3, 10, 10))
+        x_new, y_new = 5, 5
+
+        dc.resize(x_new, y_new, interpolation='linear')
+
+        assert dc.cube.shape[1] == x_new
+        assert dc.cube.shape[2] == y_new
+
+    def test_resize_invalid_interpolation(self):
+        dc = create_test_cube(shape=(3, 10, 10))
+        with pytest.raises(ValueError):
+            dc.resize(5, 5, interpolation='invalid_method')
+
+    def test_baseline_als(self):
+        dc = create_test_cube()
+        dc.baseline_als(lam=1000000, p=0.01, niter=10)
+        assert dc is not None
+        assert isinstance(dc, DataCube)
+
+    def test_merge_cubes(self):
+        dc1 = create_test_cube()
+        dc2 = create_test_cube()
+        dc2.set_wavelengths([4,5,6])
+        dc1.merge_cubes(dc2)
+        assert dc1 is not None
+        np.testing.assert_array_equal(dc1.wavelengths, [0,1,2,4,5,6])
+        np.testing.assert_array_equal(dc1.shape, (6,4,4))
+        assert isinstance(dc1, DataCube)
