@@ -110,6 +110,7 @@ def calculate_modified_z_score(spectrum: np.array):
     mean_spectrum = np.mean(spectrum, keepdims=True)  # Compute mean
     return spectrum - mean_spectrum  # Subtract mean from each element
 
+
 def get_ratio_two_specs(spectrum: np.array, waves: np.array, wave_1: int, wave_2: int) -> np.array:
     """
     Calculate the ratio between two selected wavelengths in the spectrum.

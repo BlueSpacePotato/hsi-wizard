@@ -22,10 +22,8 @@ Functions
 
 import numpy as np
 import pandas as pd
-from openpyxl import load_workbook
 
 import wizard
-from ._helper import to_cube
 from ..._core import DataCube
 
 

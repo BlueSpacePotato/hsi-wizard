@@ -21,22 +21,21 @@ Functions
 import pandas as pd
 import numpy as np
 
-import csv
-
 from ..._core import DataCube
+
 
 def _read_csv(filepath: str) -> DataCube:
     """
-Read a CSV file and convert it into a DataCube.
+    Read a CSV file and convert it into a DataCube.
 
-The CSV file should have:
-- 'x' and 'y' as the first two columns (integer values representing spatial coordinates).
-- The remaining columns as spectral data with corresponding wavelengths in the header.
+    The CSV file should have:
+    - 'x' and 'y' as the first two columns (integer values representing spatial coordinates).
+    - The remaining columns as spectral data with corresponding wavelengths in the header.
 
-:param filepath: Path to the CSV file.
-:type filepath: str
-:return: A DataCube containing the parsed data.
-:rtype: DataCube
+    :param filepath: Path to the CSV file.
+    :type filepath: str
+    :return: A DataCube containing the parsed data.
+    :rtype: DataCube
     """
     df = pd.read_csv(filepath, delimiter=';')
 
@@ -54,18 +53,19 @@ The CSV file should have:
 
     return DataCube(cube, wavelengths=wavelengths)
 
+
 def _write_csv(dc: DataCube, filename: str) -> None:
     """
-Write a DataCube to a CSV file.
+    Write a DataCube to a CSV file.
 
-The output CSV file will have:
-- 'x' and 'y' as the first two columns.
-- The remaining columns containing spectral data.
+    The output CSV file will have:
+    - 'x' and 'y' as the first two columns.
+    - The remaining columns containing spectral data.
 
-:param dc: The DataCube to be written.
-:type dc: DataCube
-:param filename: Name of the output CSV file.
-:type filename: str
+    :param dc: The DataCube to be written.
+    :type dc: DataCube
+    :param filename: Name of the output CSV file.
+    :type filename: str
     """
     shape = dc.shape
     df = pd.DataFrame()

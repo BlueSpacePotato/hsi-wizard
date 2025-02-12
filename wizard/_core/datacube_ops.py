@@ -221,9 +221,8 @@ def merge_cubes(dc1: DataCube, dc2: DataCube) -> DataCube:
         raise NotImplementedError('Sorry - your wavelengths are overlapping,'
                                   ' we working on a solution')
     else:
-        wave3 =  np.concatenate((wave1, wave2))
+        wave3 = np.concatenate((wave1, wave2))
 
     dc1.set_cube(c3)
     dc1.set_wavelengths(wave3)
     return dc1
-
