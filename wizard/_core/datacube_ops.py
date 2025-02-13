@@ -226,3 +226,18 @@ def merge_cubes(dc1: DataCube, dc2: DataCube) -> DataCube:
     dc1.set_cube(c3)
     dc1.set_wavelengths(wave3)
     return dc1
+
+
+def inverse(dc: DataCube) -> DataCube:
+    """
+    invert the datacube, handy for flipping transmission and reflextion data
+
+    :param dc: wizard.DataCube
+    :return: dc
+    """
+    tmp = dc.cube
+    tmp *= -1
+    tmp += - tmp.min()
+
+    dc.set_cube(tmp)
+    return dc
