@@ -19,6 +19,8 @@ Functions
 
 """
 
+import numpy as np
+
 
 def find_nex_greater_wave(waves, wave_1: int, maximum_deviation: int = 5) -> int:
     """
@@ -76,3 +78,9 @@ def find_nex_smaller_wave(waves, wave_1: int, maximum_deviation: int = 5) -> int
             break
 
     return wave_next
+
+
+def normalize(spec):
+    """Normalize the spectrum to the range 0-1 if needed."""
+    spec_min, spec_max = spec.min(), spec.max()
+    return np.clip((spec - spec_min) / (spec_max - spec_min), 0, 1) if spec_max > spec_min else spec

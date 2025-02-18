@@ -1,7 +1,10 @@
+import random
+
 import numpy as np
 import matplotlib
 
 import wizard
+from wizard._exploration import plotter
 
 import pytest
 
@@ -10,8 +13,18 @@ matplotlib.use("Agg")
 class TestPlotter:
 
     def test_plot_function_runs(self):
-        dc = wizard.DataCube(cube=np.random.rand(20, 8, 9))
-        wizard.plotter(dc)
+        dc = wizard.DataCube(cube=np.random.rand(20, 8, 9), wavelengths=np.random.randint(0, 200, size=20))
+        try:
+            wizard.plotter(dc)
+            assert True
+        except:
+            assert False
+
+    def test_normalize_small_range(self):
+        spec = np.array([0.0001, 0.0002, 0.0003])
+        normalized = plotter.normalize(spec)
+        expected = np.array([0.0, 0.5, 1.0])
+        np.testing.assert_allclose(normalized, expected, atol=1e-6)
 
 class TestSurcefacePlot:
 

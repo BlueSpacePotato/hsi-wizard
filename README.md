@@ -15,7 +15,7 @@ HSI Wizard is a Python package designed to create a streamlined environment for 
 - DataCube Class for managing and processing HSI data.
 - Spectral plotting and visualization.
 - Clustering and spectral analytics.
-- Tools for merging and processing spectral data.
+- Tools for merging and processing HSI data.
 - Data loaders for various file formats (e.g., NRRD, Pickle, TDMS, and XLSX).
 - Decorators for method tracking, input validation, and execution time logging.
 

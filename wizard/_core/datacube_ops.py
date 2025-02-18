@@ -19,7 +19,9 @@ Functions
 """
 
 import cv2
+import rembg
 import numpy as np
+from PIL import Image
 from joblib import Parallel, delayed
 
 from . import DataCube
@@ -107,6 +109,34 @@ def remove_spikes(dc, threshold: int = 6500, window: int = 5):
 
     dc.set_cube(spec_out_flat.reshape(dc.shape))
 
+    return dc
+
+
+def remove_background(dc: DataCube) -> DataCube:
+    """
+    Removes the background from the images in a DataCube using an external algorithm.
+
+    The first image in the DataCube (used as a reference) is processed to generate a mask,
+    which is then applied to all images to remove the background.
+
+    :param dc: DataCube containing the image stack.
+    :return: DataCube with the background removed from all images.
+    """
+
+    # Normalize and convert the first image to uint8 for processing
+    img = dc.cube[0]
+    img = ((img - img.min()) / (img.max() - img.min()) * 255).astype('uint8')
+
+    # Apply background removal
+    img = Image.fromarray(img)
+    img = rembg.remove(img)
+    mask = np.array(img.getchannel('A'))  # Extract alpha channel as mask
+
+    # Apply mask to the entire datacube
+    cube = dc.cube.copy()
+    cube[:, mask < 50] = 0  # Vectorized operation for efficiency
+
+    dc.set_cube(cube)
     return dc
 
 
@@ -230,7 +260,7 @@ def merge_cubes(dc1: DataCube, dc2: DataCube) -> DataCube:
 
 def inverse(dc: DataCube) -> DataCube:
     """
-    invert the datacube, handy for flipping transmission and reflextion data
+    Invert the datacube, handy for flipping transmission and reflextion data
 
     :param dc: wizard.DataCube
     :return: dc

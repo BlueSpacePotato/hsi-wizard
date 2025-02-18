@@ -126,8 +126,8 @@ def image_to_dc(path: str | list, **kwargs) -> DataCube:
 
     if isinstance(path, str):
         img = load_image(path)
-        data = np.transpose(np.array(img), (2, 0, 1))
-        
+        data = np.array(img)
+
     elif isinstance(path, list):
         def process_image(idx_file):
             idx, file = idx_file
@@ -137,12 +137,13 @@ def image_to_dc(path: str | list, **kwargs) -> DataCube:
         with ThreadPoolExecutor() as executor:
             results = list(executor.map(process_image, enumerate(path)))
 
-        data = np.array(results)
-
-        if type == 'pushbroom':
-            data = np.transpose(data, (1, 0, 2))
-
+        data = np.dstack(results)
     else:
         raise TypeError('Path must be a string to a file or a list of files')
+
+    if type == 'pushbroom':
+        data = np.transpose(data, (1, 2, 0))
+    else:
+        data = np.transpose(data, (2, 0, 1))
 
     return DataCube(data, name=name)

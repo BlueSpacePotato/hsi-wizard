@@ -514,6 +514,14 @@ class TestDataCube:
         with pytest.raises(ValueError):
             dc.set_cube([[3123,123123], '134'])
 
+    def test_record_start_stop(self):
+        dc = DataCube(record=True)
+        assert dc.record == True
+        dc.stop_recording()
+        assert dc.record == False
+        dc.start_recording()
+        assert dc.record == True
+
 
 class TestDataCubeOps:
 

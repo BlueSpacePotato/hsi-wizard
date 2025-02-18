@@ -4,7 +4,7 @@ from matplotlib.widgets import Button, CheckButtons, RectangleSelector
 from matplotlib.gridspec import GridSpec
 import random
 
-from .._utils.helper import find_nex_smaller_wave
+from .._utils.helper import find_nex_smaller_wave, normalize
 
 # State dictionary to manage the global variables locally
 state = {
@@ -15,12 +15,6 @@ state = {
 saved_plots = []  # To hold saved plot data (wave, spec, roi info, color)
 saved_lines = []  # To hold the actual line objects for plotting
 saved_rois = []  # To hold ROI rectangles for display
-
-
-def normalize(spec):
-    """Normalize the spectrum to the range 0-1 if needed."""
-    spec_min, spec_max = spec.min(), spec.max()
-    return np.clip((spec - spec_min) / (spec_max - spec_min), 0, 1) if spec_max > spec_min else spec
 
 
 def plotter(dc):
@@ -36,6 +30,7 @@ def plotter(dc):
     roi_y_start, roi_y_end = 0, dc.cube.shape[1]
     
     def update_plot(_=None):
+        print('yeah')
         """Update the main plot with current state."""
         layer_index = state['layer_id']
         layer = dc.cube[layer_index]

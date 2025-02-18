@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 from matplotlib.widgets import Slider
 
+
 def dc_cut_by_value(z: np.array, val: int, type: str) -> DataCube:
     """
     Cut cube by defined value.
@@ -19,6 +20,7 @@ def dc_cut_by_value(z: np.array, val: int, type: str) -> DataCube:
     new_z[new_z <= val] = new_z.min()
     return new_z
 
+
 def get_z_surface(cube, v):
     """
     Calculate the Surface for the Plot.
@@ -31,6 +33,7 @@ def get_z_surface(cube, v):
     mask = slice_v > 0
     z[mask] = slice_v[mask]
     return z
+
 
 def plot_surface(dc: DataCube, index: int = 0):
     """
@@ -48,7 +51,6 @@ def plot_surface(dc: DataCube, index: int = 0):
 
         # Apply the cut before getting the surface data
         z = dc_cut_by_value(z, cut_val, type="")
-
 
         x, y = np.meshgrid(range(dc.shape[1]), range(dc.shape[2]))
         ax.plot_surface(x, y, z.T, cmap=cm.coolwarm)

@@ -11,7 +11,7 @@ Creaty Empty Cube
    dc = wizard.DataCube()
 
    # add Data
-   dc.set_cube(np.zeros(shpae=(3,4,5,)))
+   dc.set_cube(np.zeros(shpae=(3,4,5)))
 
    print(dc)
 

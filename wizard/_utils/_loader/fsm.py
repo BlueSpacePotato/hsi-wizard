@@ -134,6 +134,10 @@ def _parse_fsm_file(fsm_file):
         if block_size == 0:
             continue
         block_data = content[start_byte:start_byte + block_size]
+        if block_id not in FUNC_DECODE:
+            print(f"Found block ID: {block_id} (size {block_size})")
+            raise ValueError(f"Unexpected block ID {block_id}, possible write error")
+
         data_extracted = FUNC_DECODE[block_id](block_data)
         start_byte += block_size
         if isinstance(data_extracted, dict):
@@ -169,3 +173,55 @@ def _read_fsm(path: str) -> DataCube:
     fsm_data_cube = to_cube(data=fsm_spectra.T, len_x=fsm_len_x, len_y=fsm_len_y)
 
     return DataCube(fsm_data_cube, wavelengths=fsm_wave, name='.fsm', notation='cm-1')
+
+
+"""
+In Progress
+def _write_fsm(data_cube, path):
+    # Extract metadata
+    fsm_data = data_cube.cube.T  # Convert back to original shape
+    fsm_wave = data_cube.wavelengths.astype(float)  # Ensure proper dtype
+    fsm_meta = {
+        'signature': b'FSM\x00',
+        'description': b'Generated FSM file' + b' ' * 23,  # Pad to 40 bytes
+        'n_x': fsm_data.shape[1],
+        'n_y': fsm_data.shape[2],
+        'z_start': fsm_wave[0],
+        'z_end': fsm_wave[-1],
+        'z_delta': fsm_wave[1] - fsm_wave[0],
+    }
+
+    with open(path, "wb") as file:
+        # Write file header
+        file.write(fsm_meta['signature'])  # 4 bytes
+        file.write(fsm_meta['description'])  # 40 bytes
+        print("Writing File Header (44 bytes)")
+
+        # ✅ Block 5100: Metadata
+        name = b"Generated"
+        block_5100_data = struct.pack(
+            '<h dddddddddd iiih BhBhBhB',
+            len(name),  # Name length
+            fsm_meta['z_delta'], fsm_meta['z_delta'], fsm_meta['z_delta'],
+            fsm_meta['z_start'], fsm_meta['z_end'], 0, 0,
+            0, 0, 0,
+            fsm_meta['n_x'], fsm_meta['n_y'], fsm_data.shape[0],
+            0, 0, 0, 0, 0, 0, 0, 0  # Placeholder values
+        )
+
+        block_size_5100 = len(name) + len(block_5100_data)
+        print(f"Writing Block 5100 (size {block_size_5100})")
+        file.write(struct.pack('<Hi', 5100, block_size_5100))  # Write Block Header
+        file.write(name)  # Write name
+        file.write(block_5100_data)  # Write metadata
+
+        # ✅ Block 5105: Spectral data
+        spectrum_data = fsm_data.astype(np.float32).tobytes()
+        block_size_5105 = len(spectrum_data)
+        print(f"Writing Block 5105 (size {block_size_5105})")
+        file.write(struct.pack('<Hi', 5105, block_size_5105))  # Write Block Header
+        file.write(spectrum_data)  # Write spectral data
+
+    print(f"FSM file written to {path}")
+
+"""
