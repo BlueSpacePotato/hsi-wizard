@@ -115,7 +115,7 @@ def remove_spikes(dc, threshold: int = 6500, window: int = 5):
     return dc
 
 
-def remove_background(dc: DataCube, threshold:int  = 50, style:str = 'dark') -> DataCube:
+def remove_background(dc: DataCube, threshold:int = 50, style:str = 'dark') -> DataCube:
     """
     Removes the background from the images in a DataCube using an external algorithm.
 
