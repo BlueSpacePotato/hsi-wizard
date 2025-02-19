@@ -580,3 +580,46 @@ class TestDataCubeOps:
         np.testing.assert_array_equal(dc1.wavelengths, [0,1,2,4,5,6])
         np.testing.assert_array_equal(dc1.shape, (6,4,4))
         assert isinstance(dc1, DataCube)
+
+    def test_remove_background(self):
+        dc = create_test_cube()
+        threshold = 50
+
+        # Test for 'dark' style
+        dc_dark = dc.remove_background(threshold=threshold, style='dark')
+        assert dc_dark is not None
+        assert np.all(dc_dark.cube[:, dc_dark.cube[0] < threshold] == 0)
+
+        # Test for 'bright' style
+        dc_bright = dc.remove_background(threshold=threshold, style='bright')
+        assert dc_bright is not None
+        assert np.all(dc_bright.cube[:, dc_bright.cube[0] < threshold] == dc.cube.max())
+
+        # Test for invalid style
+        with pytest.raises(ValueError):
+            dc.remove_background(threshold=threshold, style='invalid')
+
+    def test_inverse(self):
+        dc = create_test_cube()
+        inverted_dc = dc.inverse()
+        assert inverted_dc is not None
+        assert np.all(inverted_dc.cube >= 0)  # Inversion should result in non-negative values
+
+    def test_remove_vingetting(self):
+        dc = create_test_cube(shape=(4, 200, 200))
+        corrected_dc = dc.remove_vingetting(axis=1, slice_params={"start": 0, "end": 2, "step": 1})
+        assert corrected_dc is not None
+        assert corrected_dc.cube.shape == dc.cube.shape
+
+    def test_merge_cubes_invalid_shape(self):
+        dc1 = create_test_cube(shape=(3, 4, 4))
+        dc2 = create_test_cube(shape=(3, 5, 5))
+        with pytest.raises(NotImplementedError):
+            dc1.merge_cubes(dc2)
+
+    def test_merge_cubes_overlapping_wavelengths(self):
+        dc1 = create_test_cube()
+        dc2 = create_test_cube()
+        dc2.set_wavelengths(dc1.wavelengths)  # Overlapping wavelengths
+        with pytest.raises(NotImplementedError):
+            dc1.merge_cubes(dc2)
