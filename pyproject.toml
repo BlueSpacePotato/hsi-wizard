@@ -40,6 +40,7 @@ dependencies = [
     "joblib",
     "scipy",
     "pynrrd",
+    "rembg",
 ]
 
 [project.optional-dependencies]
