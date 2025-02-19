@@ -115,7 +115,7 @@ def remove_spikes(dc, threshold: int = 6500, window: int = 5):
     return dc
 
 
-def remove_background(dc: DataCube, type:str = 'dark') -> DataCube:
+def remove_background(dc: DataCube, threshold:int  = 50, style:str = 'dark') -> DataCube:
     """
     Removes the background from the images in a DataCube using an external algorithm.
 
@@ -123,7 +123,8 @@ def remove_background(dc: DataCube, type:str = 'dark') -> DataCube:
     which is then applied to all images to remove the background.
 
     :param dc: DataCube containing the image stack.
-    :param type: 'dark' or 'bright'
+    :param threshold: Threshold value to define the background.
+    :param style: 'dark' or 'bright'
     :return: DataCube with the background removed from all images.
     """
 
@@ -138,10 +139,10 @@ def remove_background(dc: DataCube, type:str = 'dark') -> DataCube:
 
     # Apply mask to the entire datacube
     cube = dc.cube.copy()
-    if type == 'dark':
-        cube[:, mask < 50] = 0  # Vectorized operation for efficiency
-    elif type == 'bright':
-        cube[:, mask < 50] = dc.cube.max()
+    if style == 'dark':
+        cube[:, mask < threshold] = 0  # Vectorized operation for efficiency
+    elif style == 'bright':
+        cube[:, mask < threshold] = dc.cube.max()
     else:
         raise ValueError('Type must be dark or bright')
 
@@ -339,7 +340,13 @@ def remove_vingetting(dc: DataCube, axis: int = 1, slice_params: dict = None) ->
     step = slice_params.get("step", 1)
 
     # Summing along the specified axis with dynamic slicing
-    sliced_data = dc.cube[:, start:end:step]
+    if axis == 1:
+        sliced_data = dc.cube[:, start:end:step]
+    elif axis == 2:
+        sliced_data = dc.cube[:, :, start:end:step]
+    else:
+        raise ValueError('Axis cant only be 1 or 2.')
+
     summed_data = np.mean(sliced_data, axis=axis)
 
     # Create a copy of the cube to modify
@@ -356,7 +363,10 @@ def remove_vingetting(dc: DataCube, axis: int = 1, slice_params: dict = None) ->
         smoothed_layer = savgol_filter(layer, window_length=71, polyorder=1)
 
         for j in range(dc.cube.shape[axis]):
-            corrected_cube[i, j, :] -= smoothed_layer
+            if axis == 1:
+                corrected_cube[i, j, :] -= smoothed_layer
+            elif axis == 2:
+                corrected_cube[i, :, j] -= smoothed_layer
 
     dc.set_cube(corrected_cube)
 
