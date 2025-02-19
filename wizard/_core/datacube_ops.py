@@ -19,14 +19,17 @@ Functions
 """
 
 import cv2
+import copy
 import rembg
 import numpy as np
 from PIL import Image
 from joblib import Parallel, delayed
+from scipy.signal import savgol_filter
 
 from . import DataCube
 
 from .._processing.spectral import calculate_modified_z_score, spec_baseline_als
+from .._utils.helper import feature_regestration
 
 
 def _process_slice(spec_out_flat, spikes_flat, idx, window):
@@ -112,7 +115,7 @@ def remove_spikes(dc, threshold: int = 6500, window: int = 5):
     return dc
 
 
-def remove_background(dc: DataCube) -> DataCube:
+def remove_background(dc: DataCube, type:str='dark') -> DataCube:
     """
     Removes the background from the images in a DataCube using an external algorithm.
 
@@ -120,6 +123,7 @@ def remove_background(dc: DataCube) -> DataCube:
     which is then applied to all images to remove the background.
 
     :param dc: DataCube containing the image stack.
+    :param type: 'dark' or 'bright'
     :return: DataCube with the background removed from all images.
     """
 
@@ -134,7 +138,12 @@ def remove_background(dc: DataCube) -> DataCube:
 
     # Apply mask to the entire datacube
     cube = dc.cube.copy()
-    cube[:, mask < 50] = 0  # Vectorized operation for efficiency
+    if type == 'dark':
+        cube[:, mask < 50] = 0  # Vectorized operation for efficiency
+    elif type == 'bright':
+        cube[:, mask < 50] = dc.cube.max()
+    else:
+      raise ValueError('Type must be dark or bright')
 
     dc.set_cube(cube)
     return dc
@@ -270,4 +279,86 @@ def inverse(dc: DataCube) -> DataCube:
     tmp += - tmp.min()
 
     dc.set_cube(tmp)
+    return dc
+
+
+def register_layers(dc: DataCube, max_features: int = 5000, match_percent: float = 0.1) -> DataCube:
+    """
+    Align the images within a datacube by using a feature-based image registration.
+
+    :param dc: Datacube
+    :param exclude: List of specific names of datacubes, which shall not be registered
+    :param max_features: Int value of the maximum number of keypoint regions
+    :param match_percent: Float percentage of keypoint matches to consider
+    :return: Registered datacube
+    """
+    o_img = dc.cube[0, :, :]
+    for i in range(dc.cube.shape[0]):
+        if i > 0:
+            a_img = copy.deepcopy(dc.cube[i, :, :])
+            _, h = feature_regestration(o_img=o_img, a_img=a_img, max_features=max_features, match_percent=match_percent)
+
+            height, width = o_img.shape
+            aligned_img = cv2.warpPerspective(a_img, h, (width, height))
+            dc.cube[i, :, :] = aligned_img
+
+    return dc
+
+
+def remove_vingetting(dc: DataCube, axis: int = 1, slice_params: dict = None) -> DataCube:
+    """
+    Process a DataCube by summing along the specified axis, fitting a best-guess polygon to each layer,
+    and plotting the results.
+
+    Parameters
+    ----------
+    dc : DataCube
+        The DataCube instance to process.
+    axis : int, optional
+        The axis along which to sum the data (default is 1).
+    slice_params : dict, optional
+        A dictionary specifying the slicing behavior. Keys can include:
+            - "start": int, starting index for slicing (default is None, meaning no slicing at the start).
+            - "end": int, ending index for slicing (default is None, meaning no slicing at the end).
+            - "step": int, step size for slicing (default is 1).
+
+    Returns
+    -------
+    DataCube
+    The processed DataCube with vingetting removed.
+    """
+    if dc.cube is None:
+        raise ValueError("The DataCube is empty. Please provide a valid cube.")
+
+    # Handle slicing dynamically based on slice_params
+    if slice_params is None:
+        slice_params = {"start": None, "end": None, "step": 1}
+
+    start = slice_params.get("start", None)
+    end = slice_params.get("end", None)
+    step = slice_params.get("step", 1)
+
+    # Summing along the specified axis with dynamic slicing
+    sliced_data = dc.cube[:, start:end:step]
+    summed_data = np.mean(sliced_data, axis=axis)
+
+    # Create a copy of the cube to modify
+    corrected_cube = dc.cube.copy().astype('float32')
+
+    # Define a polynomial function for fitting
+    def polynomial(x, *coeffs):
+        return sum(c * x**i for i, c in enumerate(coeffs))
+
+    # Plot each layer
+    for i, layer in enumerate(summed_data):
+        x = np.arange(len(layer))
+
+        # Fit a polynomial to the data
+        smoothed_layer = savgol_filter(layer, window_length=71, polyorder=1)
+
+        for j in range(dc.cube.shape[axis]):
+            corrected_cube[i, j, :] -= smoothed_layer
+
+    dc.set_cube(corrected_cube)
+
     return dc

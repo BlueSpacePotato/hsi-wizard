@@ -2,6 +2,8 @@ import pytest
 import numpy as np
 from scipy.signal import savgol_filter, butter, filtfilt
 
+import wizard
+
 # Importing the functions to be tested
 from wizard._processing.spectral import (
     smooth_savgol,
@@ -14,6 +16,20 @@ from wizard._processing.spectral import (
     signal_to_noise,
     del_leading_zeros,
     del_last_zeros
+)
+
+from wizard._processing.cluster import (
+    quit_low_change_in_clusters,
+    discard_clusters,
+    update_clusters,
+    initial_clusters,
+    sort_arrays_by_first,
+    split_clusters,
+    compute_avg_distance,
+    compute_overall_distance,
+    merge_clusters,
+    compute_pairwise_distances,
+    isodata,
 )
 
 # Create sample data for testing
@@ -92,3 +108,61 @@ def test_signal_to_noise_zero_std():
     spectrum = np.array([1, 1, 1, 1])
     snr = signal_to_noise(spectrum)
     assert snr == 0, "SNR should be zero when the standard deviation is zero."
+
+
+class TestIsodata:
+    def setup_method(self):
+        """Initialize test data."""
+        self.centers = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        self.last_centers = np.array([[1.1, 2.1], [2.9, 3.9], [5.1, 6.1]])
+        self.img_flat = np.random.rand(100, 2)
+        self.img_class_flat = np.random.randint(0, 3, 100)
+        self.clusters_list = np.array([0, 1, 2])
+        self.theta_o = 0.05
+        self.theta_m = 10
+
+    def test_discard_clusters(self):
+        new_centers, new_clusters_list, k_ = discard_clusters(self.img_class_flat, self.centers, self.clusters_list, self.theta_m)
+        assert isinstance(new_centers, np.ndarray)
+        assert isinstance(new_clusters_list, np.ndarray)
+        assert isinstance(k_, int)
+
+    def test_update_clusters(self):
+        new_centers, new_clusters_list, k_ = update_clusters(self.img_flat, self.img_class_flat, self.centers, self.clusters_list)
+        assert new_centers.shape[1] == self.img_flat.shape[1]
+
+    def test_initial_clusters(self):
+        centers = initial_clusters(self.img_flat, 3, method="linspace")
+        assert centers.shape == (3, self.img_flat.shape[1])
+
+    def test_sort_arrays_by_first(self):
+        sorted_centers, sorted_clusters_list = sort_arrays_by_first(self.centers, self.clusters_list)
+        assert sorted_centers[0, 0] <= sorted_centers[1, 0] <= sorted_centers[2, 0]
+
+    def test_split_clusters(self):
+        new_centers, new_clusters_list, k_ = split_clusters(self.img_flat, self.img_class_flat, self.centers, self.clusters_list, 0.5, self.theta_m)
+        assert isinstance(new_centers, np.ndarray)
+
+    def test_compute_avg_distance(self):
+        avg_dists, k_ = compute_avg_distance(self.img_flat, self.img_class_flat, self.centers, self.clusters_list)
+        assert avg_dists.shape == (self.centers.shape[0],)
+
+    def test_compute_overall_distance(self):
+        avg_dists, _ = compute_avg_distance(self.img_flat, self.img_class_flat, self.centers, self.clusters_list)
+        d, k_ = compute_overall_distance(self.img_class_flat, avg_dists, self.clusters_list)
+        assert isinstance(d, float)
+
+    def test_merge_clusters(self):
+        new_centers, new_clusters_list, k_ = merge_clusters(self.img_class_flat, self.centers, self.clusters_list, 2, 2, 3)
+        assert isinstance(new_centers, np.ndarray)
+
+    def test_compute_pairwise_distances(self):
+        pair_dists = compute_pairwise_distances(self.centers)
+        assert isinstance(pair_dists, list)
+        assert len(pair_dists) > 0
+
+    def test_isodata(self):
+        dc = wizard.DataCube(cube=np.random.rand(20, 8, 9), wavelengths=np.random.randint(0, 200, size=20))
+        result = isodata(dc, k=3, it=10)
+        assert isinstance(result, np.ndarray)
+        assert result.shape == (8, 9)

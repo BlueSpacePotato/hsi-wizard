@@ -21,8 +21,6 @@
 # License along with this library. If not, see <http://www.gnu.org/licenses/>.
 
 
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -31,10 +29,42 @@ from wizard._processing.cluster import isodata
 
 path = '/Users/flx/Documents/data/Tom_MA/MIR/'
 
-# img = plt.imread(path)
-dc = wizard.read(path=path)  # from folder into datacube
-dc.remove_background()
-res = isodata(dc, k_=5, k=10)
+# Read datacube
+dc = wizard.read(path=path)
 
-plt.imshow(res, cmap='plasma')
+# Create a figure for subplots
+fig, axes = plt.subplots(1, 5, figsize=(20, 5))  # Adjust number of subplots and figure size
+i=0
+
+# Step 1: Original data
+axes[i].imshow(dc.cube[0], cmap='gray')  # Display the first layer of the original datacube
+axes[i].set_title('Original Data')
+i+=1
+
+# Step 2: Remove vingeting
+dc.remove_vingetting(axis=1, slice_params= {"start": -100, "end": None})
+axes[i].imshow(dc.cube[0], cmap='gray')  # Display the first layer after registration
+axes[i].set_title('After removing vingetting')
+i+=1
+
+
+# Step 3: Register layers
+dc.register_layers()
+axes[i].imshow(dc.cube[0], cmap='gray')  # Display the first layer after registration
+axes[i].set_title('After Registration')
+i+=1
+
+# Step 4: Remove background
+dc.remove_background(type='bright')
+axes[i].imshow(dc.cube[0], cmap='gray')  # Display the first layer after background removal
+axes[i].set_title('After Background Removal')
+i+=1
+
+# Step 5: ISODATA clustering
+res = isodata(dc, k=5)
+axes[i].imshow(res, cmap='plasma')  # Display the clustering result
+axes[i].set_title('ISODATA Clustering')
+i+=1
+# Adjust layout and show the plot
+plt.tight_layout()
 plt.show()

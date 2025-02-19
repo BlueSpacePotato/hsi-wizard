@@ -1,21 +1,29 @@
 """
-_processing/cluster/isodata.py
+_processing/cluster.py
 ========================
 
-.. module:: isodata
+.. module:: cluster
 :platform: Unix
-:synopsis: Initialization of the exploration package for `hsi-wizard`.
+:synopsis: Initialization of the exploration package for hsi-wizard.
 
 Module Overview
 ---------------
 
-This module initializes the cluster functions of the `hsi-wizard` package.
+This module initializes the cluster functions of the hsi-wizard package.
 
 Functions
 ---------
 
 .. autofunction:: quit_low_change_in_clusters
 .. autofunction:: discard_clusters
+
+
+Credits
+-------
+The Isodata code was inspired by:
+- Repository: pyRadar
+- Author/Organization: PyRadar
+- Original repository: https://github.com/PyRadar/pyradar/
 
 """
 import numpy as np
@@ -92,8 +100,10 @@ def update_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: n
     new_centers = np.zeros((k_, img_flat.shape[1]))
     new_clusters_list = np.array([])
 
-    assert centers.shape[0] == clusters_list.size, \
-        "ERROR: update_clusters() centers and clusters_list size are different"
+    if centers.shape[0] != clusters_list.size:
+        raise ValueError(
+            "ERROR: update_clusters() centers and clusters_list size are different"
+        )
 
     for cluster in range(k_):
         indices = np.where(img_class_flat == clusters_list[cluster])[0]
@@ -105,8 +115,10 @@ def update_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: n
 
     new_centers, new_clusters_list = sort_arrays_by_first(new_centers, new_clusters_list)
 
-    assert new_centers.shape[0] == new_clusters_list.size, \
-        "ERROR: update_clusters() centers and clusters_list size are different"
+    if new_centers.shape[0] != new_clusters_list.size:
+        raise ValueError(
+            "ERROR: update_clusters() centers and clusters_list size are different after sorting"
+        )
 
     return new_centers, new_clusters_list, k_
 
@@ -160,7 +172,6 @@ def sort_arrays_by_first(centers: np.ndarray, clusters_list: np.ndarray) -> Tupl
     return sorted_centers, sorted_clusters_list
 
 
-# Todos
 def split_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray, theta_s: float, theta_m: int) -> Tuple[np.ndarray, np.ndarray, int]:
     """
     Split clusters to form new clusters.
@@ -283,7 +294,6 @@ def merge_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_lis
     pair_dists = compute_pairwise_distances(centers)
 
     first_p_elements = pair_dists[:p]
-
     below_threshold = [(c1, c2) for d, (c1, c2) in first_p_elements if d < theta_c]
 
     if below_threshold:
@@ -336,19 +346,18 @@ def compute_pairwise_distances(centers: np.ndarray) -> list:
     second coord has a tuple, with the numbers of the clusters measured
     """
     pair_dists = []
-    size = centers.size
 
-    for i in range(size):
-        for j in range(size):
-            if i > j:
-                d = np.abs(centers[i] - centers[j])
-                pair_dists.append((d, (i, j)))
+    for i in range(centers.shape[0]):
+        for j in range(i):
+            # Compute the Euclidean distance using np.linalg.norm
+            d = np.linalg.norm(centers[i] - centers[j])
+            pair_dists.append((d, (i, j)))
 
-    # return it sorted on the first elem
-    return sorted(pair_dists)
+    # Sort by the computed distance (the first element in the tuple)
+    return sorted(pair_dists, key=lambda x: x[0])
 
 
-def isodata(dc, k: int = 5, it: int = 100, p: int = 2, theta_m: int = 10,
+def isodata(dc, k: int = 10, it: int = 10, p: int = 2, theta_m: int = 10,
             theta_s: float = 0.1, theta_c: int = 2, theta_o: float = 0.05,
             k_: Optional[int] = None) -> np.ndarray:
     """
