@@ -41,6 +41,7 @@ dependencies = [
     "scipy",
     "pynrrd",
     "rembg",
+    "onnxruntime",
 ]
 
 [project.optional-dependencies]
