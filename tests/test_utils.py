@@ -132,6 +132,159 @@ class TestLoaderHelper:
         # Assert
         assert result.shape == (4, 3, 3)
 
+    def test_normalize_valid_input(self):
+        """
+        Test the normalize function with valid input.
+        """
+        spec = np.array([10, 20, 30, 40, 50], dtype=np.float32)
+        normalized = helper.normalize(spec)
+
+        # Expected normalization: (x - min) / (max - min)
+        expected = (spec - spec.min()) / (spec.max() - spec.min())
+        np.testing.assert_array_almost_equal(normalized, expected, decimal=5, err_msg="Normalization output is incorrect.")
+
+    def test_normalize_constant_input(self):
+        """
+        Test the normalize function with constant input.
+        """
+        spec = np.array([10, 10, 10, 10, 10], dtype=np.float32)
+        normalized = helper.normalize(spec)
+
+        # Expected output: all zeros since max == min
+        expected = spec
+        np.testing.assert_array_almost_equal(normalized, expected, decimal=5, err_msg="Normalization of constant input is incorrect.")
+
+    def test_feature_registration_valid_input(self):
+        """
+        Test the feature_regestration function with valid input.
+        """
+        # Create two dummy grayscale images
+        img1 = np.random.randint(0, 256, (100, 100), dtype=np.uint8)
+        img2 = np.roll(img1, shift=5, axis=1)  # Shifted version of img1
+
+        # Call the feature registration function
+        aligned_img, homography = helper.feature_regestration(img1, img2)
+
+        # Assert the aligned image and homography are not None
+        assert aligned_img is not None, "Aligned image should not be None."
+        assert homography is not None, "Homography should not be None."
+
+    def test_feature_registration_non_uint8_input(self):
+        """
+        Test the feature_regestration function with non-uint8 input.
+        """
+        # Create two dummy grayscale images with float32 type
+        img1 = np.random.rand(100, 100).astype(np.float32) * 255
+        img2 = np.roll(img1, shift=5, axis=1)
+
+        # Call the feature registration function
+        aligned_img, homography = helper.feature_regestration(img1, img2)
+
+        # Assert the aligned image and homography are not None
+        assert aligned_img is not None, "Aligned image should not be None."
+        assert homography is not None, "Homography should not be None."
+
+class TestHelperFindNextGreaterWave:
+    def test_find_next_greater_wave_valid(self):
+        """
+        Test with a valid wave list where a greater wave exists within the deviation.
+        """
+        waves = [100, 105, 110, 115]
+        wave_1 = 102
+        maximum_deviation = 10
+
+        result = helper.find_nex_greater_wave(waves, wave_1, maximum_deviation)
+        assert result == 105, f"Expected 105, but got {result}"
+
+    def test_find_next_greater_wave_no_match(self):
+        """
+        Test with a wave list where no greater wave exists within the deviation.
+        """
+        waves = [100, 105, 110, 115]
+        wave_1 = 120
+        maximum_deviation = 5
+
+        result = helper.find_nex_greater_wave(waves, wave_1, maximum_deviation)
+        assert result == -1, f"Expected -1, but got {result}"
+
+    def test_find_next_greater_wave_exact_match(self):
+        """
+        Test with a wave list where the next wave is exactly at the starting value.
+        """
+        waves = [100, 105, 110, 115]
+        wave_1 = 105
+        maximum_deviation = 5
+
+        result = helper.find_nex_greater_wave(waves, wave_1, maximum_deviation)
+        assert result == 105, f"Expected 105, but got {result}"
+
+    def test_find_next_greater_wave_empty_list(self):
+        """
+        Test with an empty wave list.
+        """
+        waves = []
+        wave_1 = 100
+        maximum_deviation = 5
+
+        result = helper.find_nex_greater_wave(waves, wave_1, maximum_deviation)
+        assert result == -1, f"Expected -1, but got {result}"
+
+    def test_find_next_greater_wave_zero_deviation(self):
+        """
+        Test with zero maximum deviation.
+        """
+        waves = [100, 105, 110, 115]
+        wave_1 = 100
+        maximum_deviation = 0
+
+        result = helper.find_nex_greater_wave(waves, wave_1, maximum_deviation)
+        assert result == -1, f"Expected -1, but got {result}"
+
+    def test_find_next_greater_wave_negative_deviation(self):
+        """
+        Test with a negative maximum deviation (should behave the same as zero deviation).
+        """
+        waves = [100, 105, 110, 115]
+        wave_1 = 100
+        maximum_deviation = -5
+
+        result = helper.find_nex_greater_wave(waves, wave_1, maximum_deviation)
+        assert result == -1, f"Expected -1, but got {result}"
+
+class TestFindNextSmallerWave:
+    def test_find_next_smaller_wave_valid(self):
+        """
+        Test with a valid wave list where a smaller wave exists within the deviation.
+        """
+        waves = [90, 95, 100, 105]
+        wave_1 = 102
+        maximum_deviation = 10
+
+        result = helper.find_nex_smaller_wave(waves, wave_1, maximum_deviation)
+        assert result == 100, f"Expected 100, but got {result}"
+
+    def test_find_next_smaller_wave_no_match(self):
+        """
+        Test with a wave list where no smaller wave exists within the deviation.
+        """
+        waves = [90, 95, 100, 105]
+        wave_1 = 85
+        maximum_deviation = 5
+
+        result = helper.find_nex_smaller_wave(waves, wave_1, maximum_deviation)
+        assert result == -1, f"Expected -1, but got {result}"
+
+    def test_find_next_smaller_wave_exact_match(self):
+        """
+        Test with a wave list where the next smaller wave is exactly at the starting value.
+        """
+        waves = [90, 95, 100, 105]
+        wave_1 = 100
+        maximum_deviation = 5
+
+        result = helper.find_nex_smaller_wave(waves, wave_1, maximum_deviation)
+        assert result == 100, f"Expected 100, but got {result}"
+
 class TestDecorators:
 
     #  Function called with valid path
@@ -652,3 +805,55 @@ class TestHelper:
         normalized = helper.normalize(spec)
         expected = np.array([0.0, 0.5, 1.0])
         np.testing.assert_allclose(normalized, expected, atol=1e-6)
+
+
+class TestFeatureRegistration:
+    def test_feature_registration_identity(self):
+        """
+        Test feature registration with identical images.
+        """
+        # Create a dummy grayscale image
+        img = np.random.randint(0, 256, (100, 100), dtype=np.uint8)
+
+        # Call the feature registration function
+        aligned_img, homography = helper.feature_regestration(img, img)
+
+        # Assert that the aligned image is identical to the input
+        assert np.array_equal(aligned_img, img), "Aligned image should be identical to the input image for identical inputs."
+
+        # Assert that the homography is close to the identity matrix
+        np.testing.assert_array_almost_equal(homography, np.eye(3), decimal=5, err_msg="Homography should be close to the identity matrix for identical inputs.")
+
+    def test_feature_registration_different_images(self):
+        """
+        Test feature registration with slightly different images.
+        """
+        # Create two dummy grayscale images
+        img1 = np.random.randint(0, 256, (100, 100), dtype=np.uint8)
+        img2 = np.roll(img1, shift=5, axis=1)  # Shifted version of img1
+
+        # Call the feature registration function
+        aligned_img, homography = helper.feature_regestration(img1, img2)
+
+        # Assert that the aligned image is not None
+        assert aligned_img is not None, "Aligned image should not be None."
+
+        # Assert that the homography is not None
+        assert homography is not None, "Homography should not be None."
+
+    def test_feature_registration_invalid_input(self):
+        """
+        Test feature registration with invalid inputs.
+        """
+        # Create dummy invalid inputs
+        img1 = np.random.randint(0, 256, (100, 100)).astype('float32')  # Float32 instead of uint8
+        img2 = np.random.randint(0, 256, (100, 100)).astype('uint8')
+
+        # Call the feature registration function
+        aligned_img, h = helper.feature_regestration(img1, img2)
+
+        # Assert that the aligned image is not None
+        assert aligned_img is not None, "Aligned image should not be None."
+
+        # Assert that the homography is not None
+        assert h is not None, "Homography should not be None."

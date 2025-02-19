@@ -115,7 +115,7 @@ def remove_spikes(dc, threshold: int = 6500, window: int = 5):
     return dc
 
 
-def remove_background(dc: DataCube, type:str='dark') -> DataCube:
+def remove_background(dc: DataCube, type:str = 'dark') -> DataCube:
     """
     Removes the background from the images in a DataCube using an external algorithm.
 
@@ -143,7 +143,7 @@ def remove_background(dc: DataCube, type:str='dark') -> DataCube:
     elif type == 'bright':
         cube[:, mask < 50] = dc.cube.max()
     else:
-      raise ValueError('Type must be dark or bright')
+        raise ValueError('Type must be dark or bright')
 
     dc.set_cube(cube)
     return dc
@@ -351,7 +351,6 @@ def remove_vingetting(dc: DataCube, axis: int = 1, slice_params: dict = None) ->
 
     # Plot each layer
     for i, layer in enumerate(summed_data):
-        x = np.arange(len(layer))
 
         # Fit a polynomial to the data
         smoothed_layer = savgol_filter(layer, window_length=71, polyorder=1)
