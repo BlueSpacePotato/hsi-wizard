@@ -136,3 +136,8 @@ Functions
 
 .. autofunction:: wizard._utils._loader.xlsx._read_xlsx
 .. autofunction:: wizard._utils._loader.xlsx._write_xlsx
+
+Credits
+------
+
+The FSM module in this package was inspired by the `specio` repository by paris-saclay-cds. The original repository can be found at https://github.com/paris-saclay-cds/specio.

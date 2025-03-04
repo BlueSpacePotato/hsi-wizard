@@ -39,29 +39,24 @@ To install from source:
    pip install -e .                                          # Install in editable mode
 
 
-============
-Key Concepts
-============
+====================
+DataCube Key Concept
+====================
 
-Data Representation of the DataCube
------------------------------------
-The `DataCube` is a 3D array of shape `(v, x, y)`:
-- `x` and `y` represent the pixel dimensions.
-- `v` represents the spectral depth (wavelength).
-
-Example:
-********
-   .. code-block:: python
-
-      from wizard import DataCube
-
-      # Define an empty DataCube
-      datacube = DataCube()
-
-      # Access a spectrum for a specific pixel
-      spectrum = datacube[:, 3, 3]
-
-      # Access a 2D slice of the cube at a specific wavelength
-      img_2d = datacube[3]
+DataCube Representation
+-----------------------
 
 
+The `DataCube.cube` is a 3D array of shape `(v, x, y)`:
+
+   - `v` represents the spectral depth (wavelength)
+   - `x` and `y` represent the spatial resolution
+
+Wavelengths and Notation
+------------------------
+
+
+The `DataCube` often contains wavelength information in units such as nanometers (`nm`) or wavenumbers (`cm⁻¹`).
+
+   - this information is stored in the `wavelengths` attribute and can be dynamically updated
+   - the `notation` attribute specifies the unit of data

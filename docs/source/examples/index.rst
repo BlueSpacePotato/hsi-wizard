@@ -1,46 +1,50 @@
 .. _examples:
 
-Creaty Empty Cube
------------------
 
-.. code-block:: python
+Create a DataCube
+=================
+   .. literalinclude:: ../../../examples/00_creating_a_DataCube/00_example.py
+      :language: python
+      :linenos:
 
-   import wizard
+Plot DataCube
+=============
 
-   # create empty DataCube
-   dc = wizard.DataCube()
+   .. literalinclude:: ../../../examples/01_plot_datacube/01_example.py
+      :language: python
+      :linenos:
 
-   # add Data
-   dc.set_cube(np.zeros(shpae=(3,4,5)))
+Use DataCube Methods
+====================
 
-   print(dc)
+   .. literalinclude:: ../../../examples/02_use_DataCube_methods/02_example.py
+      :language: python
+      :linenos:
 
+Create Template
+===============
 
-Read Data
----------
+   .. literalinclude:: ../../../examples/03_create_Templates/03_example.py
+      :language: python
+      :linenos:
 
-.. code-block:: python
+Use Template
+============
 
-   import wizard
+   .. literalinclude:: ../../../examples/04_use_Templates/04_example.py
+      :language: python
+      :linenos:
 
-   # define path
-   path_to_data = 'some/randome/path'
+Read & Write Data
+=================
 
-   # read data
-   dc = wizard.read(path_to_data)
+   .. literalinclude:: ../../../examples/05_read_write/05_csv_example.py
+      :language: python
+      :linenos:
 
-   print(dc)
+Plot Surface
+============
 
-
-Write Data
-----------
-
-.. code-block:: python
-
-   import wizard
-
-   # define DataCube
-   a = wizard.DataCube()
-
-   # write data
-   a.write('some/output/path.csv')
+   .. literalinclude:: ../../../examples/06_plot_surface/06_example.py
+      :language: python
+      :linenos:

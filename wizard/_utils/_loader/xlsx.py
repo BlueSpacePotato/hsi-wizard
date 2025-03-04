@@ -44,10 +44,6 @@ def _read_xlsx(filepath: str) -> DataCube:
     :raises FileNotFoundError: If the specified file does not exist.
     :raises ValueError: If the data cannot be parsed correctly.
 
-    :Example:
-
-    >>> dc = _read_xlsx('path/to/file.xlsx')
-    >>> print(dc.shape)  # Output: shape of the DataCube
     """
     # Read the Excel file into a DataFrame
     df = pd.read_excel(filepath)
@@ -87,9 +83,6 @@ def _write_xlsx(dc: wizard.DataCube, filename: str) -> None:
 
     :raises ValueError: If the dimensions of the datacube and wavelengths do not match.
 
-    :Example:
-
-    >>> _write_xlsx(dc.cube, 'output_file')
     """
     shape = dc.shape
 

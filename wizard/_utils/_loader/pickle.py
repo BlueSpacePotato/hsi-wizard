@@ -37,10 +37,6 @@ def _read_pickle(path: str) -> DataCube:
     :raises FileNotFoundError: If the specified file does not exist.
     :raises ValueError: If the loaded data is not in the expected format.
 
-    :Example:
-
-    >>> dc = _read_pickle('path/to/file.pkl')
-    >>> print(dc.shape)  # Output: shape of the DataCube
     """
     file = open(path,'rb')
     data = pickle.load(file)
@@ -65,10 +61,6 @@ def _write_pickle(data: DataCube, path: str) -> None:
     :raises TypeError: If the data cannot be pickled.
     :raises IOError: If there is an error writing to the file.
 
-    :Example:
-
-    >>> dc = DataCube(np.array([1, 2, 3]))
-    >>> _write_pickle(dc, 'path/to/file.pkl')
     """
 
     try:

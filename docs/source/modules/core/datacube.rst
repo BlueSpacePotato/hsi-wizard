@@ -1,100 +1,127 @@
 .. _datacube:
 
 DataCube
---------
+========
 .. module:: datacube
    :platform: Unix
    :synopsis: DataCube class for storing hyperspectral imaging (HSI) data.
 
 Module Overview
-***************
-This module provides the `DataCube` class, which is designed to store and manage hyperspectral imaging (HSI) data. The `DataCube` is represented as a 3D array, where the `x` and `y` axes represent spatial dimensions (pixels), and the `v` axis represents values like spectral counts, channels, or wavelengths.
-
-The `DataCube` class offers methods for manipulating and interacting with hyperspectral data, including arithmetic operations between cubes, data access, and wavelength management. Additionally, the class can track method executions and save them as reusable templates
-
-Classes
-*******
-DataCube Methods
 ---------------
+This module provides the `DataCube` class, which is used to store hyperspectral imaging (HSI) data. The `DataCube` is a 3D array where the x and y axes represent pixels, and the v axis stores measured values like counts or wavelengths.
 
-.. automethod:: wizard._core.datacube.DataCube.__init__
+Class DataCube
+--------------
+.. class:: DataCube(cube=None, wavelengths=None, name=None, notation=None, record=False)
 
-Initialize a new `DataCube` instance.
+   The `DataCube` class stores hyperspectral imaging (HSI) data as a 3D array.
 
-.. automethod:: wizard._core.datacube.DataCube.__add__
+   :param cube: 3D numpy array representing the data cube. Default is None.
+   :type cube: np.ndarray, optional
+   :param wavelengths: List of wavelengths corresponding to the `v` axis of the data cube.
+   :type wavelengths: list | np.ndarray, optional
+   :param name: Name of the data cube. Default is None.
+   :type name: str, optional
+   :param notation: Specifies whether the wavelength data is in nm or cm⁻¹. Default is None.
+   :type notation: str, optional
+   :param record: If True, execution of the methods will be recorded. Default is False.
+   :type record: bool, optional
 
-Add two `DataCube` instances.
+Methods
+-------
 
-.. automethod:: wizard._core.datacube.DataCube.__len__
+.. method:: __add__(other)
 
-Return the number of layers (v dimension) in the data cube.
+   Add two `DataCube` instances along the `v` axis.
 
-.. automethod:: wizard._core.datacube.DataCube.__getitem__
+   :param other: Another `DataCube` instance to add.
+   :type other: DataCube
+   :raises ValueError: If dimensions do not match or data is None.
+   :return: New `DataCube` instance with combined data.
+   :rtype: DataCube
 
-Get an item from the data cube.
+.. method:: __len__()
 
-.. automethod:: wizard._core.datacube.DataCube.__setitem__
+   Return the number of layers (v dimension) in the data cube.
 
-Set an item in the data cube.
+   :return: Number of layers in the data cube.
+   :rtype: int
 
-.. automethod:: wizard._core.datacube.DataCube.set_name
+.. method:: __getitem__(idx)
 
-Set a name for the `DataCube`.
+   Retrieve an item from the data cube.
 
-.. automethod:: wizard._core.datacube.DataCube.set_wavelengths
+   :param idx: Index of the item to retrieve.
+   :type idx: int
+   :return: Selected item from the data cube.
+   :rtype: np.ndarray
 
-Set wavelength data for the `DataCube`.
+.. method:: __setitem__(idx, value)
 
-.. automethod:: wizard._core.datacube.DataCube.set_cube
+   Set an item in the data cube.
 
-Set data for the `DataCube`.
+   :param idx: Index where the value should be set.
+   :type idx: int
+   :param value: Value to be set at the given index.
+   :type value: np.ndarray
 
-.. automethod:: wizard._core.datacube.DataCube.set_notation
+.. method:: __str__()
 
-Update the notation for the `DataCube`.
+   Return a string representation of the `DataCube`.
 
-.. automethod:: wizard._core.datacube.DataCube.start_recording
+   :return: String containing information about the data cube.
+   :rtype: str
 
-Start recording method execution for the `DataCube`.
+.. method:: set_name(name)
 
-.. automethod:: wizard._core.datacube.DataCube.stop_recording
+   Set a name for the DataCube.
 
-Stop recording method execution for the `DataCube`.
+   :param name: Name as a string.
+   :type name: str
+   :raises AttributeError: If the input is not a string.
 
-.. automethod:: wizard._core.datacube.DataCube.save_template
+.. method:: set_wavelengths(wavelengths)
 
-Save a template of recorded methods to a YAML file.
+   Set wavelength data for the `DataCube`.
 
-.. automethod:: wizard._core.datacube.DataCube.execute_template
+   :param wavelengths: 1D numpy array or list of wavelength data.
+   :type wavelengths: list | np.ndarray
+   :raises AttributeError: If the input is not a 1D array or list.
 
-Load a template and execute the corresponding methods.
+.. method:: set_cube(cube)
 
-Examples
-********
-Here is an example of how to use the `DataCube` class:
+   Set data for the `DataCube`.
 
-.. code-block:: python
+   :param cube: 2D, 3D, or 4D numpy array of data.
+   :type cube: np.ndarray
+   :raises AttributeError: If the input cube is not valid.
 
-    from wizard._core.datacube import DataCube
+.. method:: set_notation(notation)
 
-    # Create a DataCube instance
-    cube_data = np.random.random((10, 100, 100))
-    wavelengths = np.linspace(400, 700, 10)
-    dc = DataCube(cube=cube_data, wavelengths=wavelengths, name="ExampleCube", notation="nm")
-    dc.set_name("TestDataCube")
+   Update the notation for the DataCube.
 
-    # Access data
-    print(dc[0])  # Access the first layer
-    print(dc.wavelengths)  # Access wavelengths
+   :param notation: Notation describing wavelength units, such as 'nm' or 'cm⁻¹'.
+   :type notation: str
 
-    # Record method and save
-    dc.start_recording()
-    dc.resize(120, 120)
-    dc.save_template("methods_template.yml")
-    dc.stop_recording()
+.. method:: start_recording()
 
-    # Create new DataCube
-    dc2 = DataCube(cube=cube_data, wavelengths=wavelengths, name="ExampleCube", notation="nm")
+   Start recording method execution for the `DataCube`.
 
-    # Execute Template
-    dc2.execute_template("methods_template.yml")
+.. method:: stop_recording()
+
+   Stop recording method execution for the `DataCube`.
+
+.. method:: save_template(filename)
+
+   Save a template of recorded methods to a YAML file.
+
+   :param filename: Name of the YAML file where the template will be saved.
+   :type filename: str
+   :raises AttributeError: If filename is invalid.
+
+.. method:: execute_template(filename)
+
+   Load a template and execute the corresponding methods.
+
+   :param filename: Name of the YAML file containing the template.
+   :type filename: str

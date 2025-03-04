@@ -69,6 +69,20 @@ class DataCube(metaclass=TrackExecutionMeta):
         Specifies whether the wavelength data is in nm or cm⁻¹. Default is None.
     record : bool, optional
         If True, execution of the methods will be recorded. Default is False.
+
+    Methods added dynamically:
+    - remove_spikes()
+    - resize()
+    - remove_background()
+    - baseline_als()
+    - inverse()
+
+    These methods are injected via `__init__` for ease of use. Example:
+
+    ```python
+    dc = DataCube()
+    dc.remove_spikes()  # Works directly
+    ```
     """
 
     def __init__(self, cube=None, wavelengths=None, name=None, notation=None, record: bool = False) -> None:

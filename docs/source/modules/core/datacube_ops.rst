@@ -1,22 +1,25 @@
 .. _datacube_ops:
 
+DataCube Operations
+===================
 
-Oerations
-=========
-.. module:: datacube_ops
-   :platform: Unix
-   :synopsis: add on operation methods for the DataCube class
+.. module:: wizard._core.datacube_ops
+    :platform: Unix
+    :synopsis: DataCube Operations.
 
 Module Overview
 ---------------
-This module provides add on methods for the `DataCube` class. Alls methdos and functions in this file gets automaticlly added to the `DataCube` class.
 
-Methods
--------
+This module contains functions for processing datacubes. The methods are dynamically added to the DataCube class in its __init__ method. Therefore, they can be used as standalone functions or as methods of the DataCube class.
 
-Remove Spikes
-^^^^^^^^^^^^^
-.. autofunction:: wizard._core.datacube_ops.remove_spikes
+Functions
+---------
 
-
-
+.. autofunction:: remove_spikes
+.. autofunction:: remove_background
+.. autofunction:: resize
+.. autofunction:: baseline_als
+.. autofunction:: merge_cubes
+.. autofunction:: inverse
+.. autofunction:: register_layers
+.. autofunction:: remove_vingetting

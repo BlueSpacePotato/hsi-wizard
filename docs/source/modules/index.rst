@@ -11,14 +11,28 @@ In the core module, all unique features of the hsi-wizard are deployed. This mod
    core/datacube
    core/datacube_ops
 
+Processing
+==========
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   processing/spectral
+   processing/cluster
+
+
 Exploration
 ===========
+
+The exploration module offers a function for the visual examination of DataCubes.
 
 .. toctree::
    :maxdepth: 2
    :titlesonly:
 
    exploration/plotter
+   exploration/surface
 
 Utilities
 =========
@@ -28,5 +42,7 @@ Utilities
    :titlesonly:
 
    utils/helper
+   utils/decorators
+   utils/loader
 
 

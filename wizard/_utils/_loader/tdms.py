@@ -41,11 +41,7 @@ def _read_tdms(path: str) -> DataCube:
 
     :raises FileNotFoundError: If the specified file does not exist.
     :raises ValueError: If the data cannot be parsed correctly.
-
-    :Example:
-
-    >>> dc = _read_tdms('path/to/file.tdms')
-    >>> print(dc.shape)  # Output: shape of the DataCube
+    
     """
     # Type for automatic detection
     data_type = ''

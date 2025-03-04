@@ -1,3 +1,20 @@
+"""
+surface.py
+==========
+
+.. module:: surface
+:platform: Unix
+:synopsis: Surface plotting and manipulation module for the hsi-wizard package.
+
+Module Overview
+--------------
+
+This module provides functionalities for manipulating and visualizing data cubes.
+It includes utilities for slicing, cutting, and plotting 3D surfaces interactively
+using sliders.
+
+"""
+
 from wizard import DataCube
 import numpy as np
 import copy
@@ -6,14 +23,17 @@ from matplotlib import cm
 from matplotlib.widgets import Slider
 
 
-def dc_cut_by_value(z: np.array, val: int, type: str) -> DataCube:
+def dc_cut_by_value(z: np.array, val: int, type: str) -> np.array:
     """
-    Cut cube by defined value.
+    Cut a data cube slice by a defined value.
 
-    :param dc: DataCube
-    :param idx: Coutner
-    :param val: Value
-    :return:
+    This function normalizes the input array, applies a threshold cut-off, and
+    replaces values below the cut-off with the minimum value of the array.
+
+    :param z: 2D numpy array representing a data cube slice
+    :param val: Cut-off value for thresholding
+    :param type: Type of cut-off operation (currently unused)
+    :return: Modified 2D numpy array after applying the cut-off
     """
     new_z = copy.deepcopy(z)
     new_z /= new_z.max()
@@ -21,12 +41,16 @@ def dc_cut_by_value(z: np.array, val: int, type: str) -> DataCube:
     return new_z
 
 
-def get_z_surface(cube, v):
+def get_z_surface(cube: np.array, v: int) -> np.array:
     """
-    Calculate the Surface for the Plot.
+    Calculate the surface for plotting from a data cube.
 
-    :param cube: DataCube.cube data
-    :param v: slice value
+    This function extracts a slice from the data cube at the specified
+    index and generates a 2D surface array for plotting.
+
+    :param cube: 3D numpy array representing the data cube
+    :param v: Index of the slice to extract
+    :return: 2D numpy array representing the surface for plotting
     """
     z = np.zeros((cube.shape[1], cube.shape[2]))
     slice_v = cube[v, :, :]
@@ -37,10 +61,13 @@ def get_z_surface(cube, v):
 
 def plot_surface(dc: DataCube, index: int = 0):
     """
-    Plot a surface from a DataCube Slice with interactive sliders.
+    Plot a 3D surface from a DataCube slice with interactive sliders.
 
-    :param dc: DataCube with beautiful data
-    :param index: Initial index value for the DataCube Slice
+    This function creates an interactive 3D surface plot of a DataCube slice.
+    Users can adjust the slice index and cut-off value using sliders.
+
+    :param dc: DataCube object containing the data to plot
+    :param index: Initial index value for the DataCube slice (default is 0)
     """
     def update(val):
         idx = int(slider.val)  # Ensure integer values

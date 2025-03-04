@@ -1,3 +1,25 @@
+"""
+plotter.py
+==========
+
+.. module:: plotter
+:platform: Unix
+:synopsis: Interactive plotting module for the hsi-wizard package.
+
+Module Overview
+--------------
+
+This module provides an interactive plotting interface to explore and analyze
+data cubes. Users can visualize slices, define regions of interest (ROIs), and
+inspect the spectral data interactively. It features saving, removing, and normalizing
+plots, and allows ROI-based analysis.
+
+Importing
+--------
+
+from .._utils.helper import find_nex_smaller_wave, normalize
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button, CheckButtons, RectangleSelector
@@ -12,26 +34,34 @@ state = {
     'normalize_flag': False
 }
 
-saved_plots = []  # To hold saved plot data (wave, spec, roi info, color)
+saved_plots = []  # To hold saved plot data (wave, spec, ROI info, color)
 saved_lines = []  # To hold the actual line objects for plotting
 saved_rois = []  # To hold ROI rectangles for display
 
 
 def plotter(dc):
     """
-    Plotter function to explore the DataCube.
+    Interactive plotter function to explore the DataCube.
 
-    :param dc: DataCube with beatuifull data
+    This function provides an interactive visualization interface for a DataCube.
+    Users can view slices, define and save regions of interest (ROIs), and inspect
+    spectral data interactively.
+
+    :param dc: DataCube object containing the data to be visualized
     """
     state['layer_id'] = 0  # Initialize layer ID
 
     # Initialize ROI coordinates
     roi_x_start, roi_x_end = 0, dc.cube.shape[2]
     roi_y_start, roi_y_end = 0, dc.cube.shape[1]
-    
+
     def update_plot(_=None):
-        print('yeah')
-        """Update the main plot with current state."""
+        """
+        Update the main plot with the current state.
+
+        This function refreshes the displayed image slice, ROI mean spectrum,
+        and saved plots based on the current state.
+        """
         layer_index = state['layer_id']
         layer = dc.cube[layer_index]
         imshow.set_data(layer)
@@ -57,7 +87,12 @@ def plotter(dc):
         fig.canvas.draw_idle()
 
     def save_plot(_):
-        """Save the current spectrum data and ROI coordinates to saved_plots."""
+        """
+        Save the current spectrum data and ROI coordinates.
+
+        This function saves the mean spectrum of the current ROI along with
+        its coordinates and a randomly assigned color for visualization.
+        """
         roi_data = dc.cube[:, roi_y_start:roi_y_end, roi_x_start:roi_x_end]
         mean_spec = np.mean(roi_data, axis=(1, 2))
         if state['normalize_flag']:
@@ -85,7 +120,12 @@ def plotter(dc):
         update_plot()
 
     def remove_last_plot(_):
-        """Remove the last saved plot and its corresponding ROI rectangle."""
+        """
+        Remove the last saved plot and its corresponding ROI rectangle.
+
+        This function deletes the most recently saved plot and its associated
+        ROI rectangle from the visualization.
+        """
         if saved_plots:
             saved_plots.pop()
             saved_lines.pop().remove()
@@ -98,11 +138,22 @@ def plotter(dc):
             update_plot()
 
     def toggle_normalization(_):
+        """
+        Toggle normalization for the spectral data.
+
+        This function switches the normalization flag and updates the plot
+        to reflect the changes.
+        """
         state['normalize_flag'] = not state['normalize_flag']
         update_plot()
 
     def update_roi_mean():
-        """Compute and plot the mean spectrum over the selected ROI."""
+        """
+        Compute and plot the mean spectrum over the selected ROI.
+
+        This function calculates the mean spectrum for the current ROI and
+        updates the plot accordingly.
+        """
         roi_data = dc.cube[:, roi_y_start:roi_y_end, roi_x_start:roi_x_end]
         mean_spec = np.mean(roi_data, axis=(1, 2))
         if state['normalize_flag']:
@@ -115,7 +166,12 @@ def plotter(dc):
         roi_line.set_data(dc.wavelengths, mean_spec)
 
     def on_roi_change(eclick, erelease):
-        """Handle rectangle selector change to update ROI coordinates."""
+        """
+        Handle rectangle selector change to update ROI coordinates.
+
+        This function updates the ROI coordinates based on user interaction
+        with the rectangle selector.
+        """
         nonlocal roi_x_start, roi_x_end, roi_y_start, roi_y_end
 
         roi_x_start, roi_y_start = int(eclick.xdata), int(eclick.ydata)
@@ -129,7 +185,12 @@ def plotter(dc):
         update_plot()
 
     def onclick_select(event):
-        """Handle rectangle selector change to update ROI coordinates."""
+        """
+        Handle click events to update ROI coordinates or layer index.
+
+        This function allows users to select a specific ROI or wavelength
+        layer by clicking on the plots.
+        """
         nonlocal roi_x_start, roi_x_end, roi_y_start, roi_y_end
         if event.inaxes == ax[0]:
             roi_x, roi_y = int(event.xdata), int(event.ydata)
@@ -183,7 +244,6 @@ def plotter(dc):
     check.on_clicked(toggle_normalization)
 
     # ROI selection
-    #  _ = is nessasary, otherwise the roi selctor wouldn't wrok 
     _ = RectangleSelector(ax[0], on_roi_change, useblit=True, button=[1], minspanx=5, minspany=5, spancoords='pixels', interactive=True)
     fig.canvas.mpl_connect("button_press_event", onclick_select)
 
