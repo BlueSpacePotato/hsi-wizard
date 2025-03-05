@@ -581,19 +581,95 @@ class TestDataCubeOps:
         np.testing.assert_array_equal(dc1.shape, (6,4,4))
         assert isinstance(dc1, DataCube)
 
-    def test_remove_background(self):
-        dc = create_test_cube()
+    def test_remove_background_dark(self):
+        dc = create_test_cube(shape=(3, 24, 24))
+
+        # Create a temporary cube with specific values for testing
+        tmp_cube = dc.cube.copy() * 0.6
+
+        # Define the middle region that should remain unchanged
+        x_start, x_end = int(dc.shape[1] * 0.25), int(dc.shape[1] * 0.75)
+        y_start, y_end = int(dc.shape[2] * 0.25), int(dc.shape[2] * 0.75)
+
+        # Apply specific values to the middle region using broadcasting
+        tmp_cube[0, x_start:x_end, y_start:y_end] = 0.8
+        tmp_cube[1, x_start:x_end, y_start:y_end] = 0.7
+        tmp_cube[2, x_start:x_end, y_start:y_end] = 0.9
+
+        # Set the modified cube
+        dc.set_cube(tmp_cube)
+
+        # Call the method under test
         threshold = 50
+        dc.remove_background(threshold=threshold, style='dark')
 
-        # Test for 'dark' style
-        dc_dark = dc.remove_background(threshold=threshold, style='dark')
-        assert dc_dark is not None
-        assert np.all(dc_dark.cube[:, dc_dark.cube[0] < threshold] == 0)
+        # Assertions
+        assert dc is not None, "DataCube instance should not be None after removing the background."
+        assert dc.cube.shape == tmp_cube.shape, "The shape of the cube should remain unchanged after background removal."
+        assert isinstance(dc.cube, np.ndarray), "The cube should be a NumPy array."
 
-        # Test for 'bright' style
-        dc_bright = dc.remove_background(threshold=threshold, style='bright')
-        assert dc_bright is not None
-        assert np.all(dc_bright.cube[:, dc_bright.cube[0] < threshold] == dc.cube.max())
+        # Validate that the middle region remains unchanged
+        middle_region = dc.cube[:, x_start:x_end, y_start:y_end]
+        expected_middle = tmp_cube[:, x_start:x_end, y_start:y_end]
+        assert np.allclose(middle_region, expected_middle), "The middle region should remain unchanged for 'dark' style."
+
+        # Validate that the outside regions have a mean close to 1
+        outside_regions = np.concatenate([
+            dc.cube[:, :x_start, :].flatten(),  # Top region
+            dc.cube[:, x_end:, :].flatten(),   # Bottom region
+            dc.cube[:, :, :y_start].flatten(), # Left region
+            dc.cube[:, :, y_end:].flatten()    # Right region
+        ])
+
+        assert np.isclose(outside_regions.mean(), 0, atol=1e-1), "The outside regions should have a mean value close to 1 for 'dark' style."
+
+    def test_remove_background_bright(self):
+        dc = create_test_cube(shape=(3, 24, 24))
+
+        # Create a temporary cube with specific low values for testing
+        tmp_cube = dc.cube.copy() * 0.6 + 0.4
+
+        # Define the middle region that should remain unchanged
+        x_start, x_end = int(dc.shape[1] * 0.25), int(dc.shape[1] * 0.75)
+        y_start, y_end = int(dc.shape[2] * 0.25), int(dc.shape[2] * 0.75)
+
+        # Apply specific low values to the middle region using broadcasting
+        tmp_cube[0, x_start:x_end, y_start:y_end] = 0.3
+        tmp_cube[1, x_start:x_end, y_start:y_end] = 0.2
+        tmp_cube[2, x_start:x_end, y_start:y_end] = 0.1
+
+        # Set the modified cube
+        dc.set_cube(tmp_cube)
+
+        from matplotlib import pyplot as plt
+
+        # Call the method under test
+        threshold = 10
+        dc.remove_background(threshold=threshold, style='bright')
+
+        # Assertions
+        assert dc is not None, "DataCube instance should not be None after removing the background."
+        assert dc.cube.shape == tmp_cube.shape, "The shape of the cube should remain unchanged after background removal."
+        assert isinstance(dc.cube, np.ndarray), "The cube should be a NumPy array."
+
+        # Validate that the middle region remains unchanged
+        middle_region = dc.cube[:, x_start:x_end, y_start:y_end]
+        expected_middle = tmp_cube[:, x_start:x_end, y_start:y_end]
+        assert np.allclose(middle_region, expected_middle), "The middle region should remain unchanged for 'bright' style."
+
+        # Validate that the outside regions have a mean close to 1
+        outside_regions = np.concatenate([
+            dc.cube[:, :x_start, :].flatten(),  # Top region
+            dc.cube[:, x_end:, :].flatten(),   # Bottom region
+            dc.cube[:, :, :y_start].flatten(), # Left region
+            dc.cube[:, :, y_end:].flatten()    # Right region
+        ])
+
+        assert np.isclose(outside_regions.mean(), 1, atol=1e-1), "The outside regions should have a mean value close to 1 for 'bright' style."
+
+    def test_remove_background_invalid_style(self):
+        dc = create_test_cube()
+        threshold = .5
 
         # Test for invalid style
         with pytest.raises(ValueError):
