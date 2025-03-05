@@ -6,12 +6,12 @@ cluster
 This module initializes the cluster functions of the hsi-wizard package.
 
 Module Overview
---------------
+---------------
 
 .. currentmodule:: wizard._processing.cluster
 
 Functions
---------
+---------
 
 .. autofunction:: quit_low_change_in_clusters
 .. autofunction:: discard_clusters
@@ -26,7 +26,7 @@ Functions
 .. autofunction:: isodata
 
 Credits
-------
+-------
 The Isodata code was inspired by:
  Repository: pyRadar
  Author/Organization: PyRadar

@@ -6,7 +6,7 @@ spectral
 This module offers utilities for processing data cubes and related operations.
 
 Module Overview
---------------
+---------------
 
 .. currentmodule:: wizard._processing.spectral
 

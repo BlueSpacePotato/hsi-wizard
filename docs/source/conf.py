@@ -45,4 +45,4 @@ html_permalinks_icon = "¶"  # Default value
 jquery_use_sri = False  # Disable SRI for jQuery
 
 # Mock imports for unavailable or optional dependencies
-autodoc_mock_imports = ['nrrd'] 
+autodoc_mock_imports = ['nrrd', 'rich'] 

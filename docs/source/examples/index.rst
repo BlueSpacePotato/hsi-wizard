@@ -10,7 +10,7 @@ Create a DataCube
 Plot DataCube
 =============
 
-   .. literalinclude:: ../../../examples/01_plot_datacube/01_example.py
+   .. literalinclude:: ../../../examples/01_plot_DataCube/01_example.py
       :language: python
       :linenos:
 
