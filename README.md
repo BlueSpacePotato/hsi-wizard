@@ -1,7 +1,7 @@
 [![Documentation Status](https://readthedocs.org/projects/hsi-wizard/badge/?version=latest)](https://hsi-wizard.readthedocs.io)
 [![codecov](https://codecov.io/gh/BlueSpacePotato/hsi-wizard/graph/badge.svg?token=85ASSSF2ZN)](https://codecov.io/gh/BlueSpacePotato/hsi-wizard)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/hsi-wizard)
-
+[![Socket Badge](https://socket.dev/api/badge/pypi/package/hsi-wizard/0.1.13?artifact_id=tar-gz)](https://socket.dev/pypi/package/hsi-wizard/overview/0.1.13/tar-gz)
 
 # HSI Wizard
 
