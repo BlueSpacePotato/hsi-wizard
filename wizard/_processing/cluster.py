@@ -34,8 +34,6 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances
 from scipy.signal import convolve2d
 
-import wizard
-
 
 def quit_low_change_in_clusters(centers: np.ndarray, last_centers: np.ndarray, theta_o: float) -> bool:
     """
@@ -420,11 +418,25 @@ def generate_gaussian_kernel(size=3, sigma=1.0):
     kernel = np.outer(gauss, gauss)
     return kernel / kernel.sum()
 
-def optimal_clusters(pixels, max_clusters=5, threshold=0.1):
+
+def optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
     """
-    Dynamically determine the number of clusters based on centroid distances.
+    Determine the optimal number of KMeans clusters based on minimum centroid distances.
 
+    The function iteratively fits KMeans clustering with increasing values of k (from 2 up to `max_clusters`)
+    and evaluates the minimum distance between any two cluster centers. Clustering stops when this distance
+    falls below the specified `threshold`, indicating the clusters are getting too close together.
 
+    :param pixels: np.ndarray
+        A 1D NumPy array representing the data to be clustered.
+    :param max_clusters: int, optional (default=5)
+        The maximum number of clusters to evaluate.
+    :param threshold: float, optional (default=0.1)
+        The minimum allowable distance between cluster centroids.
+        Clustering stops when the closest centroids are within this threshold.
+
+    :return: int
+        The optimal number of clusters based on the centroid distance threshold.
     """
     best_k = 2
     for k in range(2, max_clusters + 1):
@@ -440,10 +452,10 @@ def optimal_clusters(pixels, max_clusters=5, threshold=0.1):
             break
     return best_k
 
-def segment_cube(dc:wizard.DataCube, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=12, sigma=1.0):
+
+def segment_cube(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=12, sigma=1.0):
     """
     Segments a data cube using both spectral clustering (KMeans) and spatial smoothing (MRF-based regularization).
-
 
     :param dc: wizard.DataCube
         3D array where each voxel has a spectrum (v, x, y)
@@ -456,8 +468,8 @@ def segment_cube(dc:wizard.DataCube, n_clusters=5, threshold=.1, mrf_iterations=
     :param sigma: float
         Standard deviation for Gaussian kernel
 
-    Returns:
-    segmented: np.ndarray
+    :return: segmented
+    :rtype: np.ndarray
         2D array with cluster labels
     """
     v, x, y = dc.shape
@@ -484,4 +496,3 @@ def segment_cube(dc:wizard.DataCube, n_clusters=5, threshold=.1, mrf_iterations=
         labels = np.round(smoothed_labels).astype(np.int32)
 
     return labels
-

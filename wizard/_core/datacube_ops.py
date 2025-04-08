@@ -373,22 +373,22 @@ def remove_vingetting(dc: DataCube, axis: int = 1, slice_params: dict = None) ->
     return dc
 
 
-def normalize(dc) -> DataCube:
-        """
+def normalize(dc:DataCube) -> DataCube:
+    """
     Normalizing the the spectral information between 0 and 1
 
     Parameters
     ----------
     dc : DataCube
-    The DataCube instance to process.
+        The DataCube instance to process.
 
     Returns
     -------
     DataCube
     The processed DataCube.
-        """
-        cube = dc.cube - dc.cube.min()
-        cube = cube / cube.max()
-        dc.set_cube(cube)
+    """
+    cube = dc.cube - dc.cube.min()
+    cube = cube / cube.max()
+    dc.set_cube(cube)
 
-        return dc
+    return dc

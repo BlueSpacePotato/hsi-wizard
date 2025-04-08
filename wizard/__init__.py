@@ -29,7 +29,7 @@ from ._core.datacube import DataCube
 from ._exploration.plotter import plotter
 from ._exploration.surface import plot_surface
 from ._utils._loader import read
-from ._processing import cluster
+from ._processing.cluster import isodata, segment_cube
 
 #  Define what should be accessible when using 'from wizard import *'
 # __all__ = [
