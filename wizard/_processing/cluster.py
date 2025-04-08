@@ -30,6 +30,11 @@ import numpy as np
 from scipy.cluster.vq import vq
 from typing import Tuple
 from typing import Optional
+from sklearn.cluster import KMeans
+from sklearn.metrics import pairwise_distances
+from scipy.signal import convolve2d
+
+import wizard
 
 
 def quit_low_change_in_clusters(centers: np.ndarray, last_centers: np.ndarray, theta_o: float) -> bool:
@@ -406,3 +411,77 @@ def isodata(dc, k: int = 10, it: int = 10, p: int = 2, theta_m: int = 10,
             break
 
     return img_class_flat.reshape(x, y)
+
+
+def generate_gaussian_kernel(size=3, sigma=1.0):
+    """Generates a Gaussian-like kernel dynamically."""
+    ax = np.linspace(-(size // 2), size // 2, size)
+    gauss = np.exp(-0.5 * (ax / sigma) ** 2)
+    kernel = np.outer(gauss, gauss)
+    return kernel / kernel.sum()
+
+def optimal_clusters(pixels, max_clusters=5, threshold=0.1):
+    """
+    Dynamically determine the number of clusters based on centroid distances.
+
+
+    """
+    best_k = 2
+    for k in range(2, max_clusters + 1):
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+        kmeans.fit(pixels)
+        centers = kmeans.cluster_centers_
+        dists = pairwise_distances(centers)
+        np.fill_diagonal(dists, np.inf)  # Ignore self-distances
+        closest_dist = np.min(dists)
+        if closest_dist > threshold:
+            best_k = k
+        else:
+            break
+    return best_k
+
+def segment_cube(dc:wizard.DataCube, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=12, sigma=1.0):
+    """
+    Segments a data cube using both spectral clustering (KMeans) and spatial smoothing (MRF-based regularization).
+
+
+    :param dc: wizard.DataCube
+        3D array where each voxel has a spectrum (v, x, y)
+    :param n_clusters: int
+        Number of clusters for segmentation
+    :param mrf_iterations: int
+        Number of iterations for spatial regularization
+    :param kernel_size: int
+        Size of the Gaussian smoothing kernel
+    :param sigma: float
+        Standard deviation for Gaussian kernel
+
+    Returns:
+    segmented: np.ndarray
+        2D array with cluster labels
+    """
+    v, x, y = dc.shape
+
+    # Reshape cube for clustering
+    pixels = dc.cube.reshape(v, -1).T
+
+    # Determine optimal number of clusters
+    optimal_k = optimal_clusters(pixels, max_clusters=n_clusters, threshold=threshold)
+    kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
+    labels = kmeans.fit_predict(pixels)
+    labels = labels.reshape(x, y)
+
+    # Generate dynamic Gaussian kernel
+    kernel = generate_gaussian_kernel(size=kernel_size, sigma=sigma)
+
+    # Apply Markov Random Field-based spatial regularization
+    for _ in range(mrf_iterations):
+        smoothed_labels = np.zeros_like(labels, dtype=np.float64)
+        for cluster in range(optimal_k):
+            binary_mask = (labels == cluster).astype(np.float64)
+            smoothed_mask = convolve2d(binary_mask, kernel, mode='same', boundary='symm')
+            smoothed_labels += cluster * smoothed_mask
+        labels = np.round(smoothed_labels).astype(np.int32)
+
+    return labels
+

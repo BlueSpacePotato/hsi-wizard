@@ -42,7 +42,6 @@ def to_cube(data: np.array, len_x: int, len_y: int) -> np.array:
     :return: Transformed 3D data cube.
     :rtype: np.ndarray
     """
-    print(len_x, len_y)
     return data.reshape(-1, len_x, len_y, order='F')
 
 
