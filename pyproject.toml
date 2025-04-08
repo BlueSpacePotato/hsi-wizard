@@ -42,7 +42,7 @@ dependencies = [
     "pynrrd",
     "rembg",
     "onnxruntime",
-    "sklearn",
+    "scikit-learn",
 ]
 
 [project.optional-dependencies]
