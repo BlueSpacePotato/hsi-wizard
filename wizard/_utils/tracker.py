@@ -26,10 +26,20 @@ exculted = ['stop_recording', 'save_template', '_clean_data', '_map_args_to_kwar
 
 class TrackExecutionMeta(type):
     """
-    Metaclass for tracking DataCube method executions.
+    A metaclass for tracking method executions in classes that use it (e.g., DataCube).
 
-    This metaclass keeps track of the functions and methods invoked on
-    DataCube instances. It can record method calls dynamically.
+    This metaclass automatically wraps methods to log their calls when recording is enabled.
+    Only methods marked as dynamic (with `__is_dynamic__ = True`) are recorded.
+    Useful for debugging, auditing, or dynamically analyzing method usage patterns.
+
+    Attributes:
+        recording (bool): Flag indicating whether to track method calls.
+        recorded_methods (list): Stores tuples of (method_name, args, kwargs) for recorded calls.
+
+    Methods:
+        start_recording(): Enables method tracking and resets previous records.
+        stop_recording(): Disables method tracking.
+        record_method(func): Decorator to wrap and conditionally log method calls.
     """
 
     recording = False
@@ -37,16 +47,15 @@ class TrackExecutionMeta(type):
 
     def __new__(cls, name, bases, dct):
         """
-        Create a new instance of the metaclass.
+        Overrides the class creation process to wrap methods for tracking.
 
-        This method wraps methods in the class with a recording decorator
-        unless they are excluded from tracking.
+        Args:
+            name (str): Name of the class being created.
+            bases (tuple): Base classes of the new class.
+            dct (dict): Dictionary of attributes/methods in the class.
 
-        :param cls: The metaclass.
-        :param name: The name of the class.
-        :param bases: A tuple of base classes.
-        :param dct: A dictionary containing the class's namespace.
-        :return: A new instance of the class.
+        Returns:
+            type: A new class with wrapped methods for execution tracking.
         """
         for key, value in dct.items():
             # Wrap only dynamic methods or those that are not in the excluded list
@@ -57,12 +66,13 @@ class TrackExecutionMeta(type):
     @staticmethod
     def record_method(func):
         """
-        Decorator for recording method calls.
+        Decorator to wrap a method and record its execution if it's marked as dynamic.
 
-        This decorator tracks the execution of dynamic methods when recording is enabled.
+        Args:
+            func (callable): The function to be wrapped.
 
-        :param func: The function to be wrapped.
-        :return: A wrapper function that records method calls.
+        Returns:
+            callable: A wrapped version of the original function.
         """
         def wrapper(*args, **kwargs):
             if TrackExecutionMeta.recording:
@@ -76,10 +86,7 @@ class TrackExecutionMeta(type):
     @staticmethod
     def start_recording():
         """
-        Start tracking method executions.
-
-        This method enables recording of method calls.
-        :return: None
+        Activates the tracking of dynamic method executions and clears previous records.
         """
         TrackExecutionMeta.recording = True
         TrackExecutionMeta.recorded_methods = []
@@ -87,9 +94,6 @@ class TrackExecutionMeta(type):
     @staticmethod
     def stop_recording():
         """
-        Stop tracking method executions.
-
-        This method disables recording of method calls.
-        :return: None
+        Deactivates the tracking of method executions.
         """
         TrackExecutionMeta.recording = False
