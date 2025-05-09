@@ -22,7 +22,7 @@ class TestPlotter:
 
     def test_normalize_small_range(self):
         spec = np.array([0.0001, 0.0002, 0.0003])
-        normalized = plotter.normalize(spec)
+        normalized = plotter.normalize_spec(spec)
         expected = np.array([0.0, 0.5, 1.0])
         np.testing.assert_allclose(normalized, expected, atol=1e-6)
 

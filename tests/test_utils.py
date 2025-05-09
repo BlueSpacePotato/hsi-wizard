@@ -137,7 +137,7 @@ class TestLoaderHelper:
         Test the normalize function with valid input.
         """
         spec = np.array([10, 20, 30, 40, 50], dtype=np.float32)
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
 
         # Expected normalization: (x - min) / (max - min)
         expected = (spec - spec.min()) / (spec.max() - spec.min())
@@ -148,7 +148,7 @@ class TestLoaderHelper:
         Test the normalize function with constant input.
         """
         spec = np.array([10, 10, 10, 10, 10], dtype=np.float32)
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
 
         # Expected output: all zeros since max == min
         expected = spec
@@ -776,33 +776,33 @@ class TestHelper:
 
     def test_normalize_basic(self):
         spec = np.array([0, 5, 10])
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
         expected = np.array([0.0, 0.5, 1.0])
         np.testing.assert_allclose(normalized, expected, atol=1e-6)
 
 
     def test_normalize_already_normalized(self):
         spec = np.array([0.0, 0.5, 1.0])
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
         np.testing.assert_array_equal(normalized, spec)
 
 
     def test_normalize_constant_array(self):
         spec = np.array([3, 3, 3])
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
         np.testing.assert_array_equal(normalized, spec)  # Should remain unchanged
 
 
     def test_normalize_negative_values(self):
         spec = np.array([-10, 0, 10])
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
         expected = np.array([0.0, 0.5, 1.0])
         np.testing.assert_allclose(normalized, expected, atol=1e-6)
 
 
     def test_normalize_large_range(self):
         spec = np.array([1e9, 2e9, 3e9])
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
         expected = np.array([0.0, 0.5, 1.0])
         np.testing.assert_allclose(normalized, expected, atol=1e-6)
 

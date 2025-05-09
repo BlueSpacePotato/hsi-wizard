@@ -26,7 +26,7 @@ from matplotlib.widgets import Button, CheckButtons, RectangleSelector
 from matplotlib.gridspec import GridSpec
 import random
 
-from .._utils.helper import find_nex_smaller_wave, normalize
+from .._utils.helper import find_nex_smaller_wave, normalize_spec
 
 # State dictionary to manage the global variables locally
 state = {
@@ -80,7 +80,7 @@ def plotter(dc):
         for i, sp in enumerate(saved_plots):
             saved_spec = sp['spec']
             if state['normalize_flag']:
-                saved_spec = normalize(saved_spec)
+                saved_spec = normalize_spec(saved_spec)
             saved_lines[i].set_data(sp['wave'], saved_spec)
             saved_lines[i].set_color(sp['color'])  # Use saved color
 
@@ -96,7 +96,7 @@ def plotter(dc):
         roi_data = dc.cube[:, roi_y_start:roi_y_end, roi_x_start:roi_x_end]
         mean_spec = np.mean(roi_data, axis=(1, 2))
         if state['normalize_flag']:
-            mean_spec = normalize(mean_spec)
+            mean_spec = normalize_spec(mean_spec)
 
         # Generate a random color for this ROI and save it with the plot
         color = (random.random(), random.random(), random.random())  # Random RGB color
@@ -157,7 +157,7 @@ def plotter(dc):
         roi_data = dc.cube[:, roi_y_start:roi_y_end, roi_x_start:roi_x_end]
         mean_spec = np.mean(roi_data, axis=(1, 2))
         if state['normalize_flag']:
-            mean_spec = normalize(mean_spec)
+            mean_spec = normalize_spec(mean_spec)
 
         # Define range padding
         r = (mean_spec.max() - mean_spec.min()) * 0.1

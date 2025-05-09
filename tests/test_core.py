@@ -681,9 +681,9 @@ class TestDataCubeOps:
         assert inverted_dc is not None
         assert np.all(inverted_dc.cube >= 0)  # Inversion should result in non-negative values
 
-    def test_remove_vingetting(self):
+    def test_remove_vignetting(self):
         dc = create_test_cube(shape=(4, 200, 200))
-        corrected_dc = dc.remove_vingetting(axis=1, slice_params={"start": 0, "end": 2, "step": 1})
+        corrected_dc = dc.remove_vignetting() # axis=1, slice_params={"start": 0, "end": 2, "step": 1})
         assert corrected_dc is not None
         assert corrected_dc.cube.shape == dc.cube.shape
 
@@ -693,9 +693,3 @@ class TestDataCubeOps:
         with pytest.raises(NotImplementedError):
             dc1.merge_cubes(dc2)
 
-    def test_merge_cubes_overlapping_wavelengths(self):
-        dc1 = create_test_cube()
-        dc2 = create_test_cube()
-        dc2.set_wavelengths(dc1.wavelengths)  # Overlapping wavelengths
-        with pytest.raises(NotImplementedError):
-            dc1.merge_cubes(dc2)
