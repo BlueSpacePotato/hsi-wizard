@@ -806,6 +806,24 @@ class TestHelper:
         expected = np.array([0.0, 0.5, 1.0])
         np.testing.assert_allclose(normalized, expected, atol=1e-6)
 
+    def test_process_slice(self):
+        """
+        single test function for _process_slice beause parrallel processing is not tracked proberly
+        """
+        spec_out_flat = np.array([[1, 2, 3, 4], [5, 10000, 7, 8]])
+        spikes_flat = np.array([[False, False, False, False], [False, True, False, False]])
+        idx = 1
+        window = 3
+
+        processed_idx, processed_slice = wizard._utils.helper._process_slice(spec_out_flat, spikes_flat, idx, window)
+
+        assert processed_idx == idx
+        assert processed_slice[1] != 10000  # Spike should be replaced
+        assert processed_slice.shape == spec_out_flat[idx].shape
+
+
+
+
 
 class TestFeatureRegistration:
     def test_feature_registration_identity(self):

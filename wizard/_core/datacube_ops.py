@@ -23,7 +23,8 @@ from scipy.ndimage import gaussian_filter
 
 from . import DataCube 
 from .._processing.spectral import calculate_modified_z_score, spec_baseline_als
-from .._utils.helper import process_slice, feature_registration, RegistrationError, auto_canny, decompose_homography
+from .._utils.helper import _process_slice, feature_registration, RegistrationError, auto_canny, decompose_homography
+
 
 def remove_spikes(dc: DataCube, threshold: int = 6500, window: int = 5) -> DataCube:
     """
@@ -51,7 +52,7 @@ def remove_spikes(dc: DataCube, threshold: int = 6500, window: int = 5) -> DataC
     cube_out = dc.cube.copy()
     spec_out_flat = cube_out.reshape(cube_out.shape[0], -1)
     results = Parallel(n_jobs=-1)(
-        delayed(process_slice)(spec_out_flat, spikes, idx, window)
+        delayed(_process_slice)(spec_out_flat, spikes, idx, window)
         for idx in range(spikes.shape[0]))
     for idx, tmp in results:
         spec_out_flat[idx] = tmp
@@ -470,9 +471,6 @@ def normalize_polarity(img: np.ndarray) -> np.ndarray:
     if np.mean(img_f) > 0.5:
         img_f = 1.0 - img_f
     return img_f
-
-
-
 
 
 def register_layers_best(

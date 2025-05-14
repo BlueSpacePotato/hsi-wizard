@@ -25,7 +25,6 @@ import numpy as np
 from skimage.feature import canny
 
 
-
 class RegistrationError(Exception):
     """Custom exception for registration errors."""
 
@@ -150,10 +149,8 @@ def feature_regestration(o_img: np.ndarray, a_img: np.ndarray, max_features: int
 
     return aligned_img, h
 
-def feature_registration(o_img: np.ndarray, a_img: np.ndarray,
-                          max_features: int = 5000,
-                          match_percent: float = 0.1
-                          ) -> tuple[np.ndarray, np.ndarray]:
+
+def feature_registration(o_img: np.ndarray, a_img: np.ndarray, max_features: int = 5000, match_percent: float = 0.1) -> tuple[np.ndarray, np.ndarray]:
     """
     Perform ORB-based feature registration.
 
@@ -228,7 +225,8 @@ def feature_registration(o_img: np.ndarray, a_img: np.ndarray,
     aligned = cv2.warpPerspective(a_img, H, (w_o, h_o), flags=cv2.INTER_LINEAR)
     return aligned, H
 
-def process_slice(spec_out_flat: np.ndarray, spikes_flat: np.ndarray, idx: int, window: int) -> tuple:
+
+def _process_slice(spec_out_flat: np.ndarray, spikes_flat: np.ndarray, idx: int, window: int) -> tuple:
     """
     Process a single slice to remove spikes.
 
@@ -270,25 +268,26 @@ def process_slice(spec_out_flat: np.ndarray, spikes_flat: np.ndarray, idx: int, 
 
 def decompose_homography(H: np.ndarray) -> tuple[float, np.ndarray]:
     """
-Extract rotation angle and singular values from the 2x2 linear part of H.
+    Extract rotation angle and singular values from the 2x2 linear part of H.
 
-Parameters
-----------
-H : numpy.ndarray
-The 3x3 homography matrix.
+    Parameters
+    ----------
+    H : numpy.ndarray
+        The 3x3 homography matrix.
 
-Returns
--------
-angle : float
-The rotation angle in degrees.
-S : numpy.ndarray
-The singular values (scales) from the 2x2 affine part of H.
+    Returns
+    -------
+    angle : float
+        The rotation angle in degrees.
+    S : numpy.ndarray
+        The singular values (scales) from the 2x2 affine part of H.
     """
     A = H[:2, :2]
     U, S, Vt = np.linalg.svd(A)
     R = U.dot(Vt)
     angle = np.degrees(np.arctan2(R[1, 0], R[0, 0]))
     return angle, S
+
 
 def auto_canny(img: np.ndarray, sigma: float = 0.33) -> np.ndarray:
     """
@@ -312,4 +311,3 @@ def auto_canny(img: np.ndarray, sigma: float = 0.33) -> np.ndarray:
     lower = max(0.0, (1.0 - sigma) * v)
     upper = min(1.0, (1.0 + sigma) * v)
     return canny(img, low_threshold=lower, high_threshold=upper)
-
