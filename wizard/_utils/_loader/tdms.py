@@ -18,97 +18,66 @@ Functions
 .. autofunction:: _read_tdms
 
 """
-
 import re
-import numpy as np
 from nptdms import TdmsFile
 
 from ._helper import to_cube
 from ..._core import DataCube
 
 
+# Precompile regex for length extraction
+def _extract_dims(col_name):
+    nums = re.findall(r"\d+", col_name)
+    return int(nums[0]) + 1, int(nums[1]) + 1
+
+
 def _read_tdms(path: str) -> DataCube:
     """
-    Read a .tdms file and convert its contents into a DataCube.
-
-    The function reads and parses the specified TDMS file and extracts relevant data,
-    organizing it into a structured format suitable for further analysis.
-
-    :param path: The file path to the TDMS file.
-    :type path: str
-    :return: A DataCube containing the parsed data from the TDMS file.
-    :rtype: DataCube
-
-    :raises FileNotFoundError: If the specified file does not exist.
-    :raises ValueError: If the data cannot be parsed correctly.
-    
+    Optimized TDMS reader: reads the file, cleans and filters columns,
+    vectorizes operations, and builds DataCube efficiently.
     """
-    # Type for automatic detection
-    data_type = ''
-    wave_col = 0
-    len_col = 0
+    # Load and convert to DataFrame
+    tdms = TdmsFile(path)
+    df = tdms.as_dataframe()
 
-    # Get values
-    file = TdmsFile(path)
+    # Clean column names in-place
+    cols = df.columns.str.replace(' ', '', regex=False).str.replace("'", '', regex=False)
+    df.columns = cols
 
-    # Build DataFrame
-    tdms_df = file.as_dataframe()
+    # Identify columns by mask
+    is_raw = cols.str.contains('RAW')
+    is_drop = cols.str.contains('DarkCurrent') | cols.str.contains('cm|nm')
+    is_sample = ~(is_raw | is_drop)
 
-    # Copy columns
-    col = tdms_df.columns
-    col_new = []
-    col_sample = []
-    col_raw = []
+    # Determine data type and wavelength column offset
+    if cols.str.contains('RAMAN').any():
+        data_type, wave_col = 'raman', 1
+    elif cols.str.contains('NIR|KNIR').any():
+        data_type, wave_col = 'nir', 1
+    elif cols.str.contains('VIS|KVIS').any():
+        data_type, wave_col = 'vis', 2
+    else:
+        data_type, wave_col = '', 1
 
-    # Sort by dark and normal
-    for i in col:
-        i = i.replace(' ', '').replace('\'', '')
+    # Extract wavelength array
+    wave = df.iloc[:, -wave_col].to_numpy(dtype=int)
 
-        if 'RAW' in i:
-            col_raw.append(i)
-        elif ('DarkCurrent' in i or 'cm' in i or 'nm' in i):
-            continue
-        else:
-            col_sample.append(i)
+    # Compute spatial dimensions from last sample column
+    sample_cols = cols[is_sample]
+    if sample_cols.size:
+        len_x, len_y = _extract_dims(sample_cols[-1])
+    else:
+        # fallback to raw if no sample columns
+        raw_cols = cols[is_raw]
+        len_x, len_y = _extract_dims(raw_cols[-1])
 
-        col_new.append(i)
+    # Filter out drop columns
+    df = df.loc[:, ~is_drop]
 
-    # Rename columns
-    tdms_df.columns = col_new
+    # Select data array
+    data_cols = cols[is_sample] if is_sample.any() else cols[is_raw]
+    data_arr = df[data_cols].to_numpy()
 
-    # Detect data type and set wave and length columns
-    if any("RAMAN" in s for s in col_new):
-        data_type = 'raman'
-        wave_col = 1
-        len_col = 4
-    elif any("NIR" in s for s in col_new) or any("KNIR" in s for s in col_new):
-        data_type = 'nir'
-        wave_col = 1
-        len_col = 3
-    elif any("VIS" in s for s in col_new) or any("KVIS" in s for s in col_new):
-        data_type = 'vis'
-        wave_col = 1
-        len_col = 3
-
-    # Get wavelength
-    wave = np.array(tdms_df[tdms_df.columns[-wave_col]])
-
-    # Parse length information
-    len_xy = re.findall(r'\d+', col_new[-len_col])
-    len_x = int(len_xy[0]) + 1
-    len_y = int(len_xy[1]) + 1
-
-    # Set index and extract samples
-    tdms_df = tdms_df.set_index(tdms_df.columns[-2])
-    tdms_sample_df = tdms_df[col_sample].copy()
-
-    tdms_sample = np.array(tdms_sample_df)
-    tdms_sample_cube = to_cube(data=tdms_sample, len_x=len_x, len_y=len_y)
-
-    wave = wave.astype('int')
-
-    return DataCube(
-        cube=tdms_sample_cube,
-        wavelengths=wave,
-        name=data_type
-    )
+    # Build cube and return
+    cube = to_cube(data=data_arr, len_x=len_x, len_y=len_y)
+    return DataCube(cube=cube, wavelengths=wave, name=data_type)

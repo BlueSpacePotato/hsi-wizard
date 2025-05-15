@@ -55,6 +55,21 @@ def plotter(dc):
     roi_x_start, roi_x_end = 0, dc.cube.shape[2]
     roi_y_start, roi_y_end = 0, dc.cube.shape[1]
 
+    def on_key(event):
+        """
+        Change layer_id using left/right arrow keys
+        and refresh the plots.
+        """
+        if event.key == 'left':
+            # step down, but not below 0
+            state['layer_id'] = max(0, state['layer_id'] - 1)
+            update_plot()
+        elif event.key == 'right':
+            # step up, but not beyond last index
+            max_idx = dc.cube.shape[0] - 1
+            state['layer_id'] = min(max_idx, state['layer_id'] + 1)
+            update_plot()
+
     def update_plot(_=None):
         """
         Update the main plot with the current state.
@@ -246,6 +261,8 @@ def plotter(dc):
     # ROI selection
     _ = RectangleSelector(ax[0], on_roi_change, useblit=True, button=[1], minspanx=5, minspany=5, spancoords='pixels', interactive=True)
     fig.canvas.mpl_connect("button_press_event", onclick_select)
+    
+    fig.canvas.mpl_connect("key_press_event", on_key)
 
     update_plot()
 

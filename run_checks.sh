@@ -16,3 +16,6 @@ pytest --cov=wizard --cov-report=term-missing
 
 # Deactivate the virtual environment
 deactivate
+
+# Cleanup temporary coverage files
+find . -maxdepth 1 -type f -name ".coverage.*" -delete

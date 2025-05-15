@@ -522,7 +522,7 @@ def register_layers_best(
     n_layers, H_dim, W_dim = dc.cube.shape
 
     def try_align(layer_idx: int, current_aligned_indices: set) -> bool:
-        nonlocal dc
+        # nonlocal dc
         a_img = dc.cube[layer_idx]
         best_alignment_img = None
 
