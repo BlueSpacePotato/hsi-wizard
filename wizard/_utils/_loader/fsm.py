@@ -172,7 +172,7 @@ def _read_fsm(path: str) -> DataCube:
     # Transform 2D array into a 3D data cube
     fsm_data_cube = to_cube(data=fsm_spectra.T, len_x=fsm_len_x, len_y=fsm_len_y)
 
-    return DataCube(fsm_data_cube, wavelengths=fsm_wave, name='.fsm', notation='cm-1')
+    return DataCube(fsm_data_cube, wavelengths=fsm_wave, name='.fsm', notation='cm-1', registered=True)
 
 
 """

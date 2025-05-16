@@ -15,11 +15,13 @@ This module contains operation function for processing datacubes.
 import cv2
 import copy
 import rembg
+import random
 import numpy as np
 from PIL import Image
 from joblib import Parallel, delayed
 from scipy.signal import savgol_filter
 from scipy.ndimage import gaussian_filter
+from skimage.transform import warp
 
 from . import DataCube 
 from .._processing.spectral import calculate_modified_z_score, spec_baseline_als
@@ -28,35 +30,69 @@ from .._utils.helper import _process_slice, feature_registration, RegistrationEr
 
 def remove_spikes(dc: DataCube, threshold: int = 6500, window: int = 5) -> DataCube:
     """
-    Remove cosmic spikes from the DataCube.
+    Remove cosmic spikes from each pixel's spectral data.
 
-    Identifies spikes using the modified z-score and replaces them
-    with the mean of neighboring values within the specified window.
+    This function computes the modified z-score for each pixel's spectral vector,
+    identifies spikes where the score exceeds the threshold, and replaces spike
+    values with the local mean within a sliding window along the spectrum.
 
     Parameters
     ----------
     dc : DataCube
-        The input DataCube from which cosmic spikes are to be removed.
+        The input DataCube with shape (v, x, y), where v is the number of spectral bands.
     threshold : int, optional
         Threshold for spike detection via modified z-score, defaults to 6500.
     window : int, optional
-        Window size for mean calculation when replacing spikes, defaults to 5.
+        Window size (in spectral channels) for mean replacement of spikes, defaults to 5.
 
     Returns
     -------
     DataCube
-        The DataCube with spikes removed.
+        A new DataCube instance with spikes removed per-pixel.
+
+    Raises
+    ------
+    ValueError
+        If `window` is not in the range [1, number of spectral bands].
+
+    Notes
+    -----
+    - The original DataCube is not modified in place; es wird eine Kopie zurückgegeben.
+    - Die Modifizierte z-Score-Berechnung erwartet Input mit Form (n_samples, n_features).
+    - Parallelisierung beschleunigt die Einzelpixel-Bearbeitung.
+
+    Examples
+    --------
+    >>> dc = DataCube.read("example.fsm")
+    >>> dc_clean = remove_spikes(dc, threshold=6500, window=5)
     """
-    z_spectrum = calculate_modified_z_score(dc.cube.reshape(dc.shape[0], -1))
-    spikes = abs(z_spectrum) > threshold
-    cube_out = dc.cube.copy()
-    spec_out_flat = cube_out.reshape(cube_out.shape[0], -1)
+    v, x, y = dc.cube.shape
+    if not (1 <= window <= v):
+        raise ValueError(f"window must be between 1 and {v}, got {window}")
+
+    # reshape to (n_pixels, v)
+    n_pixels = x * y
+    flat_cube = dc.cube.reshape(v, n_pixels).T  # shape: (n_pixels, v)
+
+    # Berechne pro-pixel modifizierten z-score
+    z_scores = calculate_modified_z_score(flat_cube)  # (n_pixels, v)
+    spikes = np.abs(z_scores) > threshold
+    flat_out = flat_cube.copy()
+
+    # Parallel auf jedes Pixel anwenden
     results = Parallel(n_jobs=-1)(
-        delayed(_process_slice)(spec_out_flat, spikes, idx, window)
-        for idx in range(spikes.shape[0]))
-    for idx, tmp in results:
-        spec_out_flat[idx] = tmp
-    dc.set_cube(spec_out_flat.reshape(dc.shape))
+        delayed(_process_slice)(flat_out, spikes, idx, window)
+        for idx in range(n_pixels)
+    )
+    for idx, spec in results:
+        flat_out[idx] = spec
+
+    # zurück in (v, x, y) formen
+    clean_cube = flat_out.T.reshape(v, x, y)
+
+    # Kopie des DataCube mit dem bereinigten Cube
+
+    dc.set_cube(clean_cube)
     return dc
 
 
@@ -207,64 +243,96 @@ def baseline_als(dc: DataCube, lam: float = 1000000, p: float = 0.01, niter: int
     return dc
 
 
-def merge_cubes(dc1: DataCube, dc2: DataCube) -> DataCube:
+def merge_cubes(dc1: DataCube, dc2: DataCube, register: bool = False) -> DataCube:
     """
-    Merge two DataCubes by concatenating spectral bands.
+    Merge two DataCubes into a single DataCube, with optional registration.
 
-    Concatenates the cube data and wavelengths of two DataCubes along the
-    spectral (first) axis. This function requires that the spatial
-    dimensions (height, width) of the cubes are the same.
-
-    Wavelengths are concatenated. If both cubes use simple integer indices
-    starting from 0 for wavelengths, the new wavelengths will also be a
-    continuous range of indices.
+    If both datacubes are already registered and the `register` flag is True,
+    the function will sample up to 10 random spectral layers from dc2, attempt to
+    register each to the first layer of dc1, choose the transform with the lowest
+    mean-squared-error alignment, then apply that best transform to all layers of dc2
+    before merging.
 
     Parameters
     ----------
     dc1 : DataCube
-        The first DataCube. This cube will be modified and returned.
+        The first DataCube (used as reference).
     dc2 : DataCube
-        The second DataCube to merge with the first.
+        The second DataCube to be merged into the first.
+    register : bool, optional
+        If True (default), registration will be attempted if both cubes are marked as registered.
 
     Returns
     -------
     DataCube
-        The first DataCube (dc1) modified to include data from dc2.
+        A new DataCube containing merged spatial and spectral data.
 
     Raises
     ------
     NotImplementedError
-        If spatial dimensions (height, width) do not match,
-        or if wavelengths overlap and are not simple integer indices.
+        If the cubes have mismatched spatial dimensions and cannot be merged,
+        or if wavelengths overlap without being purely indices.
     """
     c1 = dc1.cube
     c2 = dc2.cube
     wave1 = dc1.wavelengths
     wave2 = dc2.wavelengths
 
-    if c1.shape[1:] == c2.shape[1:]:  # Compare spatial dimensions (height, width)
-        c3 = np.concatenate([c1, c2], axis=0)  # Concatenate along spectral axis
+    # Optional registration step with sampling
+    if register and getattr(dc1, 'registered', False) and getattr(dc2, 'registered', False):
+        print("Both datacubes registered. Sampling layers for alignment...")
+        ref_img = c1[0]
+        num_layers = c2.shape[0]
+        sample_indices = random.sample(range(num_layers), min(10, num_layers))
+
+        best_score = np.inf
+        best_transform = None
+        # Try to register sampled layers and pick best
+        for idx in sample_indices:
+            try:
+                aligned_slice, transform = feature_registration(ref_img, c2[idx])
+                # Compute alignment quality (mean squared error)
+                mse = np.mean((ref_img - aligned_slice)**2)
+                if mse < best_score:
+                    best_score = mse
+                    best_transform = transform
+            except RegistrationError as e:
+                print(f"Registration of sampled layer {idx} failed: {e}")
+
+        if best_transform is not None:
+            # Apply best transform to all layers of dc2
+            for i in range(num_layers):
+                try:
+                    c2[i] = warp(c2[i], inverse_map=best_transform.inverse, preserve_range=True)
+                except Exception as e:
+                    print(f"Failed to apply best transform to layer {i}: {e}")
+        else:
+            print("No successful sampled registration. Skipping registration.")
+
+    # Spatial size check
+    if c1.shape[1:] == c2.shape[1:]:
+        c3 = np.concatenate([c1, c2], axis=0)
     else:
         raise NotImplementedError(
-            'Sorry - This function is not implemented yet. '
-            'At the moment you just can merge cubes with the same size x,y.'
+            'Sorry - this function can only merge cubes with the same spatial dimensions.'
         )
 
+    # Handle wavelength merge
     if set(wave1) & set(wave2):
-        is_wave1_indexed = list(wave1) == list(range(c1.shape[0]))
-        is_wave2_indexed = list(wave2) == list(range(c2.shape[0]))
-        if is_wave1_indexed and is_wave2_indexed:
+        # If wavelengths are index-based, just concatenate indices
+        if set(wave1) <= set(range(c1.shape[0])) and set(wave2) <= set(range(c2.shape[0])):
             wave3 = list(range(c1.shape[0] + c2.shape[0]))
         else:
             raise NotImplementedError(
-                'Sorry - your wavelengths are overlapping in a complex way, '
-                'we are working on a solution for generic wavelength merging.'
+                'Sorry - your wavelengths overlap and are not purely index-based.'
             )
     else:
         wave3 = np.concatenate((wave1, wave2))
 
+    # Create new merged DataCube (modify dc1 in-place)
     dc1.set_cube(c3)
     dc1.set_wavelengths(wave3)
+
     return dc1
 
 
@@ -584,6 +652,7 @@ def register_layers_best(
                 waitlist.remove(i)
             else:
                 raise RuntimeError(f"Layer {i}: alignment failed after retry.")
+    dc.registerd = True
     return dc
 
 

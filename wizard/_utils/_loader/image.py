@@ -1,10 +1,10 @@
 """
-_utils/_loader/folder.py
+_utils/_loader/image.py
 ==========================
 
 .. module:: images
-   :platform: Unix
-   :synopsis: Provides functions to read and write image files.
+:platform: Unix
+:synopsis: Provides functions to read and write image files.
 
 Module Overview
 ---------------
@@ -22,7 +22,6 @@ Functions
 
 """
 
-import os
 import numpy as np
 from matplotlib import pyplot as plt
 from concurrent.futures import ThreadPoolExecutor
@@ -58,7 +57,7 @@ def filter_image_files(files):
 
 
 @check_path
-def _read_folder(path: str, **kwargs) -> DataCube:
+def _read_image(path: str, **kwargs) -> DataCube:
     """
     Load a folder of images into a DataCube.
 
@@ -72,13 +71,8 @@ def _read_folder(path: str, **kwargs) -> DataCube:
     :raises FileNotFoundError: If the specified directory does not exist.
     :raises ValueError: If no valid image files are found in the directory.
     """
-    _files = [os.path.join(path, f) for f in os.listdir(path)]
-    _files_filtered = filter_image_files(_files)
 
-    if not _files_filtered:
-        raise ValueError("No valid image files found in the directory.")
-
-    _dc = image_to_dc(_files_filtered, **kwargs)
+    _dc = image_to_dc(path, **kwargs)
 
     return _dc
 
@@ -109,12 +103,12 @@ def image_to_dc(path: str | list, **kwargs) -> DataCube:
     Images are processed based on the specified type, which determines the transpose operation applied to the data.
 
     :param path: Path to an image file or a list of image file paths.
-                 If a list is provided, images are loaded concurrently.
+    If a list is provided, images are loaded concurrently.
     :type path: str or list[str]
     :param kwargs: Optional keyword arguments.
-        - type: Specifies the transpose operation to apply to the data.
-                Can be 'default' (default behavior) or 'pushbroom' (for pushbroom images).
-        - Other keyword arguments may be accepted depending on the implementation of `load_image`.
+    - type: Specifies the transpose operation to apply to the data.
+    Can be 'default' (default behavior) or 'pushbroom' (for pushbroom images).
+    - Other keyword arguments may be accepted depending on the implementation of `load_image`.
 
     :returns: A DataCube object containing the image data.
     :rtype: DataCube

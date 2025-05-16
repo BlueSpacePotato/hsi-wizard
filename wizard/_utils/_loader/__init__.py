@@ -58,6 +58,8 @@ def read(path: str, datatype: str = 'auto', **kwargs):
     if datatype == 'auto':
         if os.path.isdir(path):
             suffix = '.folder'
+        elif path.endswith('tiff') or path.endswith('jpg') or path.endswith('png'):
+            suffix = '.image'
         else:
             suffix = pathlib.Path(path).suffix
     else:
@@ -85,6 +87,7 @@ def load_all_loaders():
         "fsm",
         "folder",
         "nrrd",
+        "image",
     ]
 
     for module_name in loader_modules:

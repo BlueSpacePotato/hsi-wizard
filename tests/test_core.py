@@ -527,13 +527,13 @@ class TestDataCubeOps:
 
     def test_remove_spikes(self):
         dc = create_test_cube()
-        dc.cube[0, 1, 1] = 100  # Insert a spike
+        dc.cube[0, 1, 1] = 1000  # Insert a spike
         threshold = 10
-        dc.remove_spikes(threshold=threshold, window=5)
+        dc.remove_spikes(threshold=threshold, window=3)
 
         assert dc is not None
         assert dc.cube.shape == dc.cube.shape
-        assert dc.cube[0, 1, 1] != 10000
+        assert dc.cube[0, 1, 1] != 1000
 
 
 
