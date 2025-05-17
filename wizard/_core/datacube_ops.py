@@ -408,6 +408,7 @@ def register_layers_simple(dc: DataCube, max_features: int = 5000, match_percent
             except RegistrationError as e:
                 print(f"Warning: Could not register layer {i} in simple registration: {e}")
                 pass
+    dc.registered = True
     return dc
 
 
@@ -652,7 +653,7 @@ def register_layers_best(
                 waitlist.remove(i)
             else:
                 raise RuntimeError(f"Layer {i}: alignment failed after retry.")
-    dc.registerd = True
+    dc.registered = True
     return dc
 
 
