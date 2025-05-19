@@ -535,7 +535,7 @@ def normalize_polarity(img: np.ndarray) -> np.ndarray:
             else:
                 img_f = (img.astype(np.float32) - min_val) / (max_val - min_val)
         else:
-            img_f = img.astype(np.float32)
+            img_f = (img.astype(np.float32) - min_val) / (max_val - min_val)
 
     if np.mean(img_f) > 0.5:
         img_f = 1.0 - img_f

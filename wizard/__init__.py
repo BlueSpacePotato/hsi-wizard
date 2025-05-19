@@ -28,7 +28,7 @@ This module imports essential submodules and classes/functions, including:
 from ._core.datacube import DataCube
 from ._exploration.plotter import plotter
 from ._exploration.surface import plot_surface
-from ._exploration.cube import plot_datacube_3d, plot_datacube_solid
+from ._exploration.faces import plot_datacube_faces
 from ._utils._loader import read
 from ._processing.cluster import isodata, segment_cube
 
