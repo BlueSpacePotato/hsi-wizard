@@ -603,6 +603,12 @@ def register_layers_best(
     ------
     RuntimeError
         If alignment fails for a layer after retry.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read('example.fsm')
+    >>> dc.register_layers_best()
     """
     aligned_indices = {ref_layer}
     waitlist = set()
@@ -703,6 +709,12 @@ def remove_vignetting(dc: DataCube, sigma: float = 50, clip: bool = True, epsilo
     DataCube
         The DataCube with vignetting corrected. The output cube has the
         same shape and dtype as the input.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read('example.fsm')
+    >>> dc.remove_vignetting()
     """
     corrected_cube = np.empty_like(dc.cube)
     orig_dtype = dc.cube.dtype

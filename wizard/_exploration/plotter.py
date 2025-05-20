@@ -266,5 +266,5 @@ def plotter(dc):
 
     update_plot()
 
-    plt.tight_layout(rect=[0, 0, .95, 1])
+    # plt.tight_layout(rect=[0, 0, .95, 1])
     plt.show()
