@@ -1,7 +1,9 @@
 [![Documentation Status](https://readthedocs.org/projects/hsi-wizard/badge/?version=latest)](https://hsi-wizard.readthedocs.io)
 [![codecov](https://codecov.io/gh/BlueSpacePotato/hsi-wizard/graph/badge.svg?token=85ASSSF2ZN)](https://codecov.io/gh/BlueSpacePotato/hsi-wizard)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/hsi-wizard)
 [![Socket Badge](https://socket.dev/api/badge/pypi/package/hsi-wizard/0.1.13?artifact_id=tar-gz)](https://socket.dev/pypi/package/hsi-wizard/overview/0.1.13/tar-gz)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/hsi-wizard)
+[![PyPI Downloads](https://static.pepy.tech/badge/hsi-wizard)](https://pepy.tech/projects/hsi-wizard)
+[![status](https://joss.theoj.org/papers/b79920c171c93c833323cc3e55e56962/status.svg)](https://joss.theoj.org/papers/b79920c171c93c833323cc3e55e56962)
 
 # HSI Wizard
 
@@ -61,13 +63,17 @@ pip install --no-build-isolation --editable .             # Compile and install 
 
 After installing the package, you can import the DataCube, read function, and plotter for quick HSI data analysis:
 ```python
-from wizard import DataCube, read, plotter
+import wizard
 
 # Load an HSI datacube from a file
-datacube = read('path_to_file')
+dc = wizard.read('path_to_file')
+
+# process DataCube
+dc.resize(x_new=500, y_new=500)
+dc.remove_background()
 
 # Visualize the datacube
-plotter(datacube)
+wizard.plotter(dc)
 ```
 
 ---

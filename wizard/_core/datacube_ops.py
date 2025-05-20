@@ -25,7 +25,7 @@ from skimage.transform import warp
 
 from . import DataCube 
 from .._processing.spectral import calculate_modified_z_score, spec_baseline_als
-from .._utils.helper import _process_slice, feature_registration, RegistrationError, auto_canny, decompose_homography
+from .._utils.helper import _process_slice, feature_registration, RegistrationError, auto_canny, decompose_homography, normalize_polarity
 
 
 def remove_spikes(dc: DataCube, threshold: int = 6500, window: int = 5) -> DataCube:
@@ -63,8 +63,9 @@ def remove_spikes(dc: DataCube, threshold: int = 6500, window: int = 5) -> DataC
 
     Examples
     --------
-    >>> dc = DataCube.read("example.fsm")
-    >>> dc_clean = remove_spikes(dc, threshold=6500, window=5)
+    >>> import wizard
+    >>> dc = wizard.read("example.fsm")
+    >>> dc.remove_spikes(threshold=6500, window=5)
     """
     v, x, y = dc.cube.shape
     if not (1 <= window <= v):
@@ -125,6 +126,12 @@ def remove_background(dc: DataCube, threshold: int = 50, style: str = 'dark') ->
     ------
     ValueError
         If style is not 'dark' or 'bright'.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read("example.fsm")
+    >>> dc.remove_background(threshold=50, style='bright') # or style 'dark'
     """
     img = dc.cube[0]
     img = ((img - img.min()) / (img.max() - img.min()) * 255).astype('uint8')
@@ -178,6 +185,12 @@ def resize(dc: DataCube, x_new: int, y_new: int, interpolation: str = 'linear') 
     ------
     ValueError
         If the interpolation method is not recognized.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read("example.fsm")
+    >>> dc.resize(x_new=500, y_new=500)
     """
     mode = None
     shape = dc.cube.shape
@@ -231,6 +244,12 @@ def baseline_als(dc: DataCube, lam: float = 1000000, p: float = 0.01, niter: int
     -------
     DataCube
         The DataCube with baseline correction applied.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read("example.fsm")
+    >>> dc.baseline_als(lam=1e6, p=.001, niter=10)
     """
     for x in range(dc.shape[1]):
         for y in range(dc.shape[2]):
@@ -272,6 +291,13 @@ def merge_cubes(dc1: DataCube, dc2: DataCube, register: bool = False) -> DataCub
     NotImplementedError
         If the cubes have mismatched spatial dimensions and cannot be merged,
         or if wavelengths overlap without being purely indices.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc_a = wizard.read('example.fsm')
+    >>> dc_b = wizard.read('another_file.csv')
+    >>> dc_a.merge_cubes(dc_b)
     """
     c1 = dc1.cube
     c2 = dc2.cube
@@ -356,6 +382,12 @@ def inverse(dc: DataCube) -> DataCube:
     -------
     DataCube
         The DataCube with inverted values.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read('example.fsm')
+    >>> dc.inverse()
     """
     dtype = dc.cube.dtype
     if dtype == np.uint16 or dtype == np.uint8:  # Use np types for comparison
@@ -392,6 +424,12 @@ def register_layers_simple(dc: DataCube, max_features: int = 5000, match_percent
     -------
     DataCube
         The DataCube with layers registered.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read('example.fsm')
+    >>> dc.register_layers_simple()
     """
     o_img = dc.cube[0, :, :]
     for i in range(dc.cube.shape[0]):
@@ -443,6 +481,13 @@ def remove_vignetting_poly(dc: DataCube, axis: int = 1, slice_params: dict = Non
     ------
     ValueError
         If the DataCube is empty or axis is not 1 or 2.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read('example.fsm')
+    >>> params = {"start":25, "end":50}
+    >>> dc.remove_vignetting_poly(slice_params=params, axis=2)
     """
     if dc.cube is None:
         raise ValueError("The DataCube is empty. Please provide a valid cube.")
@@ -493,6 +538,12 @@ def normalize(dc: DataCube) -> DataCube:
     -------
     DataCube
         The normalized DataCube.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read('example.fsm')
+    >>> dc.normalize()
     """
     cube = dc.cube.astype(np.float32)
     min_vals = cube.min(axis=(1, 2), keepdims=True)
@@ -506,40 +557,7 @@ def normalize(dc: DataCube) -> DataCube:
     return dc
 
 
-def normalize_polarity(img: np.ndarray) -> np.ndarray:
-    """
-    Ensure features are dark-on-light by inverting if necessary.
 
-    If the image is mostly bright (mean pixel value > 0.5 after
-    normalization to [0,1]), it inverts the image.
-    Handles float or uint8 inputs transparently, returning a float32
-    image in the range [0,1].
-
-    Parameters
-    ----------
-    img : numpy.ndarray
-        Input image.
-
-    Returns
-    -------
-    numpy.ndarray
-        Polarity-normalized image as float32 in [0,1].
-    """
-    if img.dtype == np.uint8:
-        img_f = img.astype(np.float32) / 255.0
-    else:
-        min_val, max_val = img.min(), img.max()
-        if min_val < 0.0 or max_val > 1.0:
-            if max_val == min_val:
-                img_f = np.zeros_like(img, dtype=np.float32)
-            else:
-                img_f = (img.astype(np.float32) - min_val) / (max_val - min_val)
-        else:
-            img_f = (img.astype(np.float32) - min_val) / (max_val - min_val)
-
-    if np.mean(img_f) > 0.5:
-        img_f = 1.0 - img_f
-    return img_f
 
 
 def register_layers_best(

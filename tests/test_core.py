@@ -727,25 +727,6 @@ class TestDataCubeOps:
             assert np.isclose(layer.min(), 0.0)
             assert np.isclose(layer.max(), 1.0)
 
-    def test_normalize_polarity_uint8(self):
-        import numpy as np
-        from wizard._core.datacube_ops import normalize_polarity
-        img = np.full((10, 10), 200, dtype=np.uint8)
-        out = normalize_polarity(img)
-        assert out.dtype == np.float32
-        # 200/255 ≈ 0.784; since mean>0.5, it inverts to 1 - 0.784 ≈ 0.216
-        expected = 1.0 - (200 / 255.0)
-        assert np.allclose(out, expected)
-
-    def test_normalize_polarity_float(self):
-        import numpy as np
-        from wizard._core.datacube_ops import normalize_polarity
-        img = np.array([[0.8, 0.3]])
-        out = normalize_polarity(img)
-        expected = np.array([[0.0, 1.0]], dtype=np.float64)
-        np.testing.assert_allclose(out, expected, rtol=1e-5, atol=1e-7)
-        assert out.dtype == np.float64
-
     def test_register_layers_best(self):
         dc = create_test_cube(shape=(10, 251, 201))
 

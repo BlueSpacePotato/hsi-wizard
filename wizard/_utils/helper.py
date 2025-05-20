@@ -311,3 +311,41 @@ def auto_canny(img: np.ndarray, sigma: float = 0.33) -> np.ndarray:
     lower = max(0.0, (1.0 - sigma) * v)
     upper = min(1.0, (1.0 + sigma) * v)
     return canny(img, low_threshold=lower, high_threshold=upper)
+
+def normalize_polarity(img: np.ndarray) -> np.ndarray:
+    """
+    Ensure features are dark-on-light by inverting if necessary.
+
+    If the image is mostly bright (mean pixel value > 0.5 after
+    normalization to [0,1]), it inverts the image.
+    Handles float or uint8 inputs transparently, returning a float32
+    image in the range [0,1].
+
+    Parameters
+    ----------
+    img : numpy.ndarray
+        Input image.
+
+    Returns
+    -------
+    numpy.ndarray
+        Polarity-normalized image as float32 in [0,1].
+
+    Examples
+    --------
+    """
+    if img.dtype == np.uint8:
+        img_f = img.astype(np.float32) / 255.0
+    else:
+        min_val, max_val = img.min(), img.max()
+        if min_val < 0.0 or max_val > 1.0:
+            if max_val == min_val:
+                img_f = np.zeros_like(img, dtype=np.float32)
+            else:
+                img_f = (img.astype(np.float32) - min_val) / (max_val - min_val)
+        else:
+            img_f = (img.astype(np.float32) - min_val) / (max_val - min_val)
+
+    if np.mean(img_f) > 0.5:
+        img_f = 1.0 - img_f
+    return img_f

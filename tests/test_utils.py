@@ -771,9 +771,6 @@ class TestHelper:
         result = wizard._utils.helper.find_nex_smaller_wave(waves, wave_1)
         assert result == -1, f"Expected -1, got {result}"
 
-class TestHelper:
-
-
     def test_normalize_basic(self):
         spec = np.array([0, 5, 10])
         normalized = helper.normalize_spec(spec)
@@ -822,6 +819,24 @@ class TestHelper:
         assert processed_slice.shape == spec_out_flat[idx].shape
 
 
+    def test_normalize_polarity_uint8(self):
+        import numpy as np
+        from wizard._utils.helper import normalize_polarity
+        img = np.full((10, 10), 200, dtype=np.uint8)
+        out = normalize_polarity(img)
+        assert out.dtype == np.float32
+        # 200/255 ≈ 0.784; since mean>0.5, it inverts to 1 - 0.784 ≈ 0.216
+        expected = 1.0 - (200 / 255.0)
+        assert np.allclose(out, expected)
+
+    def test_normalize_polarity_float(self):
+        import numpy as np
+        from wizard._utils.helper import normalize_polarity
+        img = np.array([[0.8, 0.3]])
+        out = normalize_polarity(img)
+        expected = np.array([[0.0, 1.0]], dtype=np.float64)
+        np.testing.assert_allclose(out, expected, rtol=1e-5, atol=1e-7)
+        assert out.dtype == np.float64
 
 
 
