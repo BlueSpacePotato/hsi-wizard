@@ -33,21 +33,42 @@ class RegistrationError(Exception):
 
 def find_nex_greater_wave(waves, wave_1: int, maximum_deviation: int = 5) -> int:
     """
-    Finds the next greater wave value in a list of waves within a specified deviation.
+    Find the next greater wave value within a specified deviation.
 
-    This function identifies the smallest wave value greater than the specified `wave_1`
-    within a range defined by `maximum_deviation`. If no such value exists, it returns -1.
+    This function searches for the smallest wave value greater than or equal to `wave_1`
+    that exists in the `waves` list, within a deviation range up to `maximum_deviation`.
+    If no such wave is found, the function returns -1.
 
-    :param waves: A list of integers representing the available wave values.
-    :type waves: list[int]
-    :param wave_1: The starting wave value to find the next greater wave for.
-    :type wave_1: int
-    :param maximum_deviation: The maximum deviation from `wave_1` to consider.
-    :type maximum_deviation: int
-    :returns: The next greater wave value within the deviation range, or -1 if no such value exists.
-    :rtype: int
+    Parameters
+    ----------
+    waves : list[int]
+        A list of integer wave values to search within.
+    wave_1 : int
+        The reference wave value to find the next greater wave after.
+    maximum_deviation : int, optional
+        The maximum positive offset from `wave_1` to consider (default is 5).
+
+    Returns
+    -------
+    int
+        The next greater wave value found within the range, or -1 if none exists.
+
+    Raises
+    ------
+    None
+
+    Notes
+    -----
+    The function stops searching once it finds the first match within the allowed range.
+
+    Examples
+    --------
+    >>> find_nex_greater_wave([400, 405, 410, 415], 403)
+    405
+
+    >>> find_nex_greater_wave([400, 405, 410, 415], 416)
+    -1
     """
-
     wave_next = -1
 
     for n in range(maximum_deviation):
@@ -60,23 +81,45 @@ def find_nex_greater_wave(waves, wave_1: int, maximum_deviation: int = 5) -> int
     return wave_next
 
 
+
 def find_nex_smaller_wave(waves, wave_1: int, maximum_deviation: int = 5) -> int:
     """
-    Finds the next smaller wave value in a list of waves within a specified deviation.
+    Find the next smaller wave value within a specified deviation.
 
-    This function identifies the largest wave value smaller than the specified `wave_1`
-    within a range defined by `maximum_deviation`. If no such value exists, it returns -1.
+    This function searches for the largest wave value smaller than or equal to `wave_1`
+    that exists in the `waves` list, within a deviation range up to `maximum_deviation`.
+    If no such wave is found, the function returns -1.
 
-    :param waves: A list of integers representing the available wave values.
-    :type waves: list[int]
-    :param wave_1: The starting wave value to find the next smaller wave for.
-    :type wave_1: int
-    :param maximum_deviation: The maximum deviation from `wave_1` to consider.
-    :type maximum_deviation: int
-    :returns: The next smaller wave value within the deviation range, or -1 if no such value exists.
-    :rtype: int
+    Parameters
+    ----------
+    waves : list[int]
+        A list of integer wave values to search within.
+    wave_1 : int
+        The reference wave value to find the next smaller wave before.
+    maximum_deviation : int, optional
+        The maximum negative offset from `wave_1` to consider (default is 5).
+
+    Returns
+    -------
+    int
+        The next smaller wave value found within the range, or -1 if none exists.
+
+    Raises
+    ------
+    None
+
+    Notes
+    -----
+    The function stops searching once it finds the first match within the allowed range.
+
+    Examples
+    --------
+    >>> find_nex_smaller_wave([390, 395, 400, 405], 402)
+    400
+
+    >>> find_nex_smaller_wave([390, 395, 400, 405], 389)
+    -1
     """
-    
     wave_next = -1
 
     for n in range(maximum_deviation):
@@ -90,22 +133,91 @@ def find_nex_smaller_wave(waves, wave_1: int, maximum_deviation: int = 5) -> int
 
 
 def normalize_spec(spec):
-    """Normalize the spectrum to the range 0-1 if needed."""
+    """
+    Normalize a spectrum to the range [0, 1].
+
+    This function scales the input spectral array so that its values lie between 0 and 1.
+    If the spectrum has constant values (i.e., no variation), it is returned unchanged.
+    The function ensures numerical stability using `np.clip`.
+
+    Parameters
+    ----------
+    spec : np.ndarray
+        A one-dimensional NumPy array representing the spectrum to normalize.
+
+    Returns
+    -------
+    np.ndarray
+        A normalized NumPy array with values scaled to the [0, 1] range, or the original
+        array if it has no dynamic range.
+
+    Raises
+    ------
+    None
+
+    Notes
+    -----
+    Normalization is only performed if the minimum and maximum values differ.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> normalize_spec(np.array([2.0, 4.0, 6.0]))
+    array([0. , 0.5, 1. ])
+
+    >>> normalize_spec(np.array([5.0, 5.0, 5.0]))
+    array([5., 5., 5.])
+    """
     spec_min, spec_max = spec.min(), spec.max()
     return np.clip((spec - spec_min) / (spec_max - spec_min), 0, 1) if spec_max > spec_min else spec
 
 
+
 def feature_regestration(o_img: np.ndarray, a_img: np.ndarray, max_features: int = 5000, match_percent: float = 0.1):
     """
-    Perform a feature-based registration of two grayscale-images.
+    Perform feature-based registration of two grayscale images.
 
-    The aligned image as well as the used homography are returned.
+    This function aligns a moving image (`a_img`) to a reference image (`o_img`) using
+    ORB keypoints and brute-force Hamming descriptor matching. It returns the aligned image
+    and the computed homography transformation matrix.
 
-    :param o_img: 2D np.ndarray of the reference image
-    :param a_img: 2D np.ndarray of the moving image
-    :param max_features: Int value of the maximum number of keypoint regions
-    :param match_percent: Float percentage of keypoint matches to consider
-    :return: Tuple of arrays which define the aligned image as well as the used homography
+    Parameters
+    ----------
+    o_img : np.ndarray
+        A 2D NumPy array representing the reference (original) grayscale image.
+    a_img : np.ndarray
+        A 2D NumPy array representing the image to be aligned (affine-transformed).
+    max_features : int, optional
+        The maximum number of ORB features to detect (default is 5000).
+    match_percent : float, optional
+        The fraction of best matches to use when computing the homography (default is 0.1).
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        A tuple containing:
+        - The aligned image (np.ndarray) warped to match the reference.
+        - The homography matrix (np.ndarray) used for the transformation.
+
+    Raises
+    ------
+    ValueError
+        If feature matching fails or not enough good matches are found to compute homography.
+
+    Notes
+    -----
+    Images are automatically normalized and converted to 8-bit if needed. The function uses
+    RANSAC to compute a robust homography estimate from feature correspondences.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import cv2
+    >>> ref_img = cv2.imread("reference.png", cv2.IMREAD_GRAYSCALE)
+    >>> mov_img = cv2.imread("moving.png", cv2.IMREAD_GRAYSCALE)
+    >>> aligned, H = feature_regestration(ref_img, mov_img)
+    >>> print(H.shape)
+    (3, 3)
     """
     orb = cv2.ORB_create(max_features)
 
