@@ -81,7 +81,6 @@ def find_nex_greater_wave(waves, wave_1: int, maximum_deviation: int = 5) -> int
     return wave_next
 
 
-
 def find_nex_smaller_wave(waves, wave_1: int, maximum_deviation: int = 5) -> int:
     """
     Find the next smaller wave value within a specified deviation.
@@ -170,7 +169,6 @@ def normalize_spec(spec):
     """
     spec_min, spec_max = spec.min(), spec.max()
     return np.clip((spec - spec_min) / (spec_max - spec_min), 0, 1) if spec_max > spec_min else spec
-
 
 
 def feature_regestration(o_img: np.ndarray, a_img: np.ndarray, max_features: int = 5000, match_percent: float = 0.1):
@@ -424,6 +422,7 @@ def auto_canny(img: np.ndarray, sigma: float = 0.33) -> np.ndarray:
     upper = min(1.0, (1.0 + sigma) * v)
     return canny(img, low_threshold=lower, high_threshold=upper)
 
+
 def normalize_polarity(img: np.ndarray) -> np.ndarray:
     """
     Ensure features are dark-on-light by inverting if necessary.
@@ -443,8 +442,6 @@ def normalize_polarity(img: np.ndarray) -> np.ndarray:
     numpy.ndarray
         Polarity-normalized image as float32 in [0,1].
 
-    Examples
-    --------
     """
     if img.dtype == np.uint8:
         img_f = img.astype(np.float32) / 255.0
