@@ -100,7 +100,7 @@ def plotter(dc):
         Parameters
         ----------
         event : matplotlib.backend_bases.KeyEvent
-        The key press event.
+            The key press event.
 
         Raises
         ------
