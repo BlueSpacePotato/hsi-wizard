@@ -4,5 +4,5 @@
     window: 3
 - method: resize
   kwargs:
-    y_new: 146
-    x_new: 281
+    x_new: 540
+    y_new: 360

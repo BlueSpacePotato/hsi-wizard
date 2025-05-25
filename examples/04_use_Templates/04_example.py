@@ -9,7 +9,10 @@ print('DataCube:')
 print(dc)
 
 # load and execute the template
-dc.execute_template('03_example.yml')
+dc.execute_template('04_example.yml')
 
 print('Processed Datacube:')
 print(dc)
+
+# plot data
+wizard.plotter(dc)
