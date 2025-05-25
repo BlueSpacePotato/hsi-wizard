@@ -6,8 +6,6 @@ dc = wizard.DataCube(np.random.rand(20, 640, 460))
 
 dc.cube[10, 10, 10] = 500
 
-wizard.plotter(dc)
-
 # start recoding the methods
 dc.start_recording()
 
@@ -18,5 +16,3 @@ dc.resize(x_new=dc.shape[1]-100, y_new=dc.shape[2]-100)
 # save template
 dc.save_template('02_example')
 
-# plot data
-wizard.plotter(dc)
