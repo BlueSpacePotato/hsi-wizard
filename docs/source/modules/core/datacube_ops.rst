@@ -15,11 +15,26 @@ This module contains functions for processing datacubes. The methods are dynamic
 Functions
 ---------
 
+.. _remove_spikes:
 .. autofunction:: remove_spikes
+
+.. _remove_background:
 .. autofunction:: remove_background
+
+.. _resize:
 .. autofunction:: resize
+
+.. _baseline_als:
 .. autofunction:: baseline_als
+
+.. _merge_cubes:
 .. autofunction:: merge_cubes
+
+.. _inverse:
 .. autofunction:: inverse
+
+.. _register_layers:
 .. autofunction:: register_layers
+
+.. _remove_vingetting:
 .. autofunction:: remove_vingetting

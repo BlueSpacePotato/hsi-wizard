@@ -323,16 +323,24 @@ def plotter(dc):
     ax[1].set_ylabel('Counts')
     ax[1].set_xlim(dc.wavelengths.min(), dc.wavelengths.max())
 
-    # Buttons and checkbox in the control panel
-    ax_save = fig.add_axes([0.05, 0.1, 0.15, 0.075])
+    # Buttons and checkbox in the control panel, centered horizontally
+    button_w = 0.15
+    button_h = 0.075
+    gap = 0.05
+
+    # total width of 3 buttons + 2 gaps
+    total_w = 3 * button_w + 2 * gap
+    start_x = (1.0 - total_w) / 2.0
+
+    ax_save = fig.add_axes([start_x, 0.1, button_w, button_h])
     btn_save = Button(ax_save, 'Save Plot')
     btn_save.on_clicked(save_plot)
 
-    ax_remove = fig.add_axes([0.25, 0.1, 0.15, 0.075])
+    ax_remove = fig.add_axes([start_x + (button_w + gap), 0.1, button_w, button_h])
     btn_remove = Button(ax_remove, 'Remove Plot')
     btn_remove.on_clicked(remove_last_plot)
 
-    ax_checkbox = fig.add_axes([0.45, 0.1, 0.15, 0.075])
+    ax_checkbox = fig.add_axes([start_x + 2 * (button_w + gap), 0.1, button_w, button_h])
     check = CheckButtons(ax_checkbox, ['Normalize Y (0-1)'], [False])
     check.on_clicked(toggle_normalization)
 
@@ -344,5 +352,5 @@ def plotter(dc):
 
     update_plot()
 
-    # plt.tight_layout(rect=[0, 0, .95, 1])
+    plt.tight_layout(rect=[0, 0, .95, 1])
     plt.show()
