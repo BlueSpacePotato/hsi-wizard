@@ -41,7 +41,7 @@ The following example demonstrates how to use the `plotter` function:
    :language: python
    :linenos:
 
-.. figure:: ../../../../resources/imgs/plotter_example.png
+.. figure:: ../../../../resources/imgs/plot_dc.png
    :align: center
    :alt: Example of the plotter function in action.
 

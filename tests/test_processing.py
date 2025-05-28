@@ -20,15 +20,15 @@ from wizard._processing.spectral import (
 
 # Importing clustering functions
 from wizard._processing.cluster import (
-    quit_low_change_in_clusters,
-    discard_clusters,
-    update_clusters,
-    initial_clusters,
-    sort_arrays_by_first,
-    split_clusters,
-    compute_avg_distance,
-    compute_overall_distance,
-    merge_clusters,
+    _quit_low_change_in_clusters,
+    _discard_clusters,
+    _update_clusters,
+    _initial_clusters,
+    _sort_arrays_by_first,
+    _split_clusters,
+    _compute_avg_distance,
+    _compute_overall_distance,
+    _merge_clusters,
     compute_pairwise_distances,
     isodata,
 )
@@ -143,14 +143,14 @@ class TestClustering:
         clusters_list = np.array([0, 1, 2])
         theta_m = 2
 
-        new_centers, new_clusters_list, k_ = discard_clusters(img_class_flat, centers, clusters_list, theta_m)
+        new_centers, new_clusters_list, k_ = _discard_clusters(img_class_flat, centers, clusters_list, theta_m)
         assert new_centers.shape == (1, 2)
         assert new_clusters_list.size == 1
         assert k_ == 3
 
     def test_update_clusters(self):
         """Test updating cluster centers."""
-        new_centers, new_clusters_list, k_ = update_clusters(
+        new_centers, new_clusters_list, k_ = _update_clusters(
             self.img_flat, self.img_class_flat, self.centers, self.clusters_list
         )
         assert new_centers.shape[1] == self.img_flat.shape[1]
@@ -160,15 +160,15 @@ class TestClustering:
         img_flat = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
         k_ = 2
 
-        centers = initial_clusters(img_flat, k_, method="linspace")
+        centers = _initial_clusters(img_flat, k_, method="linspace")
         assert centers.shape == (2, 2)
 
-        centers = initial_clusters(img_flat, k_, method="random")
+        centers = _initial_clusters(img_flat, k_, method="random")
         assert centers.shape == (2, 2)
 
     def test_sort_arrays_by_first(self):
         """Test sorting of arrays by the first column."""
-        sorted_centers, sorted_clusters_list = sort_arrays_by_first(self.centers, self.clusters_list)
+        sorted_centers, sorted_clusters_list = _sort_arrays_by_first(self.centers, self.clusters_list)
         assert sorted_centers[0, 0] <= sorted_centers[1, 0] <= sorted_centers[2, 0]
 
     def test_split_clusters(self):
@@ -180,7 +180,7 @@ class TestClustering:
         theta_s = 1.0
         theta_m = 2
 
-        new_centers, new_clusters_list, k_ = split_clusters(
+        new_centers, new_clusters_list, k_ = _split_clusters(
             img_flat, img_class_flat, centers, clusters_list, theta_s, theta_m
         )
         assert new_centers.shape[0] >= centers.shape[0]
@@ -188,18 +188,18 @@ class TestClustering:
 
     def test_compute_avg_distance(self):
         """Test computation of average distance within clusters."""
-        avg_dists, k_ = compute_avg_distance(self.img_flat, self.img_class_flat, self.centers, self.clusters_list)
+        avg_dists, k_ = _compute_avg_distance(self.img_flat, self.img_class_flat, self.centers, self.clusters_list)
         assert avg_dists.shape == (self.centers.shape[0],)
 
     def test_compute_overall_distance(self):
         """Test computation of overall distance within clusters."""
-        avg_dists, _ = compute_avg_distance(self.img_flat, self.img_class_flat, self.centers, self.clusters_list)
-        d, k_ = compute_overall_distance(self.img_class_flat, avg_dists, self.clusters_list)
+        avg_dists, _ = _compute_avg_distance(self.img_flat, self.img_class_flat, self.centers, self.clusters_list)
+        d, k_ = _compute_overall_distance(self.img_class_flat, avg_dists, self.clusters_list)
         assert isinstance(d, float)
 
     def test_merge_clusters(self):
         """Test merging of clusters."""
-        new_centers, new_clusters_list, k_ = merge_clusters(
+        new_centers, new_clusters_list, k_ = _merge_clusters(
             self.img_class_flat, self.centers, self.clusters_list, 2, 2, 3
         )
         assert isinstance(new_centers, np.ndarray)
@@ -222,7 +222,7 @@ class TestClustering:
         centers = np.array([[1.0, 2.0], [3.0, 4.0]])
         last_centers = np.array([[1.01, 2.01], [3.01, 4.01]])
         theta_o = 0.02
-        assert quit_low_change_in_clusters(centers, last_centers, theta_o) is True
+        assert _quit_low_change_in_clusters(centers, last_centers, theta_o) is True
 
         theta_o = 0.001
-        assert quit_low_change_in_clusters(centers, last_centers, theta_o) is False
+        assert _quit_low_change_in_clusters(centers, last_centers, theta_o) is False

@@ -1,50 +1,51 @@
 .. _examples:
 
 
-Create a DataCube
-=================
-   .. literalinclude:: ../../../examples/00_creating_a_DataCube/00_example.py
-      :language: python
-      :linenos:
+First Steps
+===========
 
-Plot DataCube
-=============
+This point is intended to show the basic functions of the `DataCube` class. This includes the creation of a DataCube, the reading and writing of a DataCube, as well as the plotting of data.
 
-   .. literalinclude:: ../../../examples/01_plot_DataCube/01_example.py
-      :language: python
-      :linenos:
+.. toctree::
+   :maxdepth: 2
+   :titlesonly:
 
-Use DataCube Methods
-====================
+   first_steps/create_dc
+   first_steps/read_write
+   first_steps/plot_dc
 
-   .. literalinclude:: ../../../examples/02_use_DataCube_methods/02_example.py
-      :language: python
-      :linenos:
 
-Create Template
-===============
+DataCube Methods
+================
 
-   .. literalinclude:: ../../../examples/03_create_Templates/03_example.py
-      :language: python
-      :linenos:
+The `DataCube` class offers several functions and methods, some of which are presented in this section. For more methods, you can take a look at :ref:`DataCube Operations <DataCube_Ops>`.
+
+.. toctree::
+   :maxdepth: 2
+   :titlesonly:
+
+   methods/resize
+   methods/remove_background
+
+Process DataCube
+================
+
+.. toctree::
+   :maxdepth: 2
+   :titlesonly:
+
+   process/cluster
+
+
 
 Use Template
 ============
 
-   .. literalinclude:: ../../../examples/04_use_Templates/04_example.py
-      :language: python
-      :linenos:
+.. toctree::
+   :maxdepth: 2
+   :titlesonly:
 
-Read & Write Data
-=================
+   templates/create_use
 
-   .. literalinclude:: ../../../examples/05_read_write/05_csv_example.py
-      :language: python
-      :linenos:
 
-Plot Surface
-============
 
-   .. literalinclude:: ../../../examples/06_plot_surface/06_example.py
-      :language: python
-      :linenos:

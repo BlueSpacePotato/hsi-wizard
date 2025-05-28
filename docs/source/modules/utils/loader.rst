@@ -25,6 +25,7 @@ Each file format has a corresponding module with specialized functions for readi
    :local:
    :depth: 1
 
+.. _csv:
 csv
 ---
 
@@ -41,6 +42,7 @@ Functions
 .. autofunction:: wizard._utils._loader.csv._write_csv
 
 
+.. _folder:
 folder
 ------
 
@@ -56,6 +58,7 @@ Functions
 .. autofunction:: wizard._utils._loader.folder._read_folder
 
 
+.. _fsm:
 fsm
 ---
 
@@ -70,7 +73,7 @@ Functions
 
 .. autofunction:: wizard._utils._loader.fsm._read_fsm
 
-
+.. _nrrd:
 nrrd
 ----
 
@@ -87,7 +90,7 @@ Functions
 .. autofunction:: wizard._utils._loader.nrrd._read_nrrd
 .. autofunction:: wizard._utils._loader.nrrd._write_nrrd
 
-
+.. _pickle:
 pickle
 ------
 
@@ -105,6 +108,7 @@ Functions
 .. autofunction:: wizard._utils._loader.pickle._write_pickle
 
 
+.. _tdms:
 tdms
 ----
 
@@ -120,7 +124,7 @@ Functions
 
 .. autofunction:: wizard._utils._loader.tdms._read_tdms
 
-
+.. _xlsx:
 xlsx
 ----
 

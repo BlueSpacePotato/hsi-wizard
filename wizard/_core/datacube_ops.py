@@ -160,11 +160,11 @@ def resize(dc: DataCube, x_new: int, y_new: int, interpolation: str = 'linear') 
     interpolation method.
 
     Interpolation methods:
-    - ``linear``: Bilinear interpolation (ideal for enlarging).
-    - ``nearest``: Nearest neighbor interpolation (fast but blocky).
-    - ``area``: Pixel area interpolation (ideal for downscaling).
-    - ``cubic``: Bicubic interpolation (high quality, slower).
-    - ``lanczos``: Lanczos interpolation (highest quality, slowest).
+        * ``linear``: Bilinear interpolation (ideal for enlarging).
+        * ``nearest``: Nearest neighbor interpolation (fast but blocky).
+        * ``area``: Pixel area interpolation (ideal for downscaling).
+        * ``cubic``: Bicubic interpolation (high quality, slower).
+        * ``lanczos``: Lanczos interpolation (highest quality, slowest).
 
     Parameters
     ----------

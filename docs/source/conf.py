@@ -26,7 +26,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',  # For Google and NumPy style docstrings
     'sphinx.ext.autodoc.typehints',  # For type hints in function signatures
-    'sphinx.ext.viewcode'  # To link to source code
+    'sphinx.ext.viewcode',  # To link to source code
+    'sphinx_exec_code'
 ]
 
 templates_path = ['_templates']

@@ -25,6 +25,7 @@ Functions
 .. autofunction:: compute_pairwise_distances
 .. autofunction:: isodata
 
+
 Credits
 -------
 The Isodata code was inspired by:
