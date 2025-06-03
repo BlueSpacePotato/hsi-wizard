@@ -8,9 +8,11 @@
 Welcome to the `hsi-wizard` documentation!
 ==========================================
 
-This package provides a straightforward environment for hyperspectral imaging (HSI) analysis,
-supporting everything from basic spectral analysis to advanced machine learning and AI methods. Whether you're working with raw
-sensor data or pre-processed datasets, `hsi-wizard` offers a suite of tools to simplify and enhance your analysis workflow.
+Welcome to the hsi-wizard package! Designed primarily for medical hyperspectral imaging
+and bioinformatics workflows, this Python package provides a straightforward environment
+for hyperspectral imaging (HSI) analysis, supporting everything from basic spectral analysis
+to advanced machine learning and AI methods. Whether you're working with raw sensor data
+or pre-processed datasets, hsi-wizard offers a suite of tools to simplify and enhance your analysis workflow.
 
 If you're new here, the best place to start is the :ref:`wizard <wizard>` page, where you'll find detailed instructions on how to begin.
 
