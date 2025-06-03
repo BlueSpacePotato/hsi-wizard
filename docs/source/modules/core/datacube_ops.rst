@@ -33,8 +33,23 @@ Functions
 .. _inverse:
 .. autofunction:: inverse
 
-.. _register_layers:
-.. autofunction:: register_layers
+.. _register_layers_simple:
+.. autofunction:: register_layers_simple
 
-.. _remove_vingetting:
-.. autofunction:: remove_vingetting
+.. _register_layers_best:
+.. autofunction:: register_layers_best
+
+.. _remove_vignetting_poly:
+.. autofunction:: remove_vignetting_poly
+
+.. _remove_vignetting:
+.. autofunction:: remove_vignetting
+
+.. _upscale_datacube_edsr:
+.. autofunction:: upscale_datacube_edsr
+
+.. _upscale_datacube_espcn:
+.. autofunction:: upscale_datacube_espcn
+
+
+

@@ -2,11 +2,10 @@
 
 
 
-import wizard
-
+from wizard._utils.example import generate_pattern_stack
 from wizard._utils import helper, _loader, decorators
 from wizard._core.datacube import DataCube
-
+import wizard
 
 import os
 import time
@@ -694,6 +693,34 @@ class TestLoaderCSV:
 
         # Verify data content
         np.testing.assert_allclose(test_cube.cube, read_cube.cube, atol=1e-6), "Data cubes do not match!"
+
+
+class TestLoaderHdr:
+    def test_write_and_read_hdr(self, tmp_path):
+        """Tests whether the write and read functions are consistent for ENVI HDR format."""
+        # Generate sample DataCube
+        data = generate_pattern_stack(20, 300, 300, n_circles=10, n_rects=0, n_triangles=0, seed=42)
+        test_cube = wizard.DataCube(data)
+
+        # Define file paths
+        hdr_path = tmp_path / "test.hdr"
+        img_path = tmp_path / "test.img"
+
+        # Write DataCube to ENVI HDR format
+        _loader.hdr._write_hdr(test_cube, str(hdr_path))
+
+        # Read back the DataCube
+        read_cube = wizard.read(path=str(hdr_path), image_path=str(img_path))
+
+        # Verify dimensions
+        assert test_cube.shape == read_cube.shape, "Shapes do not match!"
+
+        # Verify wavelengths
+        np.testing.assert_array_equal(test_cube.wavelengths, read_cube.wavelengths), "Wavelengths do not match!"
+
+        # Verify data content
+        np.testing.assert_allclose(test_cube.cube, read_cube.cube, atol=1e-6), "Data cubes do not match!"
+
 
 class TestLoaderFSM:
 

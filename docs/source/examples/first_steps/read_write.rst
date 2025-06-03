@@ -35,6 +35,10 @@ The `hsi-wizard` module provides basic functions for reading and writing a DataC
    * - .image
      - ✅
      - ❌
+   * - .hdr
+     - ✅
+     - ✅
+
 
 .. note::
   The :meth:`wizard.read()` function serves as the main entry point for users. It abstracts the file handling process and automatically determines the appropriate handler based on the file type.

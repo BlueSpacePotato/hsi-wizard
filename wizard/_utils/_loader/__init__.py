@@ -88,6 +88,7 @@ def load_all_loaders():
         "folder",
         "nrrd",
         "image",
+        "hdr",
     ]
 
     for module_name in loader_modules:
