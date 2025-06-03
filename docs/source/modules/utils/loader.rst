@@ -3,9 +3,9 @@
 loader
 ======
 
-This package provides a collection of modules for handling various file formats and converting their contents into a unified `DataCube` format.
+This package provides a collection of modules for handling various file formats and converting their contents into a unified :class:`DataCube` format.
 
-The `wizard.read()` function serves as the main entry point for users. It abstracts the file handling process and automatically determines the appropriate handler based on the file type. For example:
+The :meth:`wizard.read()` function serves as the main entry point for users. It abstracts the file handling process and automatically determines the appropriate handler based on the file type. For example:
 
 .. code-block:: python
 
@@ -17,6 +17,37 @@ The `wizard.read()` function serves as the main entry point for users. It abstra
     # Reading a CSV file
     datacube = read('data.csv')
 
+.. list-table:: Supported DataCube File Formats
+   :header-rows: 1
+   :widths: 10 12 14
+
+   * - Extension
+     - Read Supported
+     - Write Supported
+   * - .csv
+     - ✅
+     - ✅
+   * - .xlsx
+     - ✅
+     - ✅
+   * - .tdms
+     - ✅
+     - ❌
+   * - .fsm
+     - ✅
+     - ❌
+   * - .folder
+     - ✅
+     - ❌
+   * - .nrrd
+     - ✅
+     - ❌
+   * - .image
+     - ✅
+     - ❌
+   * - .hdr
+     - ✅
+     - ✅
 
 
 Each file format has a corresponding module with specialized functions for reading and writing data.
@@ -26,6 +57,7 @@ Each file format has a corresponding module with specialized functions for readi
    :depth: 1
 
 .. _csv:
+
 csv
 ---
 
@@ -43,6 +75,7 @@ Functions
 
 
 .. _folder:
+
 folder
 ------
 
@@ -50,7 +83,7 @@ folder
    :platform: Unix
    :synopsis: Provides functions to read image files from a folder.
 
-This module includes functions for reading images from files and converting them into a `DataCube`.
+This module includes functions for reading images from files and converting them into a :class:`DataCube`.
 
 Functions
 ~~~~~~~~~
@@ -59,6 +92,7 @@ Functions
 
 
 .. _fsm:
+
 fsm
 ---
 
@@ -73,7 +107,12 @@ Functions
 
 .. autofunction:: wizard._utils._loader.fsm._read_fsm
 
+.. note::
+
+   The FSM module in this package was inspired by the `specio <https://github.com/paris-saclay-cds/specio>`_ repository by paris-saclay-cds. The original repository can be found at `GitHub <https://github.com/paris-saclay-cds/specio>`_.
+
 .. _nrrd:
+
 nrrd
 ----
 
@@ -91,6 +130,7 @@ Functions
 .. autofunction:: wizard._utils._loader.nrrd._write_nrrd
 
 .. _pickle:
+
 pickle
 ------
 
@@ -109,6 +149,7 @@ Functions
 
 
 .. _tdms:
+
 tdms
 ----
 
@@ -125,6 +166,7 @@ Functions
 .. autofunction:: wizard._utils._loader.tdms._read_tdms
 
 .. _xlsx:
+
 xlsx
 ----
 
@@ -141,7 +183,21 @@ Functions
 .. autofunction:: wizard._utils._loader.xlsx._read_xlsx
 .. autofunction:: wizard._utils._loader.xlsx._write_xlsx
 
-Credits
--------
 
-The FSM module in this package was inspired by the `specio` repository by paris-saclay-cds. The original repository can be found at https://github.com/paris-saclay-cds/specio.
+.. _envi:
+
+hdr / envi
+----------
+
+.. module:: wizard._utils._loader.hdr
+   :platform: Unix
+   :synopsis: Provides functions to read and write .xlsx files.
+
+This module includes functions for reading from and writing to `.hdr` files, facilitating the import and export of spectral data organized in a DataCube format.
+
+Functions
+~~~~~~~~~
+
+.. autofunction:: wizard._utils._loader.hdr._read_hdr
+.. autofunction:: wizard._utils._loader.hdr._write_hdr
+

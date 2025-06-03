@@ -10,7 +10,7 @@ Create a Template
 
 The following example shows how to create a processing template. We generate synthetic image data, apply a sequence of transformations (like resizing and background removal), and save the recorded operations into a template file.
 
-.. literalinclude:: ../../../../examples/03_template/00_create_template.py
+.. literalinclude:: ../../../../examples/03_templates/00_create_template.py
    :language: python
    :linenos:
 
@@ -29,7 +29,7 @@ Use a Template
 
 Once a template has been created, it can be applied to new data sets to ensure consistent preprocessing. The example below demonstrates how to load and apply a saved template to another :class:`DataCube`.
 
-.. literalinclude:: ../../../../examples/03_template/01_use_template.py
+.. literalinclude:: ../../../../examples/03_templates/01_use_template.py
    :language: python
    :linenos:
 

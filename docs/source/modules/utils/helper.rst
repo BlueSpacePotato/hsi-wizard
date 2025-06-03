@@ -17,5 +17,5 @@ Functions
 
 .. autofunction:: wizard._utils.helper.find_nex_greater_wave
 .. autofunction:: wizard._utils.helper.find_nex_smaller_wave
-.. autofunction:: wizard._utils.helper.normalize
+.. autofunction:: wizard._utils.helper.normalize_spec
 .. autofunction:: wizard._utils.helper.feature_regestration

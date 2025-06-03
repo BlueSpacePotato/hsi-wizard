@@ -37,7 +37,7 @@ Example Usage
 
 The following example demonstrates how to use the `plotter` function:
 
-.. literalinclude:: ../../../../examples/01_plot_DataCube/01_example.py
+.. literalinclude:: ../../../../examples/00_first_steps/02_plot_dc.py
    :language: python
    :linenos:
 
