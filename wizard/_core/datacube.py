@@ -85,7 +85,7 @@ class DataCube(metaclass=TrackExecutionMeta):
     ```
     """
 
-    def __init__(self, cube=None, wavelengths=None, name=None, notation=None, record: bool = False) -> None:
+    def __init__(self, cube=None, wavelengths=None, name=None, notation=None, record: bool = False, registered: bool = False) -> None:
         """
         Initialize a new `DataCube` instance.
 
@@ -101,6 +101,8 @@ class DataCube(metaclass=TrackExecutionMeta):
             Specifies whether the wavelength data is in nm or cm⁻¹. Default is None.
         record : bool, optional
             If True, execution of the methods will be recorded. Default is False.
+        registered: bool optional
+            If True images are allready registered. Default is False
         """
         self.name = name  # name of the dc
         self.shape = None if cube is None else cube.shape  # shape of the dc
@@ -110,6 +112,7 @@ class DataCube(metaclass=TrackExecutionMeta):
             else None
         self.cube = None if cube is None else cube
         self.notation = notation
+        self.registered = registered
 
         self.record = record
         if self.record:

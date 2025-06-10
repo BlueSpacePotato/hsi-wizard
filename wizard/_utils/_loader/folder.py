@@ -1,5 +1,5 @@
 """
-_utils/_loader/images.py
+_utils/_loader/folder.py
 ==========================
 
 .. module:: images
@@ -140,6 +140,9 @@ def image_to_dc(path: str | list, **kwargs) -> DataCube:
         data = np.dstack(results)
     else:
         raise TypeError('Path must be a string to a file or a list of files')
+
+    if data.ndim == 2:
+        data = np.expand_dims(data, axis=2)
 
     if type == 'pushbroom':
         data = np.transpose(data, (1, 2, 0))

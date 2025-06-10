@@ -28,8 +28,9 @@ This module imports essential submodules and classes/functions, including:
 from ._core.datacube import DataCube
 from ._exploration.plotter import plotter
 from ._exploration.surface import plot_surface
+from ._exploration.faces import plot_datacube_faces
 from ._utils._loader import read
-
+from ._processing.cluster import isodata, smooth_kmneas
 
 #  Define what should be accessible when using 'from wizard import *'
 # __all__ = [

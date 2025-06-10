@@ -27,6 +27,11 @@ Class DataCube
    :param record: If True, execution of the methods will be recorded. Default is False.
    :type record: bool, optional
 
+
+.. warning::
+   Warning: DataCube does not perform automatic validation of the array’s shape or check that you’ve used the correct (`v`, `x`, `y`) ordering. It assumes you know your data structure and provides no spectral/spatial checks under the hood. Incorrectly ordered or shaped arrays may lead to unexpected results.
+
+
 Methods
 -------
 

@@ -220,3 +220,7 @@ tmp/
 
 # some folder structures
 resources/samples/
+
+# envi files
+.hdr
+.img

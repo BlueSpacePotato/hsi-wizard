@@ -18,18 +18,38 @@ Classes
    :members:
    :undoc-members:
    :show-inheritance:
-
 """
 
-exculted = ['stop_recording', 'save_template', '_clean_data', '_map_args_to_kwargs', 'execute_template']
+excluded = ['stop_recording', 'save_template', '_clean_data', '_map_args_to_kwargs', 'execute_template']
 
 
 class TrackExecutionMeta(type):
     """
-    Metaclass for tracking DataCube method executions.
+    Metaclass for tracking method executions in classes that use it.
 
-    This metaclass keeps track of the functions and methods invoked on
-    DataCube instances. It can record method calls dynamically.
+    Automatically wraps dynamic methods (marked with `__is_dynamic__ = True`)
+    to log their calls when tracking is enabled. Used for debugging, auditing,
+    or analyzing usage patterns of dynamic methods.
+
+    Attributes
+    ----------
+    recording : bool
+        Indicates whether method tracking is currently active.
+
+    recorded_methods : list of tuple
+        Stores a list of tuples (method_name, args, kwargs) representing
+        recorded method calls.
+
+    Methods
+    -------
+    start_recording()
+        Enables method tracking and clears previously recorded data.
+
+    stop_recording()
+        Disables method tracking.
+
+    record_method(func)
+        Decorator to wrap and conditionally record dynamic method calls.
     """
 
     recording = False
@@ -37,19 +57,27 @@ class TrackExecutionMeta(type):
 
     def __new__(cls, name, bases, dct):
         """
-        Create a new instance of the metaclass.
+        Creates a new class, wrapping its methods for tracking if applicable.
 
-        This method wraps methods in the class with a recording decorator
-        unless they are excluded from tracking.
+        Wraps all callable attributes except those explicitly excluded or not marked dynamic.
 
-        :param cls: The metaclass.
-        :param name: The name of the class.
-        :param bases: A tuple of base classes.
-        :param dct: A dictionary containing the class's namespace.
-        :return: A new instance of the class.
+        Parameters
+        ----------
+        name : str
+            Name of the class being created.
+
+        bases : tuple
+            Base classes of the new class.
+
+        dct : dict
+            Dictionary of the class's attributes and methods.
+
+        Returns
+        -------
+        type
+            A new class with method execution tracking wrappers.
         """
         for key, value in dct.items():
-            # Wrap only dynamic methods or those that are not in the excluded list
             if callable(value) and key != 'execute_template':
                 dct[key] = cls.record_method(value)
         return super().__new__(cls, name, bases, dct)
@@ -57,12 +85,24 @@ class TrackExecutionMeta(type):
     @staticmethod
     def record_method(func):
         """
-        Decorator for recording method calls.
+        Wraps a method to record its execution if tracking is enabled.
 
-        This decorator tracks the execution of dynamic methods when recording is enabled.
+        Only records calls to methods explicitly marked as dynamic
+        using the `__is_dynamic__ = True` attribute.
 
-        :param func: The function to be wrapped.
-        :return: A wrapper function that records method calls.
+        Parameters
+        ----------
+        func : callable
+            The method to be wrapped.
+
+        Returns
+        -------
+        callable
+            The wrapped method that conditionally records executions.
+
+        Notes
+        -----
+        This does not alter the method's original behavior, only adds tracking.
         """
         def wrapper(*args, **kwargs):
             if TrackExecutionMeta.recording:
@@ -76,10 +116,11 @@ class TrackExecutionMeta(type):
     @staticmethod
     def start_recording():
         """
-        Start tracking method executions.
+        Enables method tracking and resets previously recorded calls.
 
-        This method enables recording of method calls.
-        :return: None
+        Notes
+        -----
+            Use this before any tracked operation to capture method calls.
         """
         TrackExecutionMeta.recording = True
         TrackExecutionMeta.recorded_methods = []
@@ -87,9 +128,10 @@ class TrackExecutionMeta(type):
     @staticmethod
     def stop_recording():
         """
-        Stop tracking method executions.
+        Disables method tracking.
 
-        This method disables recording of method calls.
-        :return: None
+        Notes
+        -----
+            Use this to halt tracking when the desired operations are complete.
         """
         TrackExecutionMeta.recording = False

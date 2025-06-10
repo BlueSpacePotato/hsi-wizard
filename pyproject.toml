@@ -42,6 +42,8 @@ dependencies = [
     "pynrrd",
     "rembg",
     "onnxruntime",
+    "scikit-learn",
+    "spectral",
 ]
 
 [project.optional-dependencies]

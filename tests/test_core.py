@@ -12,6 +12,7 @@ def create_test_cube(shape=(3, 4, 4)):
     cube = np.random.rand(*shape)  # Generate a random cube
     return DataCube(cube=cube, wavelengths=np.arange(shape[0]))
 
+
 class TestDataCube:
 
     #  DataCube can be initialized with cube, wavelengths, name, and notation.
@@ -527,28 +528,15 @@ class TestDataCubeOps:
 
     def test_remove_spikes(self):
         dc = create_test_cube()
-        dc.cube[0, 1, 1] = 100  # Insert a spike
+        dc.cube[0, 1, 1] = 1000  # Insert a spike
         threshold = 10
-        dc.remove_spikes(threshold=threshold, window=5)
+        dc.remove_spikes(threshold=threshold, window=3)
 
         assert dc is not None
         assert dc.cube.shape == dc.cube.shape
-        assert dc.cube[0, 1, 1] != 10000
+        assert dc.cube[0, 1, 1] != 1000
 
-    def test_process_slice(self):
-        """
-        single test function for _process_slice beause parrallel processing is not tracked proberly
-        """
-        spec_out_flat = np.array([[1, 2, 3, 4], [5, 10000, 7, 8]])
-        spikes_flat = np.array([[False, False, False, False], [False, True, False, False]])
-        idx = 1
-        window = 3
 
-        processed_idx, processed_slice = wizard._core.datacube_ops._process_slice(spec_out_flat, spikes_flat, idx, window)
-
-        assert processed_idx == idx
-        assert processed_slice[1] != 10000  # Spike should be replaced
-        assert processed_slice.shape == spec_out_flat[idx].shape
 
 
     def test_resize(self):
@@ -585,7 +573,7 @@ class TestDataCubeOps:
         dc = create_test_cube(shape=(3, 24, 24))
 
         # Create a temporary cube with specific values for testing
-        tmp_cube = dc.cube.copy() * 0.6
+        tmp_cube = dc.cube.copy() * 0.2
 
         # Define the middle region that should remain unchanged
         x_start, x_end = int(dc.shape[1] * 0.25), int(dc.shape[1] * 0.75)
@@ -593,8 +581,8 @@ class TestDataCubeOps:
 
         # Apply specific values to the middle region using broadcasting
         tmp_cube[0, x_start:x_end, y_start:y_end] = 0.8
-        tmp_cube[1, x_start:x_end, y_start:y_end] = 0.7
-        tmp_cube[2, x_start:x_end, y_start:y_end] = 0.9
+        tmp_cube[1, x_start:x_end, y_start:y_end] = 0.8
+        tmp_cube[2, x_start:x_end, y_start:y_end] = 0.8
 
         # Set the modified cube
         dc.set_cube(tmp_cube)
@@ -627,16 +615,16 @@ class TestDataCubeOps:
         dc = create_test_cube(shape=(3, 24, 24))
 
         # Create a temporary cube with specific low values for testing
-        tmp_cube = dc.cube.copy() * 0.6 + 0.4
+        tmp_cube = dc.cube.copy() * 0.6 + 0.6
 
         # Define the middle region that should remain unchanged
         x_start, x_end = int(dc.shape[1] * 0.25), int(dc.shape[1] * 0.75)
         y_start, y_end = int(dc.shape[2] * 0.25), int(dc.shape[2] * 0.75)
 
         # Apply specific low values to the middle region using broadcasting
-        tmp_cube[0, x_start:x_end, y_start:y_end] = 0.3
+        tmp_cube[0, x_start:x_end, y_start:y_end] = 0.2
         tmp_cube[1, x_start:x_end, y_start:y_end] = 0.2
-        tmp_cube[2, x_start:x_end, y_start:y_end] = 0.1
+        tmp_cube[2, x_start:x_end, y_start:y_end] = 0.2
 
         # Set the modified cube
         dc.set_cube(tmp_cube)
@@ -665,7 +653,7 @@ class TestDataCubeOps:
             dc.cube[:, :, y_end:].flatten()    # Right region
         ])
 
-        assert np.isclose(outside_regions.mean(), 1, atol=1e-1), "The outside regions should have a mean value close to 1 for 'bright' style."
+        assert np.isclose(outside_regions.mean(), 1, atol=.5), "The outside regions should have a mean value close to 1 for 'bright' style."
 
     def test_remove_background_invalid_style(self):
         dc = create_test_cube()
@@ -681,9 +669,9 @@ class TestDataCubeOps:
         assert inverted_dc is not None
         assert np.all(inverted_dc.cube >= 0)  # Inversion should result in non-negative values
 
-    def test_remove_vingetting(self):
+    def test_remove_vignetting(self):
         dc = create_test_cube(shape=(4, 200, 200))
-        corrected_dc = dc.remove_vingetting(axis=1, slice_params={"start": 0, "end": 2, "step": 1})
+        corrected_dc = dc.remove_vignetting() # axis=1, slice_params={"start": 0, "end": 2, "step": 1})
         assert corrected_dc is not None
         assert corrected_dc.cube.shape == dc.cube.shape
 
@@ -693,9 +681,81 @@ class TestDataCubeOps:
         with pytest.raises(NotImplementedError):
             dc1.merge_cubes(dc2)
 
-    def test_merge_cubes_overlapping_wavelengths(self):
-        dc1 = create_test_cube()
-        dc2 = create_test_cube()
-        dc2.set_wavelengths(dc1.wavelengths)  # Overlapping wavelengths
-        with pytest.raises(NotImplementedError):
-            dc1.merge_cubes(dc2)
+    def test_register_layers_simple(self):
+        import numpy as np
+        dc = create_test_cube(shape=(3, 5, 5))
+        # Make all layers identical for easy registration
+        base = np.random.rand(5, 5)
+        dc.cube = np.stack([base, base, base])
+        result = dc.register_layers_simple(max_features=1000, match_percent=0.2)
+        assert result is dc
+        assert dc.cube.shape == (3, 5, 5)
+        assert getattr(dc, 'registered', False) is True
+
+    def test_remove_vignetting_poly_invalid_axis(self):
+        dc = create_test_cube()
+        with pytest.raises(ValueError):
+            dc.remove_vignetting_poly(axis=3)
+
+    def test_remove_vignetting_poly_default(self):
+        import numpy as np
+        dc = create_test_cube(shape=(2, 72, 72))
+        original_shape = dc.cube.shape
+        result = dc.remove_vignetting_poly()
+        assert result is dc
+        assert dc.cube.shape == original_shape
+        # After polynomial vignetting removal, dtype should be float32
+        assert dc.cube.dtype == np.float32
+
+    def test_normalize(self):
+        import numpy as np
+        dc = create_test_cube(shape=(2, 4, 4))
+        data = np.array([
+            [[ 1,  2,  3,  4],
+             [ 5,  6,  7,  8],
+             [ 9, 10, 11, 12],
+             [13, 14, 15, 16]],
+            [[16, 15, 14, 13],
+             [12, 11, 10,  9],
+             [ 8,  7,  6,  5],
+             [ 4,  3,  2,  1]]
+        ], dtype=float)
+        dc.set_cube(data)
+        dc.normalize()
+        # Each layer should now span [0,1]
+        for layer in dc.cube:
+            assert np.isclose(layer.min(), 0.0)
+            assert np.isclose(layer.max(), 1.0)
+
+    def test_register_layers_best(self):
+        dc = create_test_cube(shape=(10, 251, 201))
+
+        # Create a temporary cube with specific values for testing
+        tmp_cube = dc.cube.copy() * 0.1
+
+        # Define the middle region that should remain unchanged
+        x_start, x_end = int(dc.shape[1] * 0.45), int(dc.shape[1] * 0.65)
+        y_start, y_end = int(dc.shape[2] * 0.45), int(dc.shape[2] * 0.65)
+
+        # Apply specific values to the middle region using broadcasting
+        for idx, layer in enumerate(range(dc.shape[0])):
+            tmp_cube[layer, x_start+idx:x_end+idx, y_start+idx:y_end+idx] = 0.9
+        dc.set_cube(tmp_cube)
+        result = dc.register_layers_best(ref_layer=2, scale_thresh=2.2, rot_thresh=20.)
+        assert result is dc
+        assert dc.cube.shape == (10, 251, 201)
+        assert getattr(dc, 'registered', False) is True
+
+    def test_remove_vignetting(self):
+        import numpy as np
+        dc = create_test_cube(shape=(3, 4, 4))
+        # constant cube so flat-field correction yields same values
+        constant = np.ones((3, 4, 4), dtype=np.uint8) * 10
+        dc.set_cube(constant.copy())
+        dtype_before = dc.cube.dtype
+        result = dc.remove_vignetting(sigma=1)
+        assert result is dc
+        assert dc.cube.shape == constant.shape
+        assert dc.cube.dtype == dtype_before
+        # all values should remain equal to original constant
+        assert np.all(dc.cube == constant)

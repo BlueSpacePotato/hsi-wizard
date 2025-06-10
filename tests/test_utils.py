@@ -2,11 +2,10 @@
 
 
 
-import wizard
-
+from wizard._utils.example import generate_pattern_stack
 from wizard._utils import helper, _loader, decorators
 from wizard._core.datacube import DataCube
-
+import wizard
 
 import os
 import time
@@ -137,7 +136,7 @@ class TestLoaderHelper:
         Test the normalize function with valid input.
         """
         spec = np.array([10, 20, 30, 40, 50], dtype=np.float32)
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
 
         # Expected normalization: (x - min) / (max - min)
         expected = (spec - spec.min()) / (spec.max() - spec.min())
@@ -148,7 +147,7 @@ class TestLoaderHelper:
         Test the normalize function with constant input.
         """
         spec = np.array([10, 10, 10, 10, 10], dtype=np.float32)
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
 
         # Expected output: all zeros since max == min
         expected = spec
@@ -695,6 +694,34 @@ class TestLoaderCSV:
         # Verify data content
         np.testing.assert_allclose(test_cube.cube, read_cube.cube, atol=1e-6), "Data cubes do not match!"
 
+
+class TestLoaderHdr:
+    def test_write_and_read_hdr(self, tmp_path):
+        """Tests whether the write and read functions are consistent for ENVI HDR format."""
+        # Generate sample DataCube
+        data = generate_pattern_stack(20, 300, 300, n_circles=10, n_rects=0, n_triangles=0, seed=42)
+        test_cube = wizard.DataCube(data)
+
+        # Define file paths
+        hdr_path = tmp_path / "test.hdr"
+        img_path = tmp_path / "test.img"
+
+        # Write DataCube to ENVI HDR format
+        _loader.hdr._write_hdr(test_cube, str(hdr_path))
+
+        # Read back the DataCube
+        read_cube = wizard.read(path=str(hdr_path), image_path=str(img_path))
+
+        # Verify dimensions
+        assert test_cube.shape == read_cube.shape, "Shapes do not match!"
+
+        # Verify wavelengths
+        np.testing.assert_array_equal(test_cube.wavelengths, read_cube.wavelengths), "Wavelengths do not match!"
+
+        # Verify data content
+        np.testing.assert_allclose(test_cube.cube, read_cube.cube, atol=1e-6), "Data cubes do not match!"
+
+
 class TestLoaderFSM:
 
     def test_wrong_len_block_info(self):
@@ -771,40 +798,73 @@ class TestHelper:
         result = wizard._utils.helper.find_nex_smaller_wave(waves, wave_1)
         assert result == -1, f"Expected -1, got {result}"
 
-class TestHelper:
-
-
     def test_normalize_basic(self):
         spec = np.array([0, 5, 10])
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
         expected = np.array([0.0, 0.5, 1.0])
         np.testing.assert_allclose(normalized, expected, atol=1e-6)
 
 
     def test_normalize_already_normalized(self):
         spec = np.array([0.0, 0.5, 1.0])
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
         np.testing.assert_array_equal(normalized, spec)
 
 
     def test_normalize_constant_array(self):
         spec = np.array([3, 3, 3])
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
         np.testing.assert_array_equal(normalized, spec)  # Should remain unchanged
 
 
     def test_normalize_negative_values(self):
         spec = np.array([-10, 0, 10])
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
         expected = np.array([0.0, 0.5, 1.0])
         np.testing.assert_allclose(normalized, expected, atol=1e-6)
 
 
     def test_normalize_large_range(self):
         spec = np.array([1e9, 2e9, 3e9])
-        normalized = helper.normalize(spec)
+        normalized = helper.normalize_spec(spec)
         expected = np.array([0.0, 0.5, 1.0])
         np.testing.assert_allclose(normalized, expected, atol=1e-6)
+
+    def test_process_slice(self):
+        """
+        single test function for _process_slice beause parrallel processing is not tracked proberly
+        """
+        spec_out_flat = np.array([[1, 2, 3, 4], [5, 10000, 7, 8]])
+        spikes_flat = np.array([[False, False, False, False], [False, True, False, False]])
+        idx = 1
+        window = 3
+
+        processed_idx, processed_slice = wizard._utils.helper._process_slice(spec_out_flat, spikes_flat, idx, window)
+
+        assert processed_idx == idx
+        assert processed_slice[1] != 10000  # Spike should be replaced
+        assert processed_slice.shape == spec_out_flat[idx].shape
+
+
+    def test_normalize_polarity_uint8(self):
+        import numpy as np
+        from wizard._utils.helper import normalize_polarity
+        img = np.full((10, 10), 200, dtype=np.uint8)
+        out = normalize_polarity(img)
+        assert out.dtype == np.float32
+        # 200/255 ≈ 0.784; since mean>0.5, it inverts to 1 - 0.784 ≈ 0.216
+        expected = 1.0 - (200 / 255.0)
+        assert np.allclose(out, expected)
+
+    def test_normalize_polarity_float(self):
+        import numpy as np
+        from wizard._utils.helper import normalize_polarity
+        img = np.array([[0.8, 0.3]])
+        out = normalize_polarity(img)
+        expected = np.array([[0.0, 1.0]], dtype=np.float64)
+        np.testing.assert_allclose(out, expected, rtol=1e-5, atol=1e-7)
+        assert out.dtype == np.float64
+
 
 
 class TestFeatureRegistration:

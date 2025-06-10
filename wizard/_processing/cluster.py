@@ -14,8 +14,8 @@ This module initializes the cluster functions of the hsi-wizard package.
 Functions
 ---------
 
-.. autofunction:: quit_low_change_in_clusters
-.. autofunction:: discard_clusters
+.. autofunction:: isodata
+.. autofunction:: smooth_kmneas
 
 
 Credits
@@ -24,22 +24,36 @@ The Isodata code was inspired by:
 - Repository: pyRadar
 - Author/Organization: PyRadar
 - Original repository: https://github.com/PyRadar/pyradar/
-
 """
+
 import numpy as np
 from scipy.cluster.vq import vq
 from typing import Tuple
 from typing import Optional
+from sklearn.cluster import KMeans
+from sklearn.metrics import pairwise_distances
+from scipy.signal import convolve2d
 
 
-def quit_low_change_in_clusters(centers: np.ndarray, last_centers: np.ndarray, theta_o: float) -> bool:
+def _quit_low_change_in_clusters(centers: np.ndarray, last_centers: np.ndarray, theta_o: float) -> bool:
     """
-    Stop algorithm by low change in the clusters values between each iteration.
+    Determine if cluster update change is below the threshold to stop iteration.
 
-    :param centers: Cluster centers
-    :param last_centers: Last cluster centers
-    :param theta_o: threshold change in the clusters between each iter
-    :return: True if it should stop, otherwise False.
+    Compares current and previous cluster centers and stops if all changes are below `theta_o`.
+
+    Parameters
+    ----------
+    centers : np.ndarray
+        Current cluster centers.
+    last_centers : np.ndarray
+        Cluster centers from the previous iteration.
+    theta_o : float
+        Threshold for the percent change in cluster centers.
+
+    Returns
+    -------
+    bool
+        True if change is below the threshold and iteration should stop, False otherwise.
     """
     qt = False
     if centers.shape == last_centers.shape:
@@ -51,15 +65,25 @@ def quit_low_change_in_clusters(centers: np.ndarray, last_centers: np.ndarray, t
     return qt
 
 
-def discard_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray, theta_m: int) -> Tuple[np.ndarray, np.ndarray, int]:
+def _discard_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray, theta_m: int) -> Tuple[np.ndarray, np.ndarray, int]:
     """
-    Discard clusters with fewer than theta_m.
+    Remove clusters with fewer members than the minimum threshold.
 
-    :param img_class_flat: Classes of the flatten image
-    :param centers: Cluster centers
-    :param clusters_list: List of clusters
-    :param theta_m: threshold value for min number in each cluster
-    :return: Tuple of the new cluster centers, a list of the new clusters and a new value for k_
+    Parameters
+    ----------
+    img_class_flat : np.ndarray
+        Flattened image class labels.
+    centers : np.ndarray
+        Cluster centers.
+    clusters_list : np.ndarray
+        List of cluster labels.
+    theta_m : int
+        Minimum number of pixels per cluster.
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray, int]
+        Updated centers, cluster list, and number of clusters.
     """
     k_ = centers.shape[0]
     to_delete = np.array([])
@@ -86,15 +110,25 @@ def discard_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_l
     return new_centers, new_clusters_list, k_
 
 
-def update_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray) -> Tuple[np.ndarray, np.ndarray, int]:
+def _update_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray) -> Tuple[np.ndarray, np.ndarray, int]:
     """
-    Update clusters.
+    Update cluster centers based on the current assignments.
 
-    :param img_flat: Flatten image
-    :param img_class_flat: Classes of the flatten image
-    :param centers: Cluster centers
-    :param clusters_list: List of clusters
-    :return: Tuple of the new cluster centers, a list of the new clusters and a new value for k_
+    Parameters
+    ----------
+    img_flat : np.ndarray
+        Flattened image pixels.
+    img_class_flat : np.ndarray
+        Flattened image class labels.
+    centers : np.ndarray
+        Current cluster centers.
+    clusters_list : np.ndarray
+        List of cluster labels.
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray, int]
+        Updated centers, cluster list, and number of clusters.
     """
     k_ = centers.shape[0]
     new_centers = np.zeros((k_, img_flat.shape[1]))
@@ -113,7 +147,7 @@ def update_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: n
         new_centers[cluster, :] = new_cluster
         new_clusters_list = np.append(new_clusters_list, cluster)
 
-    new_centers, new_clusters_list = sort_arrays_by_first(new_centers, new_clusters_list)
+    new_centers, new_clusters_list = _sort_arrays_by_first(new_centers, new_clusters_list)
 
     if new_centers.shape[0] != new_clusters_list.size:
         raise ValueError(
@@ -123,16 +157,23 @@ def update_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: n
     return new_centers, new_clusters_list, k_
 
 
-def initial_clusters(img_flat: np.ndarray, k_: int, method: str = "linspace") -> np.ndarray | None:
+def _initial_clusters(img_flat: np.ndarray, k_: int, method: str = "linspace") -> np.ndarray | None:
     """
-    Define initial clusters centers as startup.
+    Generate initial cluster centers.
 
-    By default, the method is "linspace". Other method available is "random".
+    Parameters
+    ----------
+    img_flat : np.ndarray
+        Flattened image pixels.
+    k_ : int
+        Number of clusters.
+    method : str, optional
+        Initialization method: 'linspace' or 'random'.
 
-    :param img_flat: Flatten image
-    :param k_:
-    :param method: Method for initially defining cluster centers
-    :return: Initial cluster centers
+    Returns
+    -------
+    np.ndarray | None
+        Initial cluster centers or None on error.
     """
     methods_available = ["linspace", "random"]
     v = img_flat.shape[1]
@@ -150,16 +191,21 @@ def initial_clusters(img_flat: np.ndarray, k_: int, method: str = "linspace") ->
     return centers
 
 
-def sort_arrays_by_first(centers: np.ndarray, clusters_list: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def _sort_arrays_by_first(centers: np.ndarray, clusters_list: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Sort the array 'centers' and with the indices of the sorted centers order the array 'clusters_list'.
+    Sort centers and cluster labels based on the first feature.
 
-    Example: centers=[22, 33, 0, 11] and cluster_list=[7,6,5,4]
-    returns  (array([ 0, 11, 22, 33]), array([5, 4, 7, 6]))
+    Parameters
+    ----------
+    centers : np.ndarray
+        Cluster centers.
+    clusters_list : np.ndarray
+        Cluster label array.
 
-    :param centers: Cluster centers
-    :param clusters_list: List of clusters
-    :return: Tuple of the sorted centers and the sorted cluster list
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray]
+        Sorted centers and cluster list.
     """
     assert centers.shape[0] == clusters_list.size, \
         "ERROR: sort_arrays_by_first centers and clusters_list size are not equal"
@@ -172,18 +218,31 @@ def sort_arrays_by_first(centers: np.ndarray, clusters_list: np.ndarray) -> Tupl
     return sorted_centers, sorted_clusters_list
 
 
-def split_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray, theta_s: float, theta_m: int) -> Tuple[np.ndarray, np.ndarray, int]:
+def _split_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray, theta_s: float, theta_m: int) -> Tuple[np.ndarray, np.ndarray, int]:
     """
-    Split clusters to form new clusters.
+    Split a cluster if its standard deviation exceeds a threshold.
 
-    :param img_flat: Flatten image
-    :param img_class_flat: Classes of the flatten image
-    :param centers: Cluster centers
-    :param clusters_list: List of clusters
-    :param theta_s: threshold value for standard deviation (for split)
-    :param theta_m: threshold value for min number in each cluster
-    :return: Tuple of the new cluster centers, a list of the new clusters and a new value for k_
+    Parameters
+    ----------
+    img_flat : np.ndarray
+        Flattened image pixels.
+    img_class_flat : np.ndarray
+        Flattened image class labels.
+    centers : np.ndarray
+        Cluster centers.
+    clusters_list : np.ndarray
+        Cluster label array.
+    theta_s : float
+        Standard deviation threshold for splitting.
+    theta_m : int
+        Minimum pixel count per cluster.
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray, int]
+        Updated centers, cluster list, and number of clusters.
     """
+
     assert centers.shape[0] == clusters_list.size, "ERROR: split() centers and clusters_list size are different"
 
     delta = 10
@@ -191,8 +250,8 @@ def split_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: np
     count_per_cluster = np.zeros(k_)
     stddev = np.array([])
 
-    avg_dists_to_clusters, k_ = compute_avg_distance(img_flat, img_class_flat, centers, clusters_list)
-    d, k_ = compute_overall_distance(img_class_flat, avg_dists_to_clusters, clusters_list)
+    avg_dists_to_clusters, k_ = _compute_avg_distance(img_flat, img_class_flat, centers, clusters_list)
+    d, k_ = _compute_overall_distance(img_class_flat, avg_dists_to_clusters, clusters_list)
 
     # compute all the standard deviation of the clusters
     for cluster in range(k_):
@@ -225,7 +284,7 @@ def split_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: np
                 clusters_list = np.append(clusters_list, max_clusters_list + 1)
                 clusters_list = np.append(clusters_list, max_clusters_list + 2)
 
-                centers, clusters_list = sort_arrays_by_first(centers, clusters_list)
+                centers, clusters_list = _sort_arrays_by_first(centers, clusters_list)
 
                 assert centers.shape[0] == clusters_list.size, \
                     "ERROR: split() centers and clusters_list size are different"
@@ -233,15 +292,25 @@ def split_clusters(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: np
     return centers, clusters_list, k_
 
 
-def compute_avg_distance(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray) -> Tuple[np.ndarray, int]:
+def _compute_avg_distance(img_flat: np.ndarray, img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray) -> Tuple[np.ndarray, int]:
     """
-    Computes all the average distances to the center in each cluster.
+    Compute average intra-cluster distance.
 
-    :param img_flat: Flatten image
-    :param img_class_flat: Classes of flatten image
-    :param centers: Cluster centers
-    :param clusters_list: List of clusters
-    :return: Tuple containing the average distances as well as the value for k_
+    Parameters
+    ----------
+    img_flat : np.ndarray
+        Flattened image pixels.
+    img_class_flat : np.ndarray
+        Flattened image class labels.
+    centers : np.ndarray
+        Cluster centers.
+    clusters_list : np.ndarray
+        Cluster label array.
+
+    Returns
+    -------
+    Tuple[np.ndarray, int]
+        Array of average distances and cluster count.
     """
     k_ = centers.shape[0]
     avg_dists_to_clusters = np.zeros(k_)
@@ -255,14 +324,23 @@ def compute_avg_distance(img_flat: np.ndarray, img_class_flat: np.ndarray, cente
     return avg_dists_to_clusters, k_
 
 
-def compute_overall_distance(img_class_flat: np.ndarray, avg_dists_to_clusters: np.ndarray, clusters_list: np.ndarray) -> Tuple[float, int]:
+def _compute_overall_distance(img_class_flat: np.ndarray, avg_dists_to_clusters: np.ndarray, clusters_list: np.ndarray) -> Tuple[float, int]:
     """
-    Computes the overall distance of the samples from their respective cluster centers.
+    Calculate overall weighted distance from cluster centers.
 
-    :param img_class_flat: Classes of the flatten image
-    :param avg_dists_to_clusters: Average distances
-    :param clusters_list: List of clusters
-    :return: Tuple containing the overall distances as well the value for k_
+    Parameters
+    ----------
+    img_class_flat : np.ndarray
+        Flattened image class labels.
+    avg_dists_to_clusters : np.ndarray
+        Average distances per cluster.
+    clusters_list : np.ndarray
+        Cluster label array.
+
+    Returns
+    -------
+    Tuple[float, int]
+        Overall distance and number of clusters.
     """
     k_ = avg_dists_to_clusters.size
     total_count = 0
@@ -278,18 +356,29 @@ def compute_overall_distance(img_class_flat: np.ndarray, avg_dists_to_clusters: 
     return d, k_
 
 
-def merge_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray, p: int, theta_c: int, k_: int) -> Tuple[np.ndarray, np.ndarray, int]:
+def _merge_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_list: np.ndarray, p: int, theta_c: int, k_: int) -> Tuple[np.ndarray, np.ndarray, int]:
     """
-    Merge by pair of clusters in 'below_threshold' to form new clusters.
+    Merge nearby clusters if their distance is below a threshold.
 
-    Todo: adaptation for 3d images
-    :param img_class_flat: Classes of the flatten image
-    :param centers: Cluster centers
-    :param clusters_list: List of clusters
-    :param p: max number of pairs of clusters which can be merged
-    :param theta_c: threshold value for pairwise distances (for merge)
-    :param k_:
-    :return: Tuple of the new cluster centers, a list of the new clusters and a new value for k_
+    Parameters
+    ----------
+    img_class_flat : np.ndarray
+        Flattened image class labels.
+    centers : np.ndarray
+        Cluster centers.
+    clusters_list : np.ndarray
+        Cluster label array.
+    p : int
+        Max number of merge candidates.
+    theta_c : int
+        Distance threshold for merging.
+    k_ : int
+        Current number of clusters.
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray, int]
+        Updated centers, cluster list, and number of clusters.
     """
     pair_dists = compute_pairwise_distances(centers)
 
@@ -331,19 +420,24 @@ def merge_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_lis
         centers = np.append(centers, to_add)
         clusters_list = np.append(clusters_list, range(start, end))
 
-        centers, clusters_list = sort_arrays_by_first(centers, clusters_list)
+        centers, clusters_list = _sort_arrays_by_first(centers, clusters_list)
 
     return centers, clusters_list, k_
 
 
 def compute_pairwise_distances(centers: np.ndarray) -> list:
     """
-    Compute the pairwise distances 'pair_dists', between every two clusters centers and returns them sorted.
+    Compute all pairwise distances between cluster centers.
 
-    Todo: adaptation for 3d images
-    :param centers: Cluster centers
-    :return: a list with tuples, where every tuple has in its first coord the distance between to clusters, and in the
-    second coord has a tuple, with the numbers of the clusters measured
+    Parameters
+    ----------
+    centers : np.ndarray
+        Cluster centers.
+
+    Returns
+    -------
+    list
+        Sorted list of (distance, (cluster1, cluster2)) tuples.
     """
     pair_dists = []
 
@@ -361,17 +455,51 @@ def isodata(dc, k: int = 10, it: int = 10, p: int = 2, theta_m: int = 10,
             theta_s: float = 0.1, theta_c: int = 2, theta_o: float = 0.05,
             k_: Optional[int] = None) -> np.ndarray:
     """
-    Classifies an image stored in a DataCube using the ISODATA clustering algorithm.
+    Classify hyperspectral image data using the ISODATA clustering algorithm.
 
-    :param dc: DataCube containing the image data.
-    :param k: Initial number of clusters.
-    :param it: Maximum number of iterations.
-    :param p: Maximum number of cluster pairs allowed to merge.
-    :param theta_m: Minimum number of pixels required per cluster.
-    :param theta_s: Standard deviation threshold for cluster splitting.
-    :param theta_c: Distance threshold for cluster merging.
-    :param theta_o: Minimum change in cluster centers to continue iterating.
-    :return: A 2D numpy array with the classified image.
+    Performs iterative clustering on a hyperspectral DataCube, adapting the number of clusters
+    by splitting and merging based on data distribution, until convergence or iteration limit is reached.
+
+    Parameters
+    ----------
+    dc : DataCube
+        DataCube object containing the hyperspectral image with shape (v, x, y).
+    k : int, optional
+        Initial number of clusters to begin clustering. Default is 10.
+    it : int, optional
+        Maximum number of iterations. Default is 10.
+    p : int, optional
+        Maximum number of cluster pairs allowed to merge. Default is 2.
+    theta_m : int, optional
+        Minimum number of pixels required per cluster. Default is 10.
+    theta_s : float, optional
+        Threshold for standard deviation to trigger cluster splitting. Default is 0.1.
+    theta_c : int, optional
+        Distance threshold for merging clusters. Default is 2.
+    theta_o : float, optional
+        Threshold for minimum change in cluster centers to stop iteration. Default is 0.05.
+    k_ : int, optional
+        Alternative number of clusters to override initial `k`. Default is None.
+
+    Returns
+    -------
+    np.ndarray
+        2D array (x, y) with cluster labels assigned to each pixel.
+
+    Raises
+    ------
+    ValueError
+        If intermediate clustering steps produce inconsistent dimensions or invalid data.
+
+    Notes
+    -----
+    This implementation adapts clustering during iterations by merging or splitting clusters,
+    based on the intra-cluster statistics and spatial constraints. The algorithm stops early
+    if cluster centers converge according to `theta_o`.
+
+    Examples
+    --------
+    >>> labels = isodata(dc, k=5, it=15)
     """
     img = np.transpose(dc.cube, (1, 2, 0))  # Rearrange cube dimensions to (H, W, Channels)
 
@@ -381,7 +509,7 @@ def isodata(dc, k: int = 10, it: int = 10, p: int = 2, theta_m: int = 10,
     x, y, _ = img.shape
     img_flat = img.reshape(-1, img.shape[2])  # Flatten spatial dimensions
     clusters_list = np.arange(k_)
-    centers = initial_clusters(img_flat, k_, "linspace")
+    centers = _initial_clusters(img_flat, k_, "linspace")
 
     for i in range(it):
         last_centers = centers.copy()
@@ -390,19 +518,180 @@ def isodata(dc, k: int = 10, it: int = 10, p: int = 2, theta_m: int = 10,
         img_class_flat, _ = vq(img_flat, centers)
 
         # Discard underpopulated clusters
-        centers, clusters_list, k_ = discard_clusters(img_class_flat, centers, clusters_list, theta_m)
+        centers, clusters_list, k_ = _discard_clusters(img_class_flat, centers, clusters_list, theta_m)
 
         # Update cluster centers
-        centers, clusters_list, k_ = update_clusters(img_flat, img_class_flat, centers, clusters_list)
+        centers, clusters_list, k_ = _update_clusters(img_flat, img_class_flat, centers, clusters_list)
 
         # Handle excessive or insufficient clusters
         if k_ <= (k / 2.0):  # Too few clusters -> Split clusters
-            centers, clusters_list, k_ = split_clusters(img_flat, img_class_flat, centers, clusters_list, theta_s, theta_m)
+            centers, clusters_list, k_ = _split_clusters(img_flat, img_class_flat, centers, clusters_list, theta_s, theta_m)
         elif k_ > (k * 2.0):  # Too many clusters -> Merge clusters
-            centers, clusters_list, k_ = merge_clusters(img_class_flat, centers, clusters_list, p, theta_c, k_)
+            centers, clusters_list, k_ = _merge_clusters(img_class_flat, centers, clusters_list, p, theta_c, k_)
 
         # Terminate early if cluster changes are minimal
-        if quit_low_change_in_clusters(centers, last_centers, theta_o):
+        if _quit_low_change_in_clusters(centers, last_centers, theta_o):
             break
 
     return img_class_flat.reshape(x, y)
+
+
+def generate_gaussian_kernel(size=3, sigma=1.0):
+    """
+    Generate a 2D Gaussian kernel for image smoothing.
+
+    Creates a square kernel using the Gaussian function, which can be used
+    for spatial smoothing via convolution operations.
+
+    Parameters
+    ----------
+    size : int, optional
+        Size of the kernel (must be odd). Default is 3.
+    sigma : float, optional
+        Standard deviation of the Gaussian distribution. Default is 1.0.
+
+    Returns
+    -------
+    np.ndarray
+        2D array representing the normalized Gaussian kernel.
+
+    Notes
+    -----
+    The kernel is normalized so that the sum of all elements equals 1. The
+    kernel is computed as the outer product of two 1D Gaussian vectors.
+
+    Examples
+    --------
+    >>> kernel = generate_gaussian_kernel(size=5, sigma=1.5)
+    >>> print(kernel.shape)
+    (5, 5)
+    """
+
+    ax = np.linspace(-(size // 2), size // 2, size)
+    gauss = np.exp(-0.5 * (ax / sigma) ** 2)
+    kernel = np.outer(gauss, gauss)
+    return kernel / kernel.sum()
+
+
+def optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
+    """
+    Estimate the optimal number of KMeans clusters using centroid distance threshold.
+
+    Iteratively fits KMeans with increasing cluster counts and evaluates the minimum
+    distance between centroids. Clustering stops when the closest centroids are within
+    the specified distance threshold, indicating excessive overlap.
+
+    Parameters
+    ----------
+    pixels : np.ndarray
+        2D array of shape (n_samples, n_features), representing the flattened image spectra.
+    max_clusters : int, optional
+        Maximum number of clusters to evaluate. Default is 5.
+    threshold : float, optional
+        Minimum acceptable distance between any pair of cluster centroids. Default is 0.1.
+
+    Returns
+    -------
+    int
+        Optimal number of clusters where centroid spacing satisfies the distance threshold.
+
+    Raises
+    ------
+    ValueError
+        If input `pixels` is not a 2D array or has insufficient samples.
+
+    Notes
+    -----
+    Uses pairwise Euclidean distances to determine centroid separation.
+    Cluster count starts from 2 up to `max_clusters`.
+
+    Examples
+    --------
+    >>> pixels = dc.cube.reshape(dc.cube.shape[0], -1).T
+    >>> k = optimal_clusters(pixels, max_clusters=6, threshold=0.2)
+    >>> print(k)
+    4
+    """
+    best_k = 2
+    for k in range(2, max_clusters + 1):
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+        kmeans.fit(pixels)
+        centers = kmeans.cluster_centers_
+        dists = pairwise_distances(centers)
+        np.fill_diagonal(dists, np.inf)  # Ignore self-distances
+        closest_dist = np.min(dists)
+        if closest_dist > threshold:
+            best_k = k
+        else:
+            break
+    return best_k
+
+
+def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=12, sigma=1.0):
+    """
+    Segment a hyperspectral DataCube using KMeans clustering with MRF-based spatial smoothing.
+
+    Performs initial clustering on spectral data using KMeans, followed by iterative Markov Random
+    Field (MRF)-based smoothing using Gaussian kernel convolution to enforce spatial consistency.
+
+    Parameters
+    ----------
+    dc : DataCube
+        Hyperspectral data cube with shape (v, x, y), where `v` is spectral resolution.
+    n_clusters : int, optional
+        Maximum number of clusters for initial KMeans clustering. Default is 5.
+    threshold : float, optional
+        Minimum allowable distance between KMeans centroids to stop increasing cluster count. Default is 0.1.
+    mrf_iterations : int, optional
+        Number of spatial smoothing iterations using MRF regularization. Default is 5.
+    kernel_size : int, optional
+        Size of the Gaussian kernel used for smoothing. Must be an odd integer. Default is 12.
+    sigma : float, optional
+        Standard deviation of the Gaussian kernel. Default is 1.0.
+
+    Returns
+    -------
+    np.ndarray
+        2D array (x, y) of cluster labels after smoothing.
+
+    Raises
+    ------
+    ValueError
+        If input DataCube is malformed or smoothing parameters are invalid.
+
+    Notes
+    -----
+    The function uses `optimal_clusters` to determine a suitable number of clusters
+    before applying KMeans. MRF smoothing is implemented by convolving binary masks
+    of each cluster with a Gaussian kernel and reassigning pixels based on weighted responses.
+
+    Examples
+    --------
+    >>> labels = smooth_kmneas(dc, n_clusters=6, mrf_iterations=3)
+    >>> plt.imshow(labels, cmap='viridis')
+    """
+
+    v, x, y = dc.shape
+
+    # Reshape cube for clustering
+    pixels = dc.cube.reshape(v, -1).T
+
+    # Determine optimal number of clusters
+    optimal_k = optimal_clusters(pixels, max_clusters=n_clusters, threshold=threshold)
+    kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
+    labels = kmeans.fit_predict(pixels)
+    labels = labels.reshape(x, y)
+
+    # Generate dynamic Gaussian kernel
+    kernel = generate_gaussian_kernel(size=kernel_size, sigma=sigma)
+
+    # Apply Markov Random Field-based spatial regularization
+    for _ in range(mrf_iterations):
+        smoothed_labels = np.zeros_like(labels, dtype=np.float64)
+        for cluster in range(optimal_k):
+            binary_mask = (labels == cluster).astype(np.float64)
+            smoothed_mask = convolve2d(binary_mask, kernel, mode='same', boundary='symm')
+            smoothed_labels += cluster * smoothed_mask
+        labels = np.round(smoothed_labels).astype(np.int32)
+
+    return labels
