@@ -28,10 +28,13 @@ The Isodata code was inspired by:
 
 import numpy as np
 from scipy.cluster.vq import vq
+from scipy.ndimage import uniform_filter
 from typing import Tuple
 from typing import Optional
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, AgglomerativeClustering
 from sklearn.metrics import pairwise_distances
+from sklearn.decomposition import PCA
+from sklearn.feature_extraction.image import grid_to_graph
 from scipy.signal import convolve2d
 
 
@@ -695,3 +698,168 @@ def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=
         labels = np.round(smoothed_labels).astype(np.int32)
 
     return labels
+
+
+def pca(dc, n_components=25):
+    """
+    Perform principal component analysis to reduce the spectral dimensionality of a DataCube.
+
+    This function reshapes the DataCube’s underlying array from shape (v, x, y) to (x*y, v),
+    applies PCA to reduce the number of spectral bands to `n_components`, then reshapes
+    the result back to (n_components, x, y). It also updates the DataCube’s wavelengths
+    to a simple integer index for each new component.
+
+    Parameters
+    ----------
+    dc : DataCube
+        The DataCube instance whose `cube` attribute (a numpy array of shape (v, x, y))
+        will be reduced in its spectral dimension.
+    n_components : int, optional
+        The number of principal components to retain. Defaults to 25.
+
+    Returns
+    -------
+    DataCube
+        The same DataCube instance, with its `cube` attribute replaced by the reduced
+        cube of shape (n_components, x, y) and its `wavelengths` attribute set to
+        integer indices from 0 to n_components-1.
+
+    Raises
+    ------
+    ValueError
+        If `n_components` is greater than the original number of spectral bands (v).
+
+    Notes
+    -----
+    - Uses `sklearn.decomposition.PCA` under the hood.
+    - The new wavelengths are not actual physical wavelengths but simple indices.
+    - The transformation is done in-place on the provided DataCube.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read("hyperspectral_data.cube")
+    >>> dc = pca(dc, n_components=10)
+    >>> print(dc.cube.shape)
+    (10, 512, 512)
+    """
+    v, x, y = dc.cube.shape
+
+    cube = dc.cube
+
+    # Reshape to (n_pixels, v)
+    data = cube.reshape(v, -1).T  # (x*y, v)
+
+    # PCA reduction
+    pca_model = PCA(n_components=n_components)
+    reduced = pca_model.fit_transform(data)  # (x*y, n_components)
+
+    # Reshape back to (n_components, x, y)
+    reduced_cube = reduced.T.reshape(n_components, x, y)
+
+    wave = np.arange(n_components, dtype=int)
+
+    dc.set_cube(reduced_cube)
+    dc.set_wavelengths(wave)
+    return dc
+
+
+def spectral_spatial_kmeans(dc, n_clusters: int, spatial_radius: int) -> np.ndarray:
+    """
+    Spectral–spatial K-Means clustering for hyperspectral images.
+
+    Applies K-Means to pixel spectra augmented by the mean spectrum of their local neighborhood.
+
+    Parameters
+    ----------
+    dc : DataCube
+        Hyperspectral data cube with shape (v, x, y), where v is number of bands.
+    n_clusters : int
+        Number of clusters to form.
+    spatial_radius : int
+        Radius (in pixels) of the square neighborhood for local averaging.
+
+    Returns
+    -------
+    labels : np.ndarray of shape (x, y)
+        Integer cluster label for each pixel.
+
+    Raises
+    ------
+    ValueError
+        If `spatial_radius < 0` or `n_clusters <= 0`.
+
+    Notes
+    -----
+    - Uses a uniform filter to compute the local mean spectrum for each pixel.
+    - Flattens the augmented spectral features and applies scikit-learn’s KMeans.
+
+    Examples
+    --------
+    >>> labels = spectral_spatial_kmeans(dc, n_clusters=5, spatial_radius=1)
+    """
+    if spatial_radius < 0 or n_clusters <= 0:
+        raise ValueError("spatial_radius must be ≥0 and n_clusters >0")
+
+    # Compute local-mean cube
+    v, x, y = dc.cube.shape
+    local_cube = np.empty_like(dc.cube)
+    for band in range(v):
+        local_cube[band] = uniform_filter(dc.cube[band], size=2 * spatial_radius + 1, mode='reflect')
+
+    # Stack spectral + spatial-mean features
+    features = np.vstack([
+        dc.cube.reshape(v, -1),
+        local_cube.reshape(v, -1)
+    ]).T  # shape (x*y, 2v)
+
+    # Run KMeans
+    km = KMeans(n_clusters=n_clusters, random_state=0)
+    flat_labels = km.fit_predict(features)
+
+    return flat_labels.reshape(x, y)
+
+
+def spatial_agglomerative_clustering(dc, n_clusters: int) -> np.ndarray:
+    """
+    Agglomerative clustering with a 4-connected grid graph enforcing spatial contiguity.
+
+    Flattens the spectral vectors and uses `grid_to_graph` for pixel connectivity,
+    so only spatial neighbors can merge.
+
+    Parameters
+    ----------
+    dc : DataCube
+        Hyperspectral data cube (v, x, y).
+    n_clusters : int
+        Desired number of clusters.
+
+    Returns
+    -------
+    labels : np.ndarray of shape (x, y)
+        Connected clusters that respect spatial adjacency.
+
+    Notes
+    -----
+    - Uses `sklearn.feature_extraction.image.grid_to_graph` to build a sparse
+    connectivity matrix over the x×y grid.
+    - May be more memory-intensive for large images.
+
+    Examples
+    --------
+    >>> labels = spatial_agglomerative_clustering(dc, n_clusters=8)
+    """
+    v, x, y = dc.cube.shape
+    # Build connectivity graph on the 2D grid
+    connectivity = grid_to_graph(n_x=x, n_y=y)
+
+    # Flatten spectral data
+    data = dc.cube.reshape(v, -1).T  # shape (x*y, v)
+
+    # Agglomerative clustering with spatial connectivity
+    agg = AgglomerativeClustering(n_clusters=n_clusters,
+                                  connectivity=connectivity,
+                                  linkage='ward')
+    flat_labels = agg.fit_predict(data)
+
+    return flat_labels.reshape(x, y)
