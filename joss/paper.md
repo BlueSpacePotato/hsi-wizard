@@ -38,6 +38,27 @@ In addition, `hsi-wizard` allows users to log and save the manipulations of the 
 
 Besides the supplied functionalities, `hsi-wizard` is also extensible, allowing users to integrate additional methods and customize the package for diverse applications.
 
+# Comparison with Existing Tools
+
+Targeted at medical hyperspectral imaging and bioinformatics, `hsi-wizard` provides a `DataCube` abstraction for uniform HSI data management, advanced spectral plotting, visualization, and clustering analytics, aswell as tools for merging multiple datasets and tools for method tracking, while deliberately omitting geospatial coordinate processing.
+
+Open-source packages like PySptools cater to remote-sensing workflows with endmember extraction, spectral unmixing, supervised classification, target detection, and denoising for satellite and airborne data.
+
+HyDe specializes in GPU-accelerated denoising via low-rank wavelet and DNN methods, offering a Pythonic API and PyTorch compatibility but minimal high-level data handling. Spectral Python (SPy) delivers general-purpose I/O, raster displays, and basic classification routines for geospatial imagery.
+
+Commercial platforms like ENVI integrate deeply with ArcGIS, providing GUI-driven batch workflows and comprehensive spectral analysis at a premium cost, while Spectronon ties strongly to Resonon hardware for data acquisition, radiometric correction, and visualization tools.  Free GUIs such as IDCubeLite and GLIMPS enable interactive exploration of 3D HSI cubes across biomedical and geospatial domains, yet their GUI-bound interfaces preclude scripting or batch processing, falter on large or mismatched datasets.
+
+By focusing on medical-domain requirements and offering a cohesive API for reproducible spectral analytics, `hsi-wizard` fills a unique niche between specialized algorithm libraries and user-friendly exploration tools in biomedical research.
+
+# Example Usage
+
+```python`
+import wizard
+
+data = 'data/'
+
+``
+
 # Future Work
 
 The development of `hsi-wizard` is ongoing. Ideas, feedback, and contributions are happily welcomed. All versions of `hsi-wizard` are available on the Python Package Index (PyPI). 
