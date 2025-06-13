@@ -914,3 +914,50 @@ def smooth_cluster(img, sigma=1.0):
     smoothed = gaussian_filter(img_float, sigma=sigma)
     result = np.rint(smoothed).astype(img.dtype)
     return result
+
+
+def kmeans(dc, n_clusters=5, n_init=10):
+    """
+    Perform KMeans clustering on a hyperspectral DataCube without spatial smoothing.
+
+    This function reshapes the spectral data into pixel vectors and applies KMeans to
+    segment the data into the specified number of clusters.
+
+    Parameters
+    ----------
+    dc : DataCube
+        Hyperspectral data cube with shape (v, x, y), where `v` is the spectral resolution.
+    n_clusters : int
+        Number of clusters to form. Default is 5.
+    n_init : int
+        Number of time the k-means algorithm will be run with different centroid seeds.
+        Default is 10.
+
+    Returns
+    -------
+    np.ndarray
+        2D array of shape (x, y) containing cluster labels for each pixel.
+
+    Raises
+    ------
+    ValueError
+        If the input DataCube is malformed or `n_clusters` or `n_init` are invalid.
+
+    Notes
+    -----
+    This function does not perform any spatial regularization or smoothing.
+    """
+    # Validate inputs
+    if n_clusters < 1 or n_init < 1:
+        raise ValueError("`n_clusters` and `n_init` must be positive integers.")
+
+    # Reshape cube for clustering
+    v, x, y = dc.cube.shape
+    pixels = dc.cube.reshape(v, -1).T
+
+    # Apply KMeans clustering
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=n_init)
+    labels_flat = kmeans.fit_predict(pixels)
+
+    # Reshape back to image dimensions
+    return labels_flat.reshape(x, y)
