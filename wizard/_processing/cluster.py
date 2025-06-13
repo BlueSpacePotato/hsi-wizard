@@ -28,7 +28,7 @@ The Isodata code was inspired by:
 
 import numpy as np
 from scipy.cluster.vq import vq
-from scipy.ndimage import uniform_filter
+from scipy.ndimage import uniform_filter, gaussian_filter
 from typing import Tuple
 from typing import Optional
 from sklearn.cluster import KMeans, AgglomerativeClustering
@@ -863,3 +863,54 @@ def spatial_agglomerative_clustering(dc, n_clusters: int) -> np.ndarray:
     flat_labels = agg.fit_predict(data)
 
     return flat_labels.reshape(x, y)
+
+
+def smooth_cluster(img, sigma=1.0):
+    """
+    Smooth a cluster label image to remove mislabelled pixels.
+
+    Apply a Gaussian filter to the input cluster label image to reduce spurious
+    mislabelled pixels by smoothing label intensities, then round back to the
+    nearest integer labels.
+
+    Parameters
+    ----------
+    img : numpy.ndarray
+        Integer label image of shape (H, W) or (H, W, ...).
+    sigma : float, optional
+        Standard deviation for Gaussian kernel. Default is 1.0.
+
+    Returns
+    -------
+    numpy.ndarray
+        Smoothed label image with same shape and dtype as input.
+
+    Raises
+    ------
+    TypeError
+        If img is not a numpy.ndarray.
+    ValueError
+        If img is empty.
+
+    Notes
+    -----
+    Internally, the image labels are converted to float, smoothed, then rounded
+    back to integer labels. This may remove small isolated noisy pixels.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> img = np.array([[1,1,2],[1,2,2],[2,2,2]])
+    >>> smooth_cluster(img, sigma=0.5)
+    array([[1,1,2],
+           [1,2,2],
+           [2,2,2]])
+    """
+    if not isinstance(img, np.ndarray):
+        raise TypeError("img must be a numpy.ndarray")
+    if img.size == 0:
+        raise ValueError("img must not be empty")
+    img_float = img.astype(np.float64)
+    smoothed = gaussian_filter(img_float, sigma=sigma)
+    result = np.rint(smoothed).astype(img.dtype)
+    return result
