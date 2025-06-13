@@ -21,7 +21,7 @@ import numpy as np
 from PIL import Image
 from joblib import Parallel, delayed
 from scipy.signal import savgol_filter
-from scipy.ndimage import gaussian_filter
+from scipy.ndimage import gaussian_filter, uniform_filter
 from skimage.transform import warp
 
 
@@ -1130,4 +1130,48 @@ def remove_vignette(dc: DataCube, vignette_map: np.ndarray, flip: bool = False) 
 
     dc.set_cube(cube)
 
+    return dc
+
+
+def uniform_filter_dc(dc, size=3):
+    """
+    Smooth each spectral band of a DataCube using a uniform spatial filter.
+
+    Applies a uniform filter of the given window size to every slice (band) in the
+    DataCube’s cube, reducing spatial noise by averaging within a local neighborhood.
+    The operation modifies the DataCube in place.
+
+    Parameters
+    ----------
+    dc : DataCube
+        The DataCube instance whose `cube` attribute (a numpy array of shape (v, x, y))
+        will be smoothed across the spatial dimensions for each spectral band.
+    size : int, optional
+        The size of the square window used by `scipy.ndimage.uniform_filter` for
+        smoothing. Must be a positive odd integer. Defaults to 3.
+
+    Returns
+    -------
+    DataCube
+        The same DataCube instance, with its `cube` attribute replaced by the
+        smoothed data of shape (v, x, y).
+
+    Raises
+    ------
+    ValueError
+        If `size` is not a positive integer.
+
+    Notes
+    -----
+    - Requires `scipy.ndimage.uniform_filter` to be imported.
+    - Smoothing is performed independently on each spectral band.
+    - This function updates `dc` in place; no new DataCube is created.
+
+    """
+    if not isinstance(size, int) or size < 1:
+        raise ValueError("`size` must be a positive integer")
+    cube = dc.cube
+    for i in range(dc.cube.shape[0]):
+        cube[i] = uniform_filter(cube[i], size=size)
+    dc.set_cube(cube)
     return dc
