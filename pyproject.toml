@@ -53,3 +53,8 @@ build = ["twine", "build"]
 [project.urls]
 Homepage = "https://github.com/BlueSpacePotato/hsi-wizard"
 Issues = "https://github.com/BlueSpacePotato/hsi-wizard/issues"
+
+[tool.poetry.overrides]
+# Force sub-deps to latest wheel-compatible versions
+numba    = ">=0.56.4"
+llvmlite = ">=0.44.0"
