@@ -211,9 +211,8 @@ class TestDataCube:
         dc = DataCube(cube=np.random.rand(10, 100, 100), wavelengths=np.arange(10))
         iterator = iter(dc)
         next_value = next(iterator)
-        assert isinstance(next_value, tuple)
-        assert len(next_value) == 2
-        assert isinstance(next_value[0], np.ndarray)
+        assert isinstance(next_value, np.ndarray)
+        assert next_value.shape == (100, 100)
 
     # Should return a string with the name and shape of the DataCube
     def test_return_string_with_name_and_shape(self):

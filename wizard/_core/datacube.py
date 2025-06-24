@@ -235,7 +235,7 @@ class DataCube(metaclass=TrackExecutionMeta):
             raise StopIteration
         else:
             self.idx += 1
-            return self.cube[self.idx - 1], self.wavelengths[self.idx - 1]
+            return self.cube[self.idx - 1]
 
     def __str__(self) -> str:
         """
