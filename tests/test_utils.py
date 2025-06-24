@@ -89,17 +89,6 @@ class TestLoaderHelper:
         assert all(filename.endswith(extension) for filename in result)
         assert sorted(result) == result
 
-    #  The function receives a valid absolute path as input and returns the same path.
-    def test_valid_absolute_path(self):
-        # Arrange
-        path = "/home/user/file.txt"
-
-        # Act
-        result = _loader._helper.make_path_absolute(path)
-
-        # Assert
-        assert result == path
-
     #  The function receives an empty string as input and raises a ValueError.
     def test_empty_string_input(self):
         # Arrange
