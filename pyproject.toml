@@ -54,6 +54,3 @@ build = ["twine", "build"]
 Homepage = "https://github.com/BlueSpacePotato/hsi-wizard"
 Issues = "https://github.com/BlueSpacePotato/hsi-wizard/issues"
 
-[tool.poetry.overrides]
-# Force sub-deps to latest wheel-compatible versions
-
