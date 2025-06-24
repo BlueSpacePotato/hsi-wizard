@@ -27,6 +27,7 @@ classifiers = [
 
 dependencies = [
 # Your regular dependencies go here
+    "numba",
     "numpy",
     "matplotlib",
     "opencv-python",
