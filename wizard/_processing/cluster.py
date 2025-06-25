@@ -866,7 +866,7 @@ def spatial_agglomerative_clustering(dc, n_clusters: int) -> np.ndarray:
     return flat_labels.reshape(x, y)
 
 
-def smooth_cluster(img, sigma=1.0):
+def smooth_cluster(img, sigma=1.0, n_iter=1):
     """
     Smooth a cluster label image to remove mislabelled pixels.
 
@@ -880,6 +880,8 @@ def smooth_cluster(img, sigma=1.0):
         Integer label image of shape (H, W) or (H, W, ...).
     sigma : float, optional
         Standard deviation for Gaussian kernel. Default is 1.0.
+    n_iter: int, optional
+        Number of iterations to apply the Gaussian filter. Default is 1.
 
     Returns
     -------
@@ -911,9 +913,13 @@ def smooth_cluster(img, sigma=1.0):
         raise TypeError("img must be a numpy.ndarray")
     if img.size == 0:
         raise ValueError("img must not be empty")
-    img_float = img.astype(np.float64)
-    smoothed = gaussian_filter(img_float, sigma=sigma)
-    result = np.rint(smoothed).astype(img.dtype)
+
+    result = img.copy()
+    for _ in range(n_iter):
+        img_float = result.astype(np.float64)
+        smoothed = gaussian_filter(img_float, sigma=sigma)
+        result = np.rint(smoothed).astype(img.dtype)
+        
     return result
 
 
