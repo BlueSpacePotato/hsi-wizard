@@ -352,5 +352,9 @@ def plotter(dc):
 
     update_plot()
 
-    plt.tight_layout(rect=[0, 0, .95, 1])
+    fig.subplots_adjust(
+        left=0.05, right=0.95,
+        top=0.95, bottom=0.05,
+        wspace=0.3, hspace=0.3
+    )
     plt.show()
