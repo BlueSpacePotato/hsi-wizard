@@ -252,10 +252,10 @@ class TestClustering:
         # very large threshold => break on first iteration, best_k stays 2
         assert wizard._processing.cluster.optimal_clusters(pixels, max_clusters=5, threshold=1e6) == 2
 
-    def test_smooth_kmneas_constant_cube(self):
+    def test_smooth_kmeans_constant_cube(self):
         cube = np.zeros((2, 3, 3))
         dc = wizard.DataCube(cube=cube, wavelengths=np.array([0, 1]))
-        labels = wizard._processing.cluster.smooth_kmneas(dc, n_clusters=2, mrf_iterations=2, kernel_size=3, sigma=0.5)
+        labels = wizard._processing.cluster.smooth_kmeans(dc, n_clusters=2, mrf_iterations=2, kernel_size=3, sigma=0.5)
         assert labels.shape == (3, 3)
         assert np.all(labels == 0)
 

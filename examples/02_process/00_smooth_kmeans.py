@@ -1,6 +1,6 @@
 import wizard
 from wizard._utils.example import generate_pattern_stack
-from wizard import smooth_kmneas
+from wizard import smooth_kmeans
 import matplotlib.pyplot as plt
 
 # generate synthetic data with spatial patterns
@@ -10,7 +10,7 @@ data = generate_pattern_stack(10, 600, 400, n_circles=3, n_rects=3, n_triangles=
 dc = wizard.DataCube(data)
 
 # apply hybrid segmentation
-segmentation = smooth_kmneas(dc, n_clusters=4, mrf_iterations=5, kernel_size=12, sigma=1.0)
+segmentation = smooth_kmeans(dc, n_clusters=4, mrf_iterations=5, kernel_size=12, sigma=1.0)
 
 # visualize a wavelength slice and the segmentation
 fig, axes = plt.subplots(1, 2, figsize=(10, 5))

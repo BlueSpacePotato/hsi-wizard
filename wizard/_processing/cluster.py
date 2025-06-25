@@ -630,7 +630,7 @@ def optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
     return best_k
 
 
-def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=12, sigma=1.0):
+def smooth_kmeans(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=12, sigma=1.0):
     """
     Segment a hyperspectral DataCube using KMeans clustering with MRF-based spatial smoothing.
 
@@ -670,8 +670,9 @@ def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=
 
     Examples
     --------
-    >>> labels = smooth_kmneas(dc, n_clusters=6, mrf_iterations=3)
+    >>> labels = smooth_kmeans(dc, n_clusters=6, mrf_iterations=3)
     >>> plt.imshow(labels, cmap='viridis')
+    >>> plt.show()
     """
 
     v, x, y = dc.shape
@@ -681,8 +682,8 @@ def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=
 
     # Determine optimal number of clusters
     optimal_k = optimal_clusters(pixels, max_clusters=n_clusters, threshold=threshold)
-    kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
-    labels = kmeans.fit_predict(pixels)
+    _kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
+    labels = _kmeans.fit_predict(pixels)
     labels = labels.reshape(x, y)
 
     # Generate dynamic Gaussian kernel
