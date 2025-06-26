@@ -17,9 +17,11 @@ fig, axes = plt.subplots(1, 2, figsize=(10, 5))
 
 axes[0].imshow(dc[5])
 axes[0].set_title("Original Slice (λ index 5)")
+axes[0].set_axis_off()
 
-axes[1].imshow(segmentation, cmap='cool')
+axes[1].imshow(segmentation)
 axes[1].set_title("Segmented (KMeans + MRF)")
+axes[1].set_axis_off()
 
 plt.tight_layout()
 plt.show()

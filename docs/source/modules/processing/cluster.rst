@@ -18,3 +18,7 @@ Functions
 
 .. note::
   The Isodata code was inspired by `pyRadar <https://github.com/PyRadar/pyradar/>` from PyRadar.
+
+
+  .. warning::
+   Agglomerative clustering with spatial connectivity is conceptually elegant, but it doesn’t scale well to large 2D grids, and processing very large datasets can lead to high computing time.
