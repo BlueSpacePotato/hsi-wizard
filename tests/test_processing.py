@@ -29,7 +29,7 @@ from wizard._processing.cluster import (
     _compute_avg_distance,
     _compute_overall_distance,
     _merge_clusters,
-    compute_pairwise_distances,
+    _compute_pairwise_distances,
     isodata,
 )
 
@@ -206,7 +206,7 @@ class TestClustering:
 
     def test_compute_pairwise_distances(self):
         """Test computation of pairwise distances between cluster centers."""
-        pair_dists = compute_pairwise_distances(self.centers)
+        pair_dists = _compute_pairwise_distances(self.centers)
         assert isinstance(pair_dists, list)
         assert len(pair_dists) > 0
 
@@ -240,7 +240,7 @@ class TestClustering:
 
     def test_generate_gaussian_kernel_properties(self):
         size, sigma = 5, 1.0
-        kernel = wizard._processing.cluster.generate_gaussian_kernel(size=size, sigma=sigma)
+        kernel = wizard._processing.cluster._generate_gaussian_kernel(size=size, sigma=sigma)
         assert kernel.shape == (size, size)
         assert pytest.approx(kernel.sum(), rel=1e-6) == 1.0
 
@@ -248,9 +248,9 @@ class TestClustering:
         # simple two-point data
         pixels = np.array([[0.0], [10.0], [20.0], [30.0]])
         # threshold 0 => always >0, so best_k == max_clusters
-        assert wizard._processing.cluster.optimal_clusters(pixels, max_clusters=3, threshold=0.0) == 3
+        assert wizard._processing.cluster._optimal_clusters(pixels, max_clusters=3, threshold=0.0) == 3
         # very large threshold => break on first iteration, best_k stays 2
-        assert wizard._processing.cluster.optimal_clusters(pixels, max_clusters=5, threshold=1e6) == 2
+        assert wizard._processing.cluster._optimal_clusters(pixels, max_clusters=5, threshold=1e6) == 2
 
     def test_smooth_kmeans_constant_cube(self):
         cube = np.zeros((2, 3, 3))
