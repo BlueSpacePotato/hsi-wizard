@@ -34,9 +34,13 @@ Process DataCube
    :maxdepth: 2
    :titlesonly:
 
-   process/cluster
-
-
+   process/kmeans
+   process/smooth_kmeans
+   process/isodata
+   process/spectral_kmeans
+   process/agglomerative_cluster
+   process/pca
+   process/smooth
 
 Use Template
 ============

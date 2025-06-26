@@ -15,4 +15,4 @@ This module initializes the exploration functions of the `hsi-wizard`.
 """
 
 from .cluster import isodata
-from .cluster import smooth_kmneas
+from .cluster import smooth_kmeans

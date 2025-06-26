@@ -383,7 +383,7 @@ def _merge_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_li
     Tuple[np.ndarray, np.ndarray, int]
         Updated centers, cluster list, and number of clusters.
     """
-    pair_dists = compute_pairwise_distances(centers)
+    pair_dists = _compute_pairwise_distances(centers)
 
     first_p_elements = pair_dists[:p]
     below_threshold = [(c1, c2) for d, (c1, c2) in first_p_elements if d < theta_c]
@@ -428,7 +428,7 @@ def _merge_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_li
     return centers, clusters_list, k_
 
 
-def compute_pairwise_distances(centers: np.ndarray) -> list:
+def _compute_pairwise_distances(centers: np.ndarray) -> list:
     """
     Compute all pairwise distances between cluster centers.
 
@@ -539,7 +539,7 @@ def isodata(dc, k: int = 10, it: int = 10, p: int = 2, theta_m: int = 10,
     return img_class_flat.reshape(x, y)
 
 
-def generate_gaussian_kernel(size=3, sigma=1.0):
+def _generate_gaussian_kernel(size=3, sigma=1.0):
     """
     Generate a 2D Gaussian kernel for image smoothing.
 
@@ -565,7 +565,7 @@ def generate_gaussian_kernel(size=3, sigma=1.0):
 
     Examples
     --------
-    >>> kernel = generate_gaussian_kernel(size=5, sigma=1.5)
+    >>> kernel = _generate_gaussian_kernel(size=5, sigma=1.5)
     >>> print(kernel.shape)
     (5, 5)
     """
@@ -576,7 +576,7 @@ def generate_gaussian_kernel(size=3, sigma=1.0):
     return kernel / kernel.sum()
 
 
-def optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
+def _optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
     """
     Estimate the optimal number of KMeans clusters using centroid distance threshold.
 
@@ -611,7 +611,7 @@ def optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
     Examples
     --------
     >>> pixels = dc.cube.reshape(dc.cube.shape[0], -1).T
-    >>> k = optimal_clusters(pixels, max_clusters=6, threshold=0.2)
+    >>> k = _optimal_clusters(pixels, max_clusters=6, threshold=0.2)
     >>> print(k)
     4
     """
@@ -630,7 +630,7 @@ def optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
     return best_k
 
 
-def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=12, sigma=1.0):
+def smooth_kmeans(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=12, sigma=1.0):
     """
     Segment a hyperspectral DataCube using KMeans clustering with MRF-based spatial smoothing.
 
@@ -670,8 +670,9 @@ def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=
 
     Examples
     --------
-    >>> labels = smooth_kmneas(dc, n_clusters=6, mrf_iterations=3)
+    >>> labels = smooth_kmeans(dc, n_clusters=6, mrf_iterations=3)
     >>> plt.imshow(labels, cmap='viridis')
+    >>> plt.show()
     """
 
     v, x, y = dc.shape
@@ -680,13 +681,13 @@ def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=
     pixels = dc.cube.reshape(v, -1).T
 
     # Determine optimal number of clusters
-    optimal_k = optimal_clusters(pixels, max_clusters=n_clusters, threshold=threshold)
-    kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
-    labels = kmeans.fit_predict(pixels)
+    optimal_k = _optimal_clusters(pixels, max_clusters=n_clusters, threshold=threshold)
+    _kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
+    labels = _kmeans.fit_predict(pixels)
     labels = labels.reshape(x, y)
 
     # Generate dynamic Gaussian kernel
-    kernel = generate_gaussian_kernel(size=kernel_size, sigma=sigma)
+    kernel = _generate_gaussian_kernel(size=kernel_size, sigma=sigma)
 
     # Apply Markov Random Field-based spatial regularization
     for _ in range(mrf_iterations):
@@ -841,8 +842,7 @@ def spatial_agglomerative_clustering(dc, n_clusters: int) -> np.ndarray:
 
     Notes
     -----
-    - Uses `sklearn.feature_extraction.image.grid_to_graph` to build a sparse
-    connectivity matrix over the x×y grid.
+    - Uses `sklearn.feature_extraction.image.grid_to_graph` to build a sparse connectivity matrix over the x×y grid.
     - May be more memory-intensive for large images.
 
     Examples
@@ -865,7 +865,7 @@ def spatial_agglomerative_clustering(dc, n_clusters: int) -> np.ndarray:
     return flat_labels.reshape(x, y)
 
 
-def smooth_cluster(img, sigma=1.0):
+def smooth_cluster(img, sigma=1.0, n_iter=1):
     """
     Smooth a cluster label image to remove mislabelled pixels.
 
@@ -879,6 +879,8 @@ def smooth_cluster(img, sigma=1.0):
         Integer label image of shape (H, W) or (H, W, ...).
     sigma : float, optional
         Standard deviation for Gaussian kernel. Default is 1.0.
+    n_iter: int, optional
+        Number of iterations to apply the Gaussian filter. Default is 1.
 
     Returns
     -------
@@ -910,9 +912,13 @@ def smooth_cluster(img, sigma=1.0):
         raise TypeError("img must be a numpy.ndarray")
     if img.size == 0:
         raise ValueError("img must not be empty")
-    img_float = img.astype(np.float64)
-    smoothed = gaussian_filter(img_float, sigma=sigma)
-    result = np.rint(smoothed).astype(img.dtype)
+
+    result = img.copy()
+    for _ in range(n_iter):
+        img_float = result.astype(np.float64)
+        smoothed = gaussian_filter(img_float, sigma=sigma)
+        result = np.rint(smoothed).astype(img.dtype)
+        
     return result
 
 
