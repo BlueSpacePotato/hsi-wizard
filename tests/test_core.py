@@ -536,11 +536,9 @@ class TestDataCubeOps:
         assert dc.cube[0, 1, 1] != 1000
 
 
-
-
     def test_resize(self):
         dc = create_test_cube(shape=(3, 10, 10))
-        x_new, y_new = 5, 5
+        x_new, y_new = 4, 5
 
         dc.resize(x_new, y_new, interpolation='linear')
 

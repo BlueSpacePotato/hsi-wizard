@@ -155,6 +155,7 @@ def remove_background(dc: DataCube, threshold: int = 50, style: str = 'dark') ->
 def resize(dc: DataCube, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
     """
     Resize the DataCube to new x and y dimensions.
+    dc.shape is v,x,y
 
     Resizes each 2D slice (x, y) of the DataCube using the specified
     interpolation method.
@@ -196,9 +197,9 @@ def resize(dc: DataCube, x_new: int, y_new: int, interpolation: str = 'linear') 
     """
     mode = None
     shape = dc.cube.shape
-    if shape[2] > x_new:
+    if shape[1] > x_new:
         print('\033[93mx_new is smaller than the existing cube, you will lose information\033[0m')
-    if shape[1] > y_new:
+    if shape[2] > y_new:
         print('\033[93my_new is smaller than the existing cube, you will lose information\033[0m')
 
     if interpolation == 'linear':
@@ -214,9 +215,9 @@ def resize(dc: DataCube, x_new: int, y_new: int, interpolation: str = 'linear') 
     else:
         raise ValueError(f'Interpolation method `{interpolation}` not recognized.')
 
-    _cube = np.empty(shape=(shape[0], y_new, x_new))
+    _cube = np.empty(shape=(shape[0], x_new, y_new))
     for idx, layer in enumerate(dc.cube):
-        _cube[idx] = cv2.resize(layer, (x_new, y_new), interpolation=mode)
+        _cube[idx] = cv2.resize(layer, (y_new, x_new), interpolation=mode)
     dc.cube = _cube
     dc._set_cube_shape()
 
