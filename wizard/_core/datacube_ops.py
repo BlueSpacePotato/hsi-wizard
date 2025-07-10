@@ -394,7 +394,7 @@ def inverse(dc: DataCube) -> DataCube:
     """
     dtype = dc.cube.dtype
     if dtype == np.uint16 or dtype == np.uint8:  # Use np types for comparison
-        cube = dc.cube.astype(np.float16)
+        cube = dc.cube.astype(np.float32)
     else:
         cube = dc.cube.copy()
 
