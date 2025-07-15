@@ -46,7 +46,7 @@ This package does not track or process geographical coordinates. If you require 
 
 # Installation
 
-## Requirements
+### Requirements
 - [Python](https://www.python.org) >3.10
 
 ### Via pip
@@ -105,9 +105,9 @@ If you encounter bugs, unexpected behavior, or have feature requests, please:
 
   1. Search existing issues to see if your problem or idea has already been reported.
   2. Open a new issue with a clear title and description:
-    2.1.Steps to reproduce the problem
-    2.2. Expected vs. actual behavior
-    2.3. Version of hsi-wizard, Python, and operating system
+     1. Steps to reproduce the problem
+     2. Expected vs. actual behavior
+     3. Version of hsi-wizard, Python, and operating system
   3. Label the issue appropriately (e.g., bug, feature request, documentation).
 
 ## Seeking Support

@@ -36,5 +36,6 @@ Example Usage
 .. figure:: ../../../../resources/imgs/surface_example.png
    :align: center
    :alt: Example of the surface plotter function in action.
-   :caption: Example of the surface plotter function in action.
+
+   Example of the surface plotter function in action.
 

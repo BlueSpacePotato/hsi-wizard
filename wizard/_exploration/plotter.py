@@ -318,7 +318,7 @@ def plotter(dc):
     line = ax[1].axvline(x=state['layer_id'], color='lightgrey', linestyle='dashed')
 
     # ROI mean line
-    roi_line, = ax[1].plot(dc.wavelengths, spec, label="ROI Mean")
+    roi_line, = ax[1].plot(dc.wavelengths, spec, label="ROI Mean", color='red')
     ax[1].set_xlabel(f'{dc.notation}')
     ax[1].set_ylabel('Counts')
     ax[1].set_xlim(dc.wavelengths.min(), dc.wavelengths.max())
@@ -352,5 +352,9 @@ def plotter(dc):
 
     update_plot()
 
-    plt.tight_layout(rect=[0, 0, .95, 1])
+    fig.subplots_adjust(
+        left=0.05, right=0.95,
+        top=0.95, bottom=0.05,
+        wspace=0.3, hspace=0.3
+    )
     plt.show()

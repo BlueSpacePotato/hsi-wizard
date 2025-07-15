@@ -29,7 +29,7 @@ from wizard._processing.cluster import (
     _compute_avg_distance,
     _compute_overall_distance,
     _merge_clusters,
-    compute_pairwise_distances,
+    _compute_pairwise_distances,
     isodata,
 )
 
@@ -206,7 +206,7 @@ class TestClustering:
 
     def test_compute_pairwise_distances(self):
         """Test computation of pairwise distances between cluster centers."""
-        pair_dists = compute_pairwise_distances(self.centers)
+        pair_dists = _compute_pairwise_distances(self.centers)
         assert isinstance(pair_dists, list)
         assert len(pair_dists) > 0
 
@@ -226,3 +226,79 @@ class TestClustering:
 
         theta_o = 0.001
         assert _quit_low_change_in_clusters(centers, last_centers, theta_o) is False
+
+    def test_update_clusters_mismatch_raises(self):
+        centers = np.array([[1.0, 2.0]])
+        clusters_list = np.array([0, 1])  # mismatch
+        with pytest.raises(ValueError):
+            _update_clusters(self.img_flat, self.img_class_flat, centers, clusters_list)
+
+    def test_initial_clusters_invalid_method(self):
+        img_flat = np.array([[0.0, 1.0], [1.0, 2.0]])
+        with pytest.raises(AssertionError):
+            _initial_clusters(img_flat, 2, method="not_a_method")
+
+    def test_generate_gaussian_kernel_properties(self):
+        size, sigma = 5, 1.0
+        kernel = wizard._processing.cluster._generate_gaussian_kernel(size=size, sigma=sigma)
+        assert kernel.shape == (size, size)
+        assert pytest.approx(kernel.sum(), rel=1e-6) == 1.0
+
+    def test_optimal_clusters_threshold_behavior(self):
+        # simple two-point data
+        pixels = np.array([[0.0], [10.0], [20.0], [30.0]])
+        # threshold 0 => always >0, so best_k == max_clusters
+        assert wizard._processing.cluster._optimal_clusters(pixels, max_clusters=3, threshold=0.0) == 3
+        # very large threshold => break on first iteration, best_k stays 2
+        assert wizard._processing.cluster._optimal_clusters(pixels, max_clusters=5, threshold=1e6) == 2
+
+    def test_smooth_kmeans_constant_cube(self):
+        cube = np.zeros((2, 3, 3))
+        dc = wizard.DataCube(cube=cube, wavelengths=np.array([0, 1]))
+        labels = wizard._processing.cluster.smooth_kmeans(dc, n_clusters=2, mrf_iterations=2, kernel_size=3, sigma=0.5)
+        assert labels.shape == (3, 3)
+        assert np.all(labels == 0)
+
+    def test_pca_reduction_and_errors(self):
+        # valid reduction
+        cube = np.arange(12).reshape(3, 2, 2).astype(float)
+        dc = wizard.DataCube(cube=cube, wavelengths=np.arange(3))
+        dc2 = wizard._processing.cluster.pca(dc, n_components=2)
+        assert dc2.cube.shape == (2, 2, 2)
+        assert np.array_equal(dc2.wavelengths, np.array([0, 1]))
+        # too many components
+        dc3 = wizard.DataCube(cube=np.zeros((3, 2, 2)), wavelengths=np.arange(3))
+        with pytest.raises(ValueError):
+            wizard._processing.cluster.pca(dc3, n_components=5)
+
+    def test_spectral_spatial_kmeans(self):
+        cube = np.array([[[0, 0], [100, 100]]], dtype=float)  # v=1, x=2, y=2
+        dc = wizard.DataCube(cube=cube, wavelengths=np.array([0]))
+        labels = wizard._processing.cluster.spectral_spatial_kmeans(dc, n_clusters=2, spatial_radius=0)
+        assert labels.shape == (2, 2)
+        assert set(np.unique(labels)) == {0, 1}
+        # invalid parameters
+        with pytest.raises(ValueError):
+            wizard._processing.cluster.spectral_spatial_kmeans(dc, n_clusters=0, spatial_radius=1)
+        with pytest.raises(ValueError):
+            wizard._processing.cluster.spectral_spatial_kmeans(dc, n_clusters=1, spatial_radius=-1)
+
+    def test_spatial_agglomerative_clustering(self):
+        cube = np.array([[[0, 1], [1, 0]]], dtype=float)
+        dc = wizard.DataCube(cube=cube, wavelengths=np.array([0]))
+        labels = wizard._processing.cluster.spatial_agglomerative_clustering(dc, n_clusters=2)
+        assert labels.shape == (2, 2)
+        assert set(np.unique(labels)).issubset({0, 1})
+
+    def test_smooth_cluster_errors_and_identity(self):
+        # bad type
+        with pytest.raises(TypeError):
+            wizard._processing.cluster.smooth_cluster([1, 2, 3], sigma=1.0)
+        # empty array
+        with pytest.raises(ValueError):
+            wizard._processing.cluster.smooth_cluster(np.array([]), sigma=1.0)
+        # identity on constant image
+        img = np.ones((5, 5), dtype=int)
+        result = wizard._processing.cluster.smooth_cluster(img, sigma=2.0)
+        assert result.dtype == img.dtype
+        assert np.array_equal(result, img)

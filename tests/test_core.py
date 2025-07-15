@@ -211,9 +211,8 @@ class TestDataCube:
         dc = DataCube(cube=np.random.rand(10, 100, 100), wavelengths=np.arange(10))
         iterator = iter(dc)
         next_value = next(iterator)
-        assert isinstance(next_value, tuple)
-        assert len(next_value) == 2
-        assert isinstance(next_value[0], np.ndarray)
+        assert isinstance(next_value, np.ndarray)
+        assert next_value.shape == (100, 100)
 
     # Should return a string with the name and shape of the DataCube
     def test_return_string_with_name_and_shape(self):
@@ -537,11 +536,9 @@ class TestDataCubeOps:
         assert dc.cube[0, 1, 1] != 1000
 
 
-
-
     def test_resize(self):
         dc = create_test_cube(shape=(3, 10, 10))
-        x_new, y_new = 5, 5
+        x_new, y_new = 4, 5
 
         dc.resize(x_new, y_new, interpolation='linear')
 
@@ -759,3 +756,54 @@ class TestDataCubeOps:
         assert dc.cube.dtype == dtype_before
         # all values should remain equal to original constant
         assert np.all(dc.cube == constant)
+
+    def test_remove_spikes_invalid_window(self):
+        dc = create_test_cube(shape=(3, 5, 5))
+        # window too large (greater than number of bands)
+        with pytest.raises(ValueError):
+            dc.remove_spikes(threshold=100, window=dc.cube.shape[0] + 1)
+        # window zero (below valid range)
+        with pytest.raises(ValueError):
+            dc.remove_spikes(threshold=100, window=0)
+
+    def test_uniform_filter_dc_invalid_size(self):
+        dc = create_test_cube(shape=(2, 4, 4))
+        with pytest.raises(ValueError):
+            dc.uniform_filter_dc(size=0)
+        with pytest.raises(ValueError):
+            dc.uniform_filter_dc(size=-3)
+        with pytest.raises(ValueError):
+            dc.uniform_filter_dc(size=2.5)
+
+    def test_uniform_filter_dc_smoothing(self):
+        dc = create_test_cube(shape=(1, 3, 3))
+        # create a checkerboard pattern
+        data = np.array([[[0, 1, 0],
+                          [1, 0, 1],
+                          [0, 1, 0]]], dtype=float)
+        dc.set_cube(data.copy())
+        dc.uniform_filter_dc(size=3)
+        smoothed = dc.cube[0]
+        # corners should now be >0 (smoothed), center <1
+        assert smoothed[0, 0] > 0
+        assert smoothed[1, 1] < 1
+
+    def test_remove_vignette_invalid_shape(self):
+        dc = create_test_cube(shape=(3, 4, 5))
+        bad_map = np.ones((3, 3))
+        with pytest.raises(ValueError):
+            dc.remove_vignette(vignette_map=bad_map)
+
+    def test_remove_vignette_subtraction_and_flip(self):
+        dc = create_test_cube(shape=(2, 2, 2))
+        base = np.full((2, 2, 2), 10.0)
+        dc.set_cube(base.copy())
+        vignette_map = np.ones((2, 2))
+        # no flip: subtract 1 everywhere → result = 9
+        dc.remove_vignette(vignette_map=vignette_map, flip=False)
+        assert np.all(dc.cube == 9.0)
+        # flip: vignette_map.max()-vignette_map = 0 → no change
+        dc.set_cube(base.copy())
+        dc.remove_vignette(vignette_map=vignette_map, flip=True)
+        assert np.all(dc.cube == 10.0)
+

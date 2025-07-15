@@ -42,6 +42,15 @@ If you're new here, the best place to start is the :ref:`wizard <wizard>` page, 
 
    examples/index
 
+
+.. toctree::
+   :maxdepth: 2
+   :caption: References
+   :titlesonly:
+
+   references/index
+
+
 Further Resources
 =================
 

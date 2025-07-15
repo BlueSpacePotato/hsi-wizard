@@ -21,7 +21,7 @@ import numpy as np
 from PIL import Image
 from joblib import Parallel, delayed
 from scipy.signal import savgol_filter
-from scipy.ndimage import gaussian_filter
+from scipy.ndimage import gaussian_filter, uniform_filter
 from skimage.transform import warp
 
 
@@ -155,6 +155,7 @@ def remove_background(dc: DataCube, threshold: int = 50, style: str = 'dark') ->
 def resize(dc: DataCube, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
     """
     Resize the DataCube to new x and y dimensions.
+    dc.shape is v,x,y
 
     Resizes each 2D slice (x, y) of the DataCube using the specified
     interpolation method.
@@ -196,9 +197,9 @@ def resize(dc: DataCube, x_new: int, y_new: int, interpolation: str = 'linear') 
     """
     mode = None
     shape = dc.cube.shape
-    if shape[2] > x_new:
+    if shape[1] > x_new:
         print('\033[93mx_new is smaller than the existing cube, you will lose information\033[0m')
-    if shape[1] > y_new:
+    if shape[2] > y_new:
         print('\033[93my_new is smaller than the existing cube, you will lose information\033[0m')
 
     if interpolation == 'linear':
@@ -214,9 +215,9 @@ def resize(dc: DataCube, x_new: int, y_new: int, interpolation: str = 'linear') 
     else:
         raise ValueError(f'Interpolation method `{interpolation}` not recognized.')
 
-    _cube = np.empty(shape=(shape[0], y_new, x_new))
+    _cube = np.empty(shape=(shape[0], x_new, y_new))
     for idx, layer in enumerate(dc.cube):
-        _cube[idx] = cv2.resize(layer, (x_new, y_new), interpolation=mode)
+        _cube[idx] = cv2.resize(layer, (y_new, x_new), interpolation=mode)
     dc.cube = _cube
     dc._set_cube_shape()
 
@@ -393,7 +394,7 @@ def inverse(dc: DataCube) -> DataCube:
     """
     dtype = dc.cube.dtype
     if dtype == np.uint16 or dtype == np.uint8:  # Use np types for comparison
-        cube = dc.cube.astype(np.float16)
+        cube = dc.cube.astype(np.float32)
     else:
         cube = dc.cube.copy()
 
@@ -1130,4 +1131,48 @@ def remove_vignette(dc: DataCube, vignette_map: np.ndarray, flip: bool = False) 
 
     dc.set_cube(cube)
 
+    return dc
+
+
+def uniform_filter_dc(dc, size=3):
+    """
+    Smooth each spectral band of a DataCube using a uniform spatial filter.
+
+    Applies a uniform filter of the given window size to every slice (band) in the
+    DataCube’s cube, reducing spatial noise by averaging within a local neighborhood.
+    The operation modifies the DataCube in place.
+
+    Parameters
+    ----------
+    dc : DataCube
+        The DataCube instance whose `cube` attribute (a numpy array of shape (v, x, y))
+        will be smoothed across the spatial dimensions for each spectral band.
+    size : int, optional
+        The size of the square window used by `scipy.ndimage.uniform_filter` for
+        smoothing. Must be a positive odd integer. Defaults to 3.
+
+    Returns
+    -------
+    DataCube
+        The same DataCube instance, with its `cube` attribute replaced by the
+        smoothed data of shape (v, x, y).
+
+    Raises
+    ------
+    ValueError
+        If `size` is not a positive integer.
+
+    Notes
+    -----
+    - Requires `scipy.ndimage.uniform_filter` to be imported.
+    - Smoothing is performed independently on each spectral band.
+    - This function updates `dc` in place; no new DataCube is created.
+
+    """
+    if not isinstance(size, int) or size < 1:
+        raise ValueError("`size` must be a positive integer")
+    cube = dc.cube
+    for i in range(dc.cube.shape[0]):
+        cube[i] = uniform_filter(cube[i], size=size)
+    dc.set_cube(cube)
     return dc

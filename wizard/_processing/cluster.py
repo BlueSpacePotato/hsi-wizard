@@ -28,10 +28,13 @@ The Isodata code was inspired by:
 
 import numpy as np
 from scipy.cluster.vq import vq
+from scipy.ndimage import uniform_filter, gaussian_filter
 from typing import Tuple
 from typing import Optional
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, AgglomerativeClustering
 from sklearn.metrics import pairwise_distances
+from sklearn.decomposition import PCA
+from sklearn.feature_extraction.image import grid_to_graph
 from scipy.signal import convolve2d
 
 
@@ -380,7 +383,7 @@ def _merge_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_li
     Tuple[np.ndarray, np.ndarray, int]
         Updated centers, cluster list, and number of clusters.
     """
-    pair_dists = compute_pairwise_distances(centers)
+    pair_dists = _compute_pairwise_distances(centers)
 
     first_p_elements = pair_dists[:p]
     below_threshold = [(c1, c2) for d, (c1, c2) in first_p_elements if d < theta_c]
@@ -425,7 +428,7 @@ def _merge_clusters(img_class_flat: np.ndarray, centers: np.ndarray, clusters_li
     return centers, clusters_list, k_
 
 
-def compute_pairwise_distances(centers: np.ndarray) -> list:
+def _compute_pairwise_distances(centers: np.ndarray) -> list:
     """
     Compute all pairwise distances between cluster centers.
 
@@ -536,7 +539,7 @@ def isodata(dc, k: int = 10, it: int = 10, p: int = 2, theta_m: int = 10,
     return img_class_flat.reshape(x, y)
 
 
-def generate_gaussian_kernel(size=3, sigma=1.0):
+def _generate_gaussian_kernel(size=3, sigma=1.0):
     """
     Generate a 2D Gaussian kernel for image smoothing.
 
@@ -562,7 +565,7 @@ def generate_gaussian_kernel(size=3, sigma=1.0):
 
     Examples
     --------
-    >>> kernel = generate_gaussian_kernel(size=5, sigma=1.5)
+    >>> kernel = _generate_gaussian_kernel(size=5, sigma=1.5)
     >>> print(kernel.shape)
     (5, 5)
     """
@@ -573,7 +576,7 @@ def generate_gaussian_kernel(size=3, sigma=1.0):
     return kernel / kernel.sum()
 
 
-def optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
+def _optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
     """
     Estimate the optimal number of KMeans clusters using centroid distance threshold.
 
@@ -608,7 +611,7 @@ def optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
     Examples
     --------
     >>> pixels = dc.cube.reshape(dc.cube.shape[0], -1).T
-    >>> k = optimal_clusters(pixels, max_clusters=6, threshold=0.2)
+    >>> k = _optimal_clusters(pixels, max_clusters=6, threshold=0.2)
     >>> print(k)
     4
     """
@@ -627,7 +630,7 @@ def optimal_clusters(pixels, max_clusters=5, threshold=0.1) -> int:
     return best_k
 
 
-def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=12, sigma=1.0):
+def smooth_kmeans(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=12, sigma=1.0):
     """
     Segment a hyperspectral DataCube using KMeans clustering with MRF-based spatial smoothing.
 
@@ -667,8 +670,9 @@ def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=
 
     Examples
     --------
-    >>> labels = smooth_kmneas(dc, n_clusters=6, mrf_iterations=3)
+    >>> labels = smooth_kmeans(dc, n_clusters=6, mrf_iterations=3)
     >>> plt.imshow(labels, cmap='viridis')
+    >>> plt.show()
     """
 
     v, x, y = dc.shape
@@ -677,13 +681,13 @@ def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=
     pixels = dc.cube.reshape(v, -1).T
 
     # Determine optimal number of clusters
-    optimal_k = optimal_clusters(pixels, max_clusters=n_clusters, threshold=threshold)
-    kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
-    labels = kmeans.fit_predict(pixels)
+    optimal_k = _optimal_clusters(pixels, max_clusters=n_clusters, threshold=threshold)
+    _kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
+    labels = _kmeans.fit_predict(pixels)
     labels = labels.reshape(x, y)
 
     # Generate dynamic Gaussian kernel
-    kernel = generate_gaussian_kernel(size=kernel_size, sigma=sigma)
+    kernel = _generate_gaussian_kernel(size=kernel_size, sigma=sigma)
 
     # Apply Markov Random Field-based spatial regularization
     for _ in range(mrf_iterations):
@@ -695,3 +699,271 @@ def smooth_kmneas(dc, n_clusters=5, threshold=.1, mrf_iterations=5, kernel_size=
         labels = np.round(smoothed_labels).astype(np.int32)
 
     return labels
+
+
+def pca(dc, n_components=25):
+    """
+    Perform principal component analysis to reduce the spectral dimensionality of a DataCube.
+
+    This function reshapes the DataCube’s underlying array from shape (v, x, y) to (x*y, v),
+    applies PCA to reduce the number of spectral bands to `n_components`, then reshapes
+    the result back to (n_components, x, y). It also updates the DataCube’s wavelengths
+    to a simple integer index for each new component.
+
+    Parameters
+    ----------
+    dc : DataCube
+        The DataCube instance whose `cube` attribute (a numpy array of shape (v, x, y))
+        will be reduced in its spectral dimension.
+    n_components : int, optional
+        The number of principal components to retain. Defaults to 25.
+
+    Returns
+    -------
+    DataCube
+        The same DataCube instance, with its `cube` attribute replaced by the reduced
+        cube of shape (n_components, x, y) and its `wavelengths` attribute set to
+        integer indices from 0 to n_components-1.
+
+    Raises
+    ------
+    ValueError
+        If `n_components` is greater than the original number of spectral bands (v).
+
+    Notes
+    -----
+    - Uses `sklearn.decomposition.PCA` under the hood.
+    - The new wavelengths are not actual physical wavelengths but simple indices.
+    - The transformation is done in-place on the provided DataCube.
+
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read("hyperspectral_data.cube")
+    >>> dc = pca(dc, n_components=10)
+    >>> print(dc.cube.shape)
+    (10, 512, 512)
+    """
+    v, x, y = dc.cube.shape
+
+    cube = dc.cube
+
+    # Reshape to (n_pixels, v)
+    data = cube.reshape(v, -1).T  # (x*y, v)
+
+    # PCA reduction
+    pca_model = PCA(n_components=n_components)
+    reduced = pca_model.fit_transform(data)  # (x*y, n_components)
+
+    # Reshape back to (n_components, x, y)
+    reduced_cube = reduced.T.reshape(n_components, x, y)
+
+    wave = np.arange(n_components, dtype=int)
+
+    dc.set_cube(reduced_cube)
+    dc.set_wavelengths(wave)
+    return dc
+
+
+def spectral_spatial_kmeans(dc, n_clusters: int, spatial_radius: int) -> np.ndarray:
+    """
+    Spectral–spatial K-Means clustering for hyperspectral images.
+
+    Applies K-Means to pixel spectra augmented by the mean spectrum of their local neighborhood.
+
+    Parameters
+    ----------
+    dc : DataCube
+        Hyperspectral data cube with shape (v, x, y), where v is number of bands.
+    n_clusters : int
+        Number of clusters to form.
+    spatial_radius : int
+        Radius (in pixels) of the square neighborhood for local averaging.
+
+    Returns
+    -------
+    labels : np.ndarray of shape (x, y)
+        Integer cluster label for each pixel.
+
+    Raises
+    ------
+    ValueError
+        If `spatial_radius < 0` or `n_clusters <= 0`.
+
+    Notes
+    -----
+    - Uses a uniform filter to compute the local mean spectrum for each pixel.
+    - Flattens the augmented spectral features and applies scikit-learn’s KMeans.
+
+    Examples
+    --------
+    >>> labels = spectral_spatial_kmeans(dc, n_clusters=5, spatial_radius=1)
+    """
+    if spatial_radius < 0 or n_clusters <= 0:
+        raise ValueError("spatial_radius must be ≥0 and n_clusters >0")
+
+    # Compute local-mean cube
+    v, x, y = dc.cube.shape
+    local_cube = np.empty_like(dc.cube)
+    for band in range(v):
+        local_cube[band] = uniform_filter(dc.cube[band], size=2 * spatial_radius + 1, mode='reflect')
+
+    # Stack spectral + spatial-mean features
+    features = np.vstack([
+        dc.cube.reshape(v, -1),
+        local_cube.reshape(v, -1)
+    ]).T  # shape (x*y, 2v)
+
+    # Run KMeans
+    km = KMeans(n_clusters=n_clusters, random_state=0)
+    flat_labels = km.fit_predict(features)
+
+    return flat_labels.reshape(x, y)
+
+
+def spatial_agglomerative_clustering(dc, n_clusters: int) -> np.ndarray:
+    """
+    Agglomerative clustering with a 4-connected grid graph enforcing spatial contiguity.
+
+    Flattens the spectral vectors and uses `grid_to_graph` for pixel connectivity,
+    so only spatial neighbors can merge.
+
+    Parameters
+    ----------
+    dc : DataCube
+        Hyperspectral data cube (v, x, y).
+    n_clusters : int
+        Desired number of clusters.
+
+    Returns
+    -------
+    labels : np.ndarray of shape (x, y)
+        Connected clusters that respect spatial adjacency.
+
+    Notes
+    -----
+    - Uses `sklearn.feature_extraction.image.grid_to_graph` to build a sparse connectivity matrix over the x×y grid.
+    - May be more memory-intensive for large images.
+
+    Examples
+    --------
+    >>> labels = spatial_agglomerative_clustering(dc, n_clusters=8)
+    """
+    v, x, y = dc.cube.shape
+    # Build connectivity graph on the 2D grid
+    connectivity = grid_to_graph(n_x=x, n_y=y)
+
+    # Flatten spectral data
+    data = dc.cube.reshape(v, -1).T  # shape (x*y, v)
+
+    # Agglomerative clustering with spatial connectivity
+    agg = AgglomerativeClustering(n_clusters=n_clusters,
+                                  connectivity=connectivity,
+                                  linkage='ward')
+    flat_labels = agg.fit_predict(data)
+
+    return flat_labels.reshape(x, y)
+
+
+def smooth_cluster(img, sigma=1.0, n_iter=1):
+    """
+    Smooth a cluster label image to remove mislabelled pixels.
+
+    Apply a Gaussian filter to the input cluster label image to reduce spurious
+    mislabelled pixels by smoothing label intensities, then round back to the
+    nearest integer labels.
+
+    Parameters
+    ----------
+    img : numpy.ndarray
+        Integer label image of shape (H, W) or (H, W, ...).
+    sigma : float, optional
+        Standard deviation for Gaussian kernel. Default is 1.0.
+    n_iter: int, optional
+        Number of iterations to apply the Gaussian filter. Default is 1.
+
+    Returns
+    -------
+    numpy.ndarray
+        Smoothed label image with same shape and dtype as input.
+
+    Raises
+    ------
+    TypeError
+        If img is not a numpy.ndarray.
+    ValueError
+        If img is empty.
+
+    Notes
+    -----
+    Internally, the image labels are converted to float, smoothed, then rounded
+    back to integer labels. This may remove small isolated noisy pixels.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> img = np.array([[1,1,2],[1,2,2],[2,2,2]])
+    >>> smooth_cluster(img, sigma=0.5)
+    array([[1,1,2],
+           [1,2,2],
+           [2,2,2]])
+    """
+    if not isinstance(img, np.ndarray):
+        raise TypeError("img must be a numpy.ndarray")
+    if img.size == 0:
+        raise ValueError("img must not be empty")
+
+    result = img.copy()
+    for _ in range(n_iter):
+        img_float = result.astype(np.float64)
+        smoothed = gaussian_filter(img_float, sigma=sigma)
+        result = np.rint(smoothed).astype(img.dtype)
+        
+    return result
+
+
+def kmeans(dc, n_clusters=5, n_init=10):
+    """
+    Perform KMeans clustering on a hyperspectral DataCube without spatial smoothing.
+
+    This function reshapes the spectral data into pixel vectors and applies KMeans to
+    segment the data into the specified number of clusters.
+
+    Parameters
+    ----------
+    dc : DataCube
+        Hyperspectral data cube with shape (v, x, y), where `v` is the spectral resolution.
+    n_clusters : int
+        Number of clusters to form. Default is 5.
+    n_init : int
+        Number of time the k-means algorithm will be run with different centroid seeds.
+        Default is 10.
+
+    Returns
+    -------
+    np.ndarray
+        2D array of shape (x, y) containing cluster labels for each pixel.
+
+    Raises
+    ------
+    ValueError
+        If the input DataCube is malformed or `n_clusters` or `n_init` are invalid.
+
+    Notes
+    -----
+    This function does not perform any spatial regularization or smoothing.
+    """
+    # Validate inputs
+    if n_clusters < 1 or n_init < 1:
+        raise ValueError("`n_clusters` and `n_init` must be positive integers.")
+
+    # Reshape cube for clustering
+    v, x, y = dc.cube.shape
+    pixels = dc.cube.reshape(v, -1).T
+
+    # Apply KMeans clustering
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=n_init)
+    labels_flat = kmeans.fit_predict(pixels)
+
+    # Reshape back to image dimensions
+    return labels_flat.reshape(x, y)
