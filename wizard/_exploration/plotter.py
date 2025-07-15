@@ -318,7 +318,7 @@ def plotter(dc):
     line = ax[1].axvline(x=state['layer_id'], color='lightgrey', linestyle='dashed')
 
     # ROI mean line
-    roi_line, = ax[1].plot(dc.wavelengths, spec, label="ROI Mean")
+    roi_line, = ax[1].plot(dc.wavelengths, spec, label="ROI Mean", color='red')
     ax[1].set_xlabel(f'{dc.notation}')
     ax[1].set_ylabel('Counts')
     ax[1].set_xlim(dc.wavelengths.min(), dc.wavelengths.max())
