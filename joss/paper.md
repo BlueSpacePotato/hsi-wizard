@@ -22,50 +22,77 @@ bibliography: paper.bib
 
 # Summary
 
-`hsi-wizard` is an open-source Python package for processing, analyzing, and visualizing hyperspectral datasets. While its methods are adaptable to other fields, the core emphasis is on analytics for medical applications. Hyperspectral data, in this context, refers to images where each pixel contains multiple pieces of information, typically intensity values at different wavelengths. The number of spectral bands per pixel (n) can range from just a few to over 2000. These datasets originate from various sources, including scanners, imaging devices, and tomographic slides. Since hyperspectral data can come with different resolutions and pixel offsets, hsi-wizard enables seamless integration of multiple data sources. `hsi-wizard` provides an intuitive environment for hyperspectral analysis. With the `DataCube`, a standardized class for representing hyperspectral data is presented. This ensures uniform and consistent processing of hyperspectral data. In addition, `hsi-wizard` provides tools to manipulate, explore, and analyze `DataCubes`.  
+`hsi-wizard` is an open-source Python package designed for processing, analysing, and visualising hyperspectral datasets, primarily in medical applications. Hyperspectral data refers to images where each pixel contains multiple intensity values at different wavelengths, with the number of spectral bands ranging from only a few to well over a thousand. These datasets vary in resolution and structure, making analysis difficult due to inconsistent formats and limited reproducibility. To address these challenges, `hsi-wizard` provides a standardised data representation and analysis protocols that enhance reproducibility. The package features the `DataCube`, a standardised class for representing hyperspectral data, which simplifies data manipulation compared to traditional array-based tools like NumPy. The `DataCube` includes built-in methods tailored specifically for hyperspectral data, facilitating quicker exploration and reducing complexity for users.
 
-A key feature of the `DataCube` class is a protocol functionality that records the methods used from the `hsi-wizard` library. The protocol serves as a reusable template for other datasets, enabling researchers to reproduce results with minimal programming effort. Another feature of the `hsi-wizard` is a method for merging `DataCubes`. This makes it easy to combine different modalities into one large dataset. 
+A notable feature of the `DataCube` class is its protocol functionality, which records the methods used from the `hsi-wizard` library. This protocol acts as a reusable template for other datasets, allowing researchers, including those without programming experience, to replicate analyses accurately and effortlessly. Additionally, `hsi-wizard` allows users to merge `DataCubes` due to its standardised representation. This capability enables researchers, for example, to easily combine near-infrared (IR) and Raman spectroscopy datasets, resulting in more comprehensive and detailed tissue analyses. Such multimodal analysis simplifies the process and provides greater insights from combined data.
 
-The `hsi-wizard` simplifies the workflow for processing, analyzing, and visualizing hyperspectral data. It is designed to cater to both beginners and experts. Students can use the straightforward methods for educational purposes, while researchers can leverage advanced functions for professional studies, with the advantage that the results are reproducible and transparently documented.
+Overall, `hsi-wizard` streamlines the workflow for processing, analysing, and visualising hyperspectral data. It caters to both beginners and experts. Students can utilise straightforward methods for educational purposes, while researchers can leverage advanced functions for professional studies, ensuring that results are reproducible and transparently documented.
 
 # Statement of Need
 
-Hyperspectral imaging (HSI) enables detailed analysis of the electromagnetic spectrum across multiple wavelengths for each pixel in an image. Originally developed for NASA applications, HSI is now used in a wide range of fields [@Bhargava]. This versatility has resulted in diverse methods for acquiring hyperspectral data, including different measurement techniques (reflection, transmission, fluorescence), wavelength ranges (ultraviolet, visible, infrared), and scanning methods (e.g., point scanning, line scanning, and Fourier transform infrared imaging (FTIR)) [@Guolan].
+Hyperspectral imaging (HSI) allows for an in-depth analysis of the electromagnetic spectrum across multiple wavelengths for each pixel in an image. Initially developed for NASA applications, HSI is now applied in various fields, including medicine, agriculture, environmental monitoring and more [@Bhargava]. In medical research, for example, HSI is instrumental in distinguishing healthy tissue from cancerous areas or detecting early-stage diseases.
 
-To streamline the analysis of these diverse datasets and eliminate the need for developing custom methods for each, `hsi-wizard` standardizes their representation through the `DataCube` class. It enables uniform analysis, manipulation, and visualization through well-defined functions. Furthermore, the standardization is essential for enabling data fusion across different scanning processes. Different scans from various scanners result in unique datasets with differing resolutions, information and aspect ratios. Therefore, the first step in merging these scans is to use a well-defined data representation combined with methods that can address these challenges. `hsi-wizard` provides this capability, making it easier to combine datasets for further analysis.
+The evolution of these fields has led to a variety of methods for acquiring hyperspectral data, encompassing different measurement techniques such as reflection, transmission, and fluorescence, as well as varying wavelength ranges (ultraviolet, visible, infrared) and scanning methods (e.g., point scanning, line scanning, Fourier transform infrared imaging (FTIR)) [@Guolan]. Consequently, datasets exhibit diverse formats, resolutions, and spectral ranges, which complicates analysis workflows and can hinder efficiency and reproducibility.
 
-In addition, `hsi-wizard` allows users to log and save the manipulations of the `DataCube`. These logs can be reused for similar `DataCubes`, ensuring consistent analysis across different measurements with minimal effort. This feature reduces the need for programming expertise and enhances reproducibility, thereby supporting the goal of increased transparency in research [@Burke] [@Knottnerus].
+The `hsi-wizard` addresses these challenges by standardising data representation through its `DataCube` class, enabling consistent analysis across diverse hyperspectral datasets. Unlike traditional software tools like NumPy or specialised applications such as ENVI or SPy, which often require extensive programming or manual adjustments to manage variability, `hsi-wizard` streamlines data handling and integrates multimodal datasets seamlessly. It also promotes reproducibility through automated protocol logging.
 
-Besides the supplied functionalities, `hsi-wizard` is also extensible, allowing users to integrate additional methods and customize the package for diverse applications.
+Moreover, the extensibility of `hsi-wizard` allows users to incorporate new analysis methods or customise existing workflows easily, ensuring adaptability to evolving research needs. This flexibility guarantees that `hsi-wizard` remains relevant across various research scenarios, significantly reducing barriers to hyperspectral data analysis while promoting transparency and reproducibility in scientific research.
 
-# Comparison with Existing Tools
+To further facilitate the analysis of diverse datasets and eliminate the need for custom methods for each, `hsi-wizard` standardises their representation through the `DataCube` class. This standardisation is crucial for enabling data fusion across different scanning processes, as scans from various scanners yield unique datasets with differing resolutions and aspect ratios. Thus, merging these scans begins with a well-defined data representation and methods to address these challenges. `hsi-wizard` provides these capabilities, simplifying the combination of datasets for subsequent analysis.
 
-Targeted at medical hyperspectral imaging and bioinformatics, `hsi-wizard` provides a `DataCube` abstraction for uniform HSI data management, advanced spectral plotting, visualization, and clustering analytics, aswell as tools for merging multiple datasets and tools for method tracking, while deliberately omitting geospatial coordinate processing.
+Additionally, `hsi-wizard` allows users to log and save manipulations of the `DataCube`. These logs can be reused for similar `DataCubes`, ensuring consistent analysis across different measurements. This feature diminishes the need for programming expertise and enhances reproducibility, thereby supporting the goal of increased transparency in research [@Knottnerus].
 
-Open-source packages like PySptools cater to remote-sensing workflows with endmember extraction, spectral unmixing, supervised classification, target detection, and denoising for satellite and airborne data.
+## Comparison with Existing Tools
 
-HyDe specializes in GPU-accelerated denoising via low-rank wavelet and DNN methods, offering a Pythonic API and PyTorch compatibility but minimal high-level data handling. Spectral Python (SPy) delivers general-purpose I/O, raster displays, and basic classification routines for geospatial imagery.
+A variety of open-source and commercial tools exist for hyperspectral imaging, but most are tailored to geospatial tasks, low-level preprocessing, or GUI-driven workflows. Libraries like PySptools and SPy focus on raster I/O and classification for remote sensing, while tools such as HyDe provide GPU-based denoising but lack biomedical integration. Commercial options like ENVI or Spectronon offer user-friendly interfaces but are often tied to hardware and limited in scripting or batch automation.
 
-Commercial platforms like ENVI integrate deeply with ArcGIS, providing GUI-driven batch workflows and comprehensive spectral analysis at a premium cost, while Spectronon ties strongly to Resonon hardware for data acquisition, radiometric correction, and visualization tools.  Free GUIs such as IDCubeLite and GLIMPS enable interactive exploration of 3D HSI cubes across biomedical and geospatial domains, yet their GUI-bound interfaces preclude scripting or batch processing, falter on large or mismatched datasets.
+In contrast, `hsi-wizard` is designed specifically for biomedical use. It supports multimodal fusion, protocol logging, and scripting within a unified Python environment. It handles formats like ENVI, CSV, NRRD, and TDMS and integrates cleanly into programmatic workflows. Unlike GUI-centric tools, hsi-wizard enables reproducible, automated processing for diverse spectral datasets, filling a gap between algorithm libraries and rigid GUI systems.
 
-By focusing on medical-domain requirements and offering a cohesive API for reproducible spectral analytics, `hsi-wizard` fills a unique niche between specialized algorithm libraries and user-friendly exploration tools in biomedical research.
+This makes `hsi-wizard` especially suitable for clinical imaging and research, combining flexibility, transparency, and domain-specific functionality in one open-source tool.
 
 # Example Usage
 
-```python`
+This snippet demonstrates the use of the `hsi-wizard` package for processing and visualizing hyperspectral data, using a real sample from the HeiPorSPECTRAL dataset [@Studier-Fischer2023]. The focus is on the *spleen* example (P086#2021_04_15_09_22_02). `hsi-wizard` handles the entire pipeline: from reading the raw `.dat` hyperspectral `DataCube`, managing metadata like wavelengths, to applying PCA and agglomerative spatial clustering. It enables concise and structured exploration of spectral information in biomedical imaging. The full example is visible in the documentation.
+
+```python3
 import wizard
+from wizard._processing.cluster import pca, spatial_agglomerative_clustering, smooth_cluster
 
-data = 'data/'
+# Define Custom reader
+def read_spectral_cube(path) -> wizard.DataCube:
+    shape = np.fromfile(path, dtype=">i", count=3)
+    cube = np.fromfile(path, dtype=">f", offset=12).reshape(*shape)
+    cube = np.swapaxes(np.flip(cube, axis=1), 0, 1).astype(np.float32)
+    wavelengths = np.linspace(500, 1000, cube.shape[2], dtype='int')
+    return wizard.DataCube(cube.transpose(2, 0, 1), wavelengths=wavelengths, notation='nm', name='HeiProSpectral')
 
-``
+# Initalize dc and read data
+dc = wizard.DataCube()
+dc.set_custom_reader(read_spectral_cube)
+dc.custom_read('2021_04_15_09_22_02_SpecCube.dat')
+
+# Inspect Data
+wizard.plotter(dc)
+```
+
+![ROI-based spectral analysis with the interactive plotting interface of hsi-wizard. The left panel shows selected tissue regions at 696 nm, while the right panel displays corresponding normalized spectra of the rois.](assets/wizard_output.png)
+
+```python3
+# Clustering
+dc_pca = pca(dc, n_components=10)
+agglo = spatial_agglomerative_clustering(dc_pca, n_clusters=5)
+agglo = smooth_cluster(agglo, n_iter=10, sigma=0.5)
+```
+
+![Comparison between manual annotation (top-right) from [@Studier-Fischer2023] and automated segmentation (bottom-left) using spatial agglomerative clustering (k = 5) on PCA-reduced hyperspectral data. The original RGB image (top-left) and the resulting cluster map (bottom-right) provide visual context and output structure.](assets/Example_output.png)
 
 # Future Work
 
-The development of `hsi-wizard` is ongoing. Ideas, feedback, and contributions are happily welcomed. All versions of `hsi-wizard` are available on the Python Package Index (PyPI). 
+The development of `hsi-wizard` is ongoing, with future goals that include expanding support for additional data formats and integrating advanced data analytics. We encourage feedback, contributions, and ideas from the community. All versions of `hsi-wizard` are available on the Python Package Index (PyPI) or on Github [@github_wizard].
 
 # Acknowledgements
 
-`hsi-wizard` is the result of several published articles like [@vanmarwick], [@heintz], [@kummel], [@nachtmann], and [@manser]. The work on `hsi-wizard` was funded by CeMOS Research & Transfer Center and the University of Applied Science Mannheim. 
+The development of hsi-wizard was funded by the CeMOS Research & Transfer Center and the Technical University of Applied Sciences Mannheim. The software was developed based on practical requirements and datasets provided by our research group: Kümmel [@kummel] shaped the mid-infrared data handling and clustering through his work on brain tissue imaging; Heintz [@heintz] provided multimodal Raman and VIS use cases; Manser [@manser] contributed workflows for Raman light sheet microscopy; Nachtmann [@nachtmann] validated complex 3D Raman pipelines; and van Marwick [@vanmarwick] influenced preprocessing through chemical segmentation tasks.
 
 # References
 
