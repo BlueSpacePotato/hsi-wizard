@@ -20,8 +20,30 @@ In many workflows, your data may already reside in a NumPy array. This example d
 Example
 -------
 
-   .. literalinclude:: ../../../../examples/00_first_steps/00_array_to_dc.py
+.. literalinclude:: ../../../../examples/00_first_steps/00_array_to_dc.py
 
 
+Here’s what our `DataCube` prints out:
 
+   .. code-block:: text
+
+      Name: Hello DataCube
+      Shape: (20, 8, 9)
+      Wavelengths:
+              Len: 20
+              From: 0
+              To: 19
+
+      Wavelength values: [ 0  1  2  … 19]
+
+   .. code-block:: text
+
+      Name: Visible Spectrum Cube
+      Shape: (20, 8, 9)
+      Wavelengths:
+              Len: 20
+              From: 400
+              To: 700
+
+      Wavelength values: [400 415 431 … 700]
 
