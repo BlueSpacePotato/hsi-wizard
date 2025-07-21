@@ -56,7 +56,9 @@ This snippet demonstrates the use of the `hsi-wizard` package for processing and
 
 ```python3
 import wizard
-from wizard._processing.cluster import pca, spatial_agglomerative_clustering, smooth_cluster
+from wizard._processing.cluster import (
+    pca, spatial_agglomerative_clustering, smooth_cluster
+)
 
 # Define Custom reader
 def read_spectral_cube(path) -> wizard.DataCube:
@@ -64,9 +66,14 @@ def read_spectral_cube(path) -> wizard.DataCube:
     cube = np.fromfile(path, dtype=">f", offset=12).reshape(*shape)
     cube = np.swapaxes(np.flip(cube, axis=1), 0, 1).astype(np.float32)
     wavelengths = np.linspace(500, 1000, cube.shape[2], dtype='int')
-    return wizard.DataCube(cube.transpose(2, 0, 1), wavelengths=wavelengths, notation='nm', name='HeiProSpectral')
+    return wizard.DataCube(
+        cube.transpose(2, 0, 1),
+        wavelengths=wavelengths,
+        notation='nm',
+        name='HeiProSpectral',
+    )
 
-# Initalize dc and read data
+# Initialize dc and read data
 dc = wizard.DataCube()
 dc.set_custom_reader(read_spectral_cube)
 dc.custom_read('2021_04_15_09_22_02_SpecCube.dat')
