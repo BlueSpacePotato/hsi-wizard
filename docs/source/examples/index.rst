@@ -26,6 +26,7 @@ The `DataCube` class offers several functions and methods, some of which are pre
 
    methods/resize
    methods/remove_background
+   methods/merge_cubes
 
 Process DataCube
 ================
