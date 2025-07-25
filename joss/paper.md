@@ -95,7 +95,7 @@ agglo = smooth_cluster(agglo, n_iter=10, sigma=0.5)
 
 # Future Work
 
-The development of `hsi-wizard` is ongoing, with future goals that include expanding support for additional data formats and integrating advanced data analytics. We encourage feedback, contributions, and ideas from the community. All versions of `hsi-wizard` are available on the Python Package Index (PyPI) or on Github [@github_wizard].
+Additional publications are currently in preparation, focusing on workflows for merging complementary datasets in more detail. The development of `hsi-wizard` is ongoing, with future goals that include expanding support for additional data formats and integrating advanced data analytics. We encourage feedback, contributions, and ideas from the community. All versions of `hsi-wizard` are available on the Python Package Index (PyPI) or on Github [@github_wizard].
 
 # Acknowledgements
 
