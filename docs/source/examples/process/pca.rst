@@ -15,5 +15,8 @@ The following example demonstrates PCA on a synthetically generated :class:DataC
    :language: python
    :linenos:
 
-The output DataCube shows the primary modes of spectral variation, which can be visualized or used as input for subsequent clustering or classification tasks.
+Output:
 
+   .. code-block:: text
+
+      Reduced cube shape: (10, 200, 200)

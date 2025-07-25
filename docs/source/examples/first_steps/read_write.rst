@@ -53,10 +53,23 @@ preserving the original data shape and structure.
 
 .. literalinclude:: ../../../../examples/00_first_steps/01_read_write_dc_csv.py
 
+Output:
+
+  .. code-block:: text
+
+    (22, 10, 8)
+
+
 xlsx
 ~~~~
 Similar to the snippet above, this example shows how to generate a random DataCube, write it to a .xlsx file using the :ref:`wizard._utils._loader.xlsx <xlsx>` module, and read it back into a new DataCube.
 
 .. literalinclude:: ../../../../examples/00_first_steps/01_read_write_dc_xlsx.py
+
+Output:
+
+  .. code-block:: text
+
+     (22, 10, 8)
 
 

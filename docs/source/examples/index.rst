@@ -26,6 +26,7 @@ The `DataCube` class offers several functions and methods, some of which are pre
 
    methods/resize
    methods/remove_background
+   methods/merge_cubes
 
 Process DataCube
 ================
@@ -50,6 +51,16 @@ Use Template
    :titlesonly:
 
    templates/create_use
+
+
+Read World Examples
+===================
+
+.. toctree::
+   :maxdepth: 2
+   :titlesonly:
+
+   real_world/HeiPorSPECTRAL
 
 
 
