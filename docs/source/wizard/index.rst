@@ -42,6 +42,10 @@ To install from source:
 Comparison with with Existing Tools
 ===================================
 
+Most existing hyperspectral‐imaging packages—whether open‑source (e.g. PySptools, SPy, HyDe) or commercial (ENVI, Spectronon)—are aimed at geospatial tasks or GUI‑driven workflows, with limited scripting, batch automation or biomedical support.
+
+In contrast, hsi‑wizard is an open‑source, Python‐native toolkit built for biomedical imaging. It handles ENVI, CSV, NRRD, TDMS and other formats; offers multimodal fusion, protocol logging and scriptable pipelines; and delivers fully reproducible, automated processing of diverse spectral datasets—bridging the gap between low‑level algorithm libraries and rigid GUI systems.
+
 .. list-table:: Comparison of Hyperspectral Imaging (HSI) Tools
    :header-rows: 1
 
