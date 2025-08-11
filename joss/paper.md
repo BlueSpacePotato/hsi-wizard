@@ -55,10 +55,9 @@ This makes `hsi-wizard` especially suitable for clinical imaging and research, c
 This snippet demonstrates the use of the `hsi-wizard` package for processing and visualizing hyperspectral data, using a real sample from the HeiPorSPECTRAL dataset [@Studier-Fischer2023]. The focus is on the *spleen* example (P086#2021_04_15_09_22_02). `hsi-wizard` handles the entire pipeline: from reading the raw `.dat` hyperspectral `DataCube`, managing metadata like wavelengths, to applying PCA and agglomerative spatial clustering. It enables concise and structured exploration of spectral information in biomedical imaging. The full example is visible in the documentation.
 
 ```python3
+import numpy as np
 import wizard
-from wizard._processing.cluster import (
-    pca, spatial_agglomerative_clustering, smooth_cluster
-)
+from wizard._processing.cluster import pca, spatial_agglomerative_clustering, smooth_cluster
 
 # Define Custom reader
 def read_spectral_cube(path) -> wizard.DataCube:
