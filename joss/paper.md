@@ -57,7 +57,9 @@ This snippet demonstrates the use of the `hsi-wizard` package for processing and
 ```python3
 import numpy as np
 import wizard
-from wizard._processing.cluster import pca, spatial_agglomerative_clustering, smooth_cluster
+from wizard._processing.cluster import (
+    pca, spatial_agglomerative_clustering, smooth_cluster
+)
 
 # Define Custom reader
 def read_spectral_cube(path) -> wizard.DataCube:
