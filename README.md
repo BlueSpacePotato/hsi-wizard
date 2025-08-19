@@ -5,7 +5,7 @@
 [![PyPI Downloads](https://static.pepy.tech/badge/hsi-wizard)](https://pepy.tech/projects/hsi-wizard)
 [![status](https://joss.theoj.org/papers/b79920c171c93c833323cc3e55e56962/status.svg)](https://joss.theoj.org/papers/b79920c171c93c833323cc3e55e56962)
 
-# HSI Wizard
+# hsi-wizard
 
 See Beyond the Visible: The Magic of Hyperspectral Imaging for Medical & Bioinformatics Applications
 
@@ -28,12 +28,12 @@ If you're new here, the best place to start is the [documentation](https://hsi-w
 - Decorators for method tracking, input validation, and execution time logging
 
 ## Geospatial Limitations
-This package does not track or process geographical coordinates. If you require full remote-sensing or GIS integration, you may need complementary tools. hsi-wizard focuses on medical and lab-based spectral analysis, so spatial georeferencing is restricted.
+This package does not track or process geographical coordinates. If you require full remote-sensing or GIS integration, you may need complementary tools. `hsi-wizard` focuses on medical and lab-based spectral analysis, so spatial georeferencing is restricted.
 
 
 
 ## Comparison with Existing Tools
-| **Attribute**        | **HSI-Wizard**                                             | **PySptools**                                                                                                 | **HyDe**                                                                                  | **Spectral Python (SPy)**                                                                | **ENVI**                                                         |
+| **Attribute**        | **hsi-wizard**                                             | **PySptools**                                                                                                 | **HyDe**                                                                                  | **Spectral Python (SPy)**                                                                | **ENVI**                                                         |
 | -------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | **Category**         | Medical Imaging                                            | Geospatial & Research Spectral Analysis                                                                       | Preprocessing & Denoising                                                                 | General-Purpose Data I/O & Basic Handling                                                | Commercial All-rounder                                           |
 | **Key Features**     | End-to-end medical pipeline,  DataCube,  Merge & analytics | Endmember extraction, Spectral unmixing,  Low-rank wavelet & DNN denoising,  Energy-efficient implementations | Read/display/manipulate HSI files, Bip/Bil/Bsq interleaves, Basic classification routines | Advanced spectral processing & classification, Full GUI & Python API, ArcGIS integration |                                                                  |
@@ -107,7 +107,7 @@ If you encounter bugs, unexpected behavior, or have feature requests, please:
   2. Open a new issue with a clear title and description:
      1. Steps to reproduce the problem
      2. Expected vs. actual behavior
-     3. Version of hsi-wizard, Python, and operating system
+     3. Version of `hsi-wizard`, Python, and operating system
   3. Label the issue appropriately (e.g., bug, feature request, documentation).
 
 ## Seeking Support

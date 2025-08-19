@@ -1,5 +1,5 @@
 ---
-title: 'HSI-Wizard: A magical open-source Python package for medical hyperspectral imaging applications'
+title: 'hsi-wizard: A magical open-source Python package for medical hyperspectral imaging applications'
 tags:
   - Python
   - hyperspectral imaging
@@ -34,13 +34,9 @@ Hyperspectral imaging (HSI) allows for an in-depth analysis of the electromagnet
 
 The evolution of these fields has led to a variety of methods for acquiring hyperspectral data, encompassing different measurement techniques such as reflection, transmission, and fluorescence, as well as varying wavelength ranges (ultraviolet, visible, infrared) and scanning methods (e.g., point scanning, line scanning, Fourier transform infrared imaging (FTIR)) [@Guolan]. Consequently, datasets exhibit diverse formats, resolutions, and spectral ranges, which complicates analysis workflows and can hinder efficiency and reproducibility.
 
-The `hsi-wizard` addresses these challenges by standardising data representation through its `DataCube` class, enabling consistent analysis across diverse hyperspectral datasets. Unlike traditional software tools like NumPy or specialised applications such as ENVI or SPy, which often require extensive programming or manual adjustments to manage variability, `hsi-wizard` streamlines data handling and integrates multimodal datasets seamlessly. It also promotes reproducibility through automated protocol logging.
+The `hsi-wizard` package addresses these challenges by standardising data representation through its `DataCube` class, enabling consistent analysis across diverse hyperspectral datasets and enabling data fusion across different scanning processes. Unlike traditional software tools like NumPy or specialised applications such as ENVI or SPy, which often require extensive programming or manual adjustments to manage variability, `hsi-wizard` streamlines data handling and integrates multimodal datasets seamlessly. It also promotes reproducibility through automated protocol logging.
 
 Moreover, the extensibility of `hsi-wizard` allows users to incorporate new analysis methods or customise existing workflows easily, ensuring adaptability to evolving research needs. This flexibility guarantees that `hsi-wizard` remains relevant across various research scenarios, significantly reducing barriers to hyperspectral data analysis while promoting transparency and reproducibility in scientific research.
-
-To further facilitate the analysis of diverse datasets and eliminate the need for custom methods for each, `hsi-wizard` standardises their representation through the `DataCube` class. This standardisation is crucial for enabling data fusion across different scanning processes, as scans from various scanners yield unique datasets with differing resolutions and aspect ratios. Thus, merging these scans begins with a well-defined data representation and methods to address these challenges. `hsi-wizard` provides these capabilities, simplifying the combination of datasets for subsequent analysis.
-
-Additionally, `hsi-wizard` allows users to log and save manipulations of the `DataCube`. These logs can be reused for similar `DataCubes`, ensuring consistent analysis across different measurements. This feature diminishes the need for programming expertise and enhances reproducibility, thereby supporting the goal of increased transparency in research [@Knottnerus].
 
 ## Comparison with Existing Tools
 
@@ -83,7 +79,7 @@ dc.custom_read('2021_04_15_09_22_02_SpecCube.dat')
 wizard.plotter(dc)
 ```
 
-![ROI-based spectral analysis with the interactive plotting interface of hsi-wizard. The left panel shows selected tissue regions at 696 nm, while the right panel displays corresponding normalized spectra of the rois.](assets/wizard_output.png)
+![ROI-based spectral analysis with the interactive plotting interface of `hsi-wizard. The left panel shows selected tissue regions at 696 nm, while the right panel displays corresponding normalized spectra of the ROIs.](assets/wizard_output.png)
 
 ```python3
 # Clustering
@@ -92,11 +88,11 @@ agglo = spatial_agglomerative_clustering(dc_pca, n_clusters=5)
 agglo = smooth_cluster(agglo, n_iter=10, sigma=0.5)
 ```
 
-![Comparison between manual annotation (top-right) from [@Studier-Fischer2023] and automated segmentation (bottom-left) using spatial agglomerative clustering (k = 5) on PCA-reduced hyperspectral data. The original RGB image (top-left) and the resulting cluster map (bottom-right) provide visual context and output structure.](assets/Example_output.png)
+![Comparison between manual annotation (top-right) from @Studier-Fischer2023 and automated segmentation (bottom-left) using spatial agglomerative clustering (k = 5) on PCA-reduced hyperspectral data. The original RGB image (top-left) and the resulting cluster map (bottom-right) provide visual context and output structure.](assets/Example_output.png)
 
 # Future Work
 
-Additional publications are currently in preparation, focusing on workflows for merging complementary datasets in more detail. The development of `hsi-wizard` is ongoing, with future goals that include expanding support for additional data formats and integrating advanced data analytics. We encourage feedback, contributions, and ideas from the community. All versions of `hsi-wizard` are available on the Python Package Index (PyPI) or on Github [@github_wizard].
+Additional publications are currently in preparation, focusing on workflows for merging complementary datasets in more detail. The development of `hsi-wizard` is ongoing, with future goals that include expanding support for additional data formats and integrating advanced data analytics. We encourage feedback, contributions, and ideas from the community. All versions of `hsi-wizard` are available on the Python Package Index (PyPI) or on GitHub [@github_wizard].
 
 # Acknowledgements
 
