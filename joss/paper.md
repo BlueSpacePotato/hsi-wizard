@@ -79,7 +79,7 @@ dc.custom_read('2021_04_15_09_22_02_SpecCube.dat')
 wizard.plotter(dc)
 ```
 
-![ROI-based spectral analysis with the interactive plotting interface of `hsi-wizard. The left panel shows selected tissue regions at 696 nm, while the right panel displays corresponding normalized spectra of the ROIs.](assets/wizard_output.png)
+![ROI-based spectral analysis with the interactive plotting interface of `hsi-wizard`. The left panel shows selected tissue regions at 696 nm, while the right panel displays corresponding normalized spectra of the ROIs.](assets/wizard_output.png)
 
 ```python3
 # Clustering
