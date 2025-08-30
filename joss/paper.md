@@ -48,7 +48,7 @@ This makes `hsi-wizard` especially suitable for clinical imaging and research, c
 
 # Example Usage
 
-This snippet demonstrates the use of the `hsi-wizard` package for processing and visualizing hyperspectral data, using a real sample from the HeiPorSPECTRAL dataset [@Studier-Fischer2023]. The focus is on the *spleen* example (P086#2021_04_15_09_22_02). `hsi-wizard` handles the entire pipeline: from reading the raw `.dat` hyperspectral `DataCube`, managing metadata like wavelengths, to applying PCA and agglomerative spatial clustering. It enables concise and structured exploration of spectral information in biomedical imaging. The full example is visible in the documentation.
+This snippet demonstrates the use of the `hsi-wizard` package for processing and visualising hyperspectral data, using a real sample from the HeiPorSPECTRAL dataset [@Studier-Fischer2023]. The focus is on the *spleen* example (P086#2021_04_15_09_22_02). `hsi-wizard` handles the entire pipeline: from reading the raw `.dat` hyperspectral `DataCube`, managing metadata like wavelengths, to applying PCA and agglomerative spatial clustering. It enables concise and structured exploration of spectral information in biomedical imaging. The full example is visible in the documentation.
 
 ```python3
 import numpy as np
@@ -70,7 +70,7 @@ def read_spectral_cube(path) -> wizard.DataCube:
         name='HeiProSpectral',
     )
 
-# Initialize dc and read data
+# Initialise dc and read data
 dc = wizard.DataCube()
 dc.set_custom_reader(read_spectral_cube)
 dc.custom_read('2021_04_15_09_22_02_SpecCube.dat')
@@ -79,7 +79,7 @@ dc.custom_read('2021_04_15_09_22_02_SpecCube.dat')
 wizard.plotter(dc)
 ```
 
-![ROI-based spectral analysis with the interactive plotting interface of `hsi-wizard`. The left panel shows selected tissue regions at 696 nm, while the right panel displays corresponding normalized spectra of the ROIs.](assets/wizard_output.png)
+![ROI-based spectral analysis with the interactive plotting interface of `hsi-wizard`. The left panel shows selected tissue regions at 696 nm, while the right panel displays corresponding normalised spectra of the ROIs.](assets/wizard_output.png)
 
 ```python3
 # Clustering
@@ -96,7 +96,7 @@ Additional publications are currently in preparation, focusing on workflows for 
 
 # Acknowledgements
 
-The development of hsi-wizard was funded by the CeMOS Research & Transfer Center and the Technical University of Applied Sciences Mannheim. The software was developed based on practical requirements and datasets provided by our research group: Kümmel [@kummel] shaped the mid-infrared data handling and clustering through his work on brain tissue imaging; Heintz [@heintz] provided multimodal Raman and VIS use cases; Manser [@manser] contributed workflows for Raman light sheet microscopy; Nachtmann [@nachtmann] validated complex 3D Raman pipelines; and van Marwick [@vanmarwick] influenced preprocessing through chemical segmentation tasks.
+The development of `hsi-wizard` was funded by the CeMOS Research & Transfer Center and the Technical University of Applied Sciences Mannheim. The software was developed based on practical requirements and datasets provided by our research group: Kümmel [@kummel] shaped the mid-infrared data handling and clustering through his work on brain tissue imaging; Heintz [@heintz] provided multimodal Raman and VIS use cases; Manser [@manser] contributed workflows for Raman light sheet microscopy; Nachtmann [@nachtmann] validated complex 3D Raman pipelines; and van Marwick [@vanmarwick] influenced preprocessing through chemical segmentation tasks.
 
 # References
 
