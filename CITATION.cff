@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the following article:"
+authors:
+  - family-names: "Wühler"
+    given-names: "Felix"
+    orcid: "https://orcid.org/0000-0002-4821-8549"
+  - family-names: "Rädle"
+    given-names: "Matthias"
+    orcid: "https://orcid.org/0000-0002-3382-7608"
+
+title: "hsi-wizard"
+version: v0.1.42
+date-released: 2025-27-08
+url: "https://github.com/BlueSpacePotato/hsi-wizard"
+
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Wühler"
+      given-names: "Felix"
+      orcid: "https://orcid.org/0000-0002-4821-8549"
+    - family-names: "Rädle"
+      given-names: "Matthias"
+      orcid: "https://orcid.org/0000-0002-3382-7608"
+  title: "hsi-wizard: A magical open-source Python package for medical hyperspectral imaging applications"
+  journal: "Journal of Open Source Software"
+  publisher: "The Open Journal"
+  doi: "10.21105/joss.08207"
+  url: "https://doi.org/10.21105/joss.08207"
+  volume: "10"
+  issue: "113"
+  pages: "8207"
+  year: 2025

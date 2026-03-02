@@ -1,0 +1,12 @@
+@article{Wühler2025,
+  doi = {10.21105/joss.08207},
+  url = {https://doi.org/10.21105/joss.08207},
+  year = {2025},
+  publisher = {The Open Journal},
+  volume = {10},
+  number = {113},
+  pages = {8207},
+  author = {Wühler, Felix and Rädle, Matthias},
+  title = {hsi-wizard: A magical open-source Python package for medical hyperspectral imaging applications},
+  journal = {Journal of Open Source Software}
+}
