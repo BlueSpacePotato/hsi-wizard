@@ -35,7 +35,7 @@ import struct
 import numpy as np
 
 from ._helper import to_cube
-from ..._core import DataCube
+from .._core import DataCube
 
 
 def _block_info(data):
@@ -103,7 +103,7 @@ def _decode_5104(data):
         'ir_accessory', 'igram_type', 'scan_direction', 'background_scans',
         'ir_laser_wave_number_unit'
     ]
-    
+
     return {key: (text[i] if i < len(text) else None) for i, key in enumerate(keys)}
 
 

@@ -9,7 +9,7 @@ _utils/_loader/nrrd.py
 Module Overview
 ---------------
 
-This module includes functions for reading and writing .nrrd files, which are commonly used 
+This module includes functions for reading and writing .nrrd files, which are commonly used
 to store multi-dimensional data, particularly in the field of medical imaging.
 
 Functions
@@ -22,7 +22,7 @@ Functions
 import os.path
 
 import nrrd as _nrrd
-from ..._core import DataCube
+from .._core import DataCube
 
 
 def _read_nrrd(path: str) -> DataCube:
@@ -35,7 +35,7 @@ def _read_nrrd(path: str) -> DataCube:
     :rtype: DataCube
 
     :raises FileNotFoundError: If the specified file does not exist.
-    :raises ValueError: If the NRRD file does not contain the expected metadata. 
+    :raises ValueError: If the NRRD file does not contain the expected metadata.
     """
 
     if not os.path.isfile(path):

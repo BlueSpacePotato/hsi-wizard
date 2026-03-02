@@ -22,7 +22,7 @@ Functions
 import pickle
 
 import wizard
-from ..._core import DataCube
+from .._core import DataCube
 
 
 def _read_pickle(path: str) -> DataCube:

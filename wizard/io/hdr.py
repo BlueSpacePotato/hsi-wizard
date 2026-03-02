@@ -21,7 +21,7 @@ Functions
 import numpy as np
 from spectral.io import envi
 
-from ..._core import DataCube
+from .._core import DataCube
 
 
 def _read_hdr(path: str, image_path: str = None) -> DataCube:

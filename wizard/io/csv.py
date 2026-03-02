@@ -21,7 +21,7 @@ Functions
 import pandas as pd
 import numpy as np
 
-from ..._core import DataCube
+from .._core import DataCube
 
 
 def _read_csv(filepath: str) -> DataCube:

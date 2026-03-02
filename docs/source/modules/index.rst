@@ -43,6 +43,15 @@ Utilities
 
    utils/helper
    utils/decorators
-   utils/loader
+
+
+IO
+==
+
+.. toctree::
+   :maxdepth: 2
+   :titlesonly:
+
+   io/loader
 
 

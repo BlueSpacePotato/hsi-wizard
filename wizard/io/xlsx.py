@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 
 import wizard
-from ..._core import DataCube
+from .._core import DataCube
 
 
 def _read_xlsx(filepath: str) -> DataCube:
@@ -47,11 +47,11 @@ def _read_xlsx(filepath: str) -> DataCube:
     """
     # Read the Excel file into a DataFrame
     df = pd.read_excel(filepath)
-    
+
     # Extract x, y coordinates
     x = df['x'].astype('int32')
     y = df['y'].astype('int32')
-    
+
     # Extract spectral data
     spectral_data = df.iloc[:, 2:].values  # All columns after 'x' and 'y'
     wavelengths = list(df.columns[2:].astype('int32'))  # Get wavelength labels

@@ -1,5 +1,5 @@
 """
-_utils/_loader/__init__.py
+io/__init__.py
 ============================
 
 .. module:: __init__.py
@@ -92,7 +92,7 @@ def load_all_loaders():
     ]
 
     for module_name in loader_modules:
-        module = importlib.import_module(f'wizard._utils._loader.{module_name}')
+        module = importlib.import_module(f'wizard.io.{module_name}')
         for attr_name in dir(module):
             if attr_name.startswith('_read_'):
                 # Assuming the function name is read_csv, read_xlsx, etc.
