@@ -25,12 +25,13 @@ This module imports essential submodules and classes/functions, including:
 """
 
 # Import necessary submodules and classes/functions from them
-from ._core.datacube import DataCube
-from ._exploration.plotter import plotter
-from ._exploration.surface import plot_surface
-from ._exploration.faces import plot_datacube_faces
+from .core.datacube import DataCube
+from .exploration.plotter import plotter
+from .exploration.surface import plot_surface
+from .exploration.faces import plot_datacube_faces
 from .io import read
-from ._processing.cluster import isodata, smooth_kmeans
+from wizard.features.cluster import isodata, smooth_kmeans
+
 
 __all__ = ["DataCube", "read", "plotter"]
 

@@ -351,8 +351,6 @@ class TestDataCube:
         with pytest.raises(AttributeError):
             dc.set_cube('hi')
 
-
-    # Line 242: Test set_name with valid and invalid inputs
     def test_set_name(self):
         data_cube = DataCube()
         valid_name = "ValidName"
@@ -362,7 +360,6 @@ class TestDataCube:
         with pytest.raises(AttributeError):
             data_cube.set_name(123)  # Non-string input
 
-    # Lines 261-273: Test set_wavelengths with valid and invalid data
     def test_set_wavelengths(self):
         data_cube = DataCube()
 
@@ -381,7 +378,6 @@ class TestDataCube:
         with pytest.raises(AttributeError):
             data_cube.set_wavelengths(invalid_wavelengths)
 
-    # Line 280: Test set_cube with valid 3D and 2D arrays, and invalid input
     def test_set_cube(self):
         data_cube = DataCube()
 
@@ -400,35 +396,30 @@ class TestDataCube:
         with pytest.raises(AttributeError):
             data_cube.set_cube(invalid_cube)
 
-    # Lines 288-291: Test _set_cube_shape method
     def test_set_cube_shape(self):
         data_cube = DataCube()
         cube = np.random.rand(3, 10, 10)
         data_cube.set_cube(cube)
         assert data_cube.shape == (3, 10, 10)
 
-    # Lines 341-342: Test set_notation with valid input
     def test_set_notation(self):
         data_cube = DataCube()
         notation = "nm"
         data_cube.set_notation(notation)
         assert data_cube.notation == notation
 
-    # Line 370: Test start_recording method
     def test_start_recording(self, mocker):
         data_cube = DataCube()
         mocker.patch("wizard._utils.tracker.TrackExecutionMeta.start_recording")
         data_cube.start_recording()
         assert data_cube.record is True
 
-    # Lines 379-380: Test stop_recording method
     def test_stop_recording(self, mocker):
         data_cube = DataCube()
         mocker.patch("wizard._utils.tracker.TrackExecutionMeta.stop_recording")
         data_cube.stop_recording()
         assert data_cube.record is False
 
-    # Lines 397-410: Test save_template with valid and invalid filenames
     def test_save_template(self, mocker):
         data_cube = DataCube()
         mock_yaml_dump = mocker.patch("yaml.dump")
@@ -448,7 +439,6 @@ class TestDataCube:
         with pytest.raises(AttributeError):
             data_cube.save_template(123)
 
-    # Lines 431-440: Test _map_args_to_kwargs with sample function and args
     def test_map_args_to_kwargs(self):
         data_cube = DataCube()
 
@@ -462,7 +452,6 @@ class TestDataCube:
         mapped_kwargs = data_cube._map_args_to_kwargs(sample_func, args, kwargs)
         assert mapped_kwargs == {"a": 1, "b": 2, "c": 3}
 
-    # Lines 491-497: Test execute_template with mocked method
     def test_execute_template(self, mocker):
         data_cube = DataCube()
         mock_method = mocker.patch.object(data_cube, "set_name")
@@ -534,7 +523,6 @@ class TestDataCubeOps:
         assert dc is not None
         assert dc.cube.shape == dc.cube.shape
         assert dc.cube[0, 1, 1] != 1000
-
 
     def test_resize(self):
         dc = create_test_cube(shape=(3, 10, 10))

@@ -26,7 +26,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from concurrent.futures import ThreadPoolExecutor
 from .._utils.decorators import check_path
-from .._core import DataCube
+from ..core import DataCube
 
 
 def filter_image_files(files):

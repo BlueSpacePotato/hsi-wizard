@@ -1,6 +1,6 @@
 import wizard
 from wizard._utils.example import generate_pattern_stack
-from wizard._processing.cluster import spatial_agglomerative_clustering, pca
+from wizard.processing.cluster import spatial_agglomerative_clustering, pca
 import matplotlib.pyplot as plt
 
 # generate synthetic data with spatial patterns

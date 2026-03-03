@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 
 import wizard
-from .._core import DataCube
+from ..core import DataCube
 
 
 def _read_xlsx(filepath: str) -> DataCube:

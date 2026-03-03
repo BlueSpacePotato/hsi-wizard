@@ -37,12 +37,13 @@ Here is an example of how to use this module:
 import inspect
 import warnings
 
-from rich import print
-import numpy as np
 import yaml
+import numpy as np
+from rich import print
+
 # from traitlets import ValidateHandler
 
-from wizard._utils.tracker import TrackExecutionMeta
+from .._utils.tracker import TrackExecutionMeta
 
 
 class DataCube(metaclass=TrackExecutionMeta):
@@ -306,7 +307,7 @@ class DataCube(metaclass=TrackExecutionMeta):
             self.name = name
         else:
             raise AttributeError('Name musste be a string.')
-        
+
     def set_wavelengths(self, wavelengths: np.ndarray) -> None:
         """
         Set wavelength data for the `DataCube`.
@@ -513,3 +514,74 @@ class DataCube(metaclass=TrackExecutionMeta):
             method = getattr(self, template_data[i]['method'])
             kwargs = template_data[i]['kwargs']
             method(**kwargs)
+
+
+    def remove_spikes(self, threshold: int = 6500, window: int = 5) -> "DataCube":
+        from ..processing.denoise import remove_spikes
+        return remove_spikes(self, threshold=threshold, window=window)
+
+    def remove_background(self, threshold: int = 50, style: str = "dark") -> "DataCube":
+        from ..processing.background import remove_background
+        return remove_background(self, threshold=threshold, style=style)
+
+    def resize(self, x_new: int, y_new: int, interpolation: str = "linear") -> "DataCube":
+        from ..processing.rescale import resize
+        resize(self, x_new=x_new, y_new=y_new, interpolation=interpolation)
+        return self  # ops.resize currently returns None, but it mutates self
+
+    def baseline_als(self, lam: float = 1_000_000, p: float = 0.01, niter: int = 10) -> "DataCube":
+        from ..processing.baseline import baseline_als
+        return baseline_als(self, lam=lam, p=p, niter=niter)
+
+    def merge_cubes(self, other: "DataCube", register: bool = False) -> "DataCube":
+        from ..processing.geometry import merge_cubes
+        return merge_cubes(self, other, register=register)
+
+    def inverse(self) -> "DataCube":
+        from ..processing.normalization import inverse
+        return inverse(self)
+
+    def register_layers_simple(self, max_features: int = 5000, match_percent: float = 0.1) -> "DataCube":
+        from ..processing.registration import register_layers_simple
+        return register_layers_simple(self, max_features=max_features, match_percent=match_percent)
+
+    def remove_vignetting_poly(self, axis: int = 1, slice_params: dict | None = None) -> "DataCube":
+        from ..processing.background import remove_vignetting_poly
+        return remove_vignetting_poly(self, axis=axis, slice_params=slice_params)
+
+    def normalize(self) -> "DataCube":
+        from ..processing.normalization import normalize
+        return normalize(self)
+
+    def register_layers_best(self, ref_layer: int = 0, max_features: int = 5000, match_percent: float = 0.1, rot_thresh: float = 20.0, scale_thresh: float = 1.1, ) -> "DataCube":
+        from ..processing.registration import register_layers_best
+        return register_layers_best(self, ref_layer=ref_layer, max_features=max_features, match_percent=match_percent, rot_thresh=rot_thresh, scale_thresh=scale_thresh)
+
+    def remove_vignetting(self, sigma: float = 50, clip: bool = True, epsilon: float = 1e-6) -> "DataCube":
+        from ..processing.background import remove_vignetting
+        return remove_vignetting(self, sigma=sigma, clip=clip, epsilon=epsilon)
+
+    def upscale_datacube_edsr(self, scale: int, model_path: str) -> "DataCube":
+        from ..processing.rescale import upscale_datacube_edsr
+        return upscale_datacube_edsr(self, scale=scale, model_path=model_path)
+
+    def upscale_datacube_espcn(self, scale: int, model_path: str) -> "DataCube":
+        from ..processing.rescale import upscale_datacube_espcn
+        return upscale_datacube_espcn(self, scale=scale, model_path=model_path)
+
+    def upscale_datacube_with_reference(self, reference_image) -> "DataCube":
+        from ..processing.rescale import upscale_datacube_with_reference
+        return upscale_datacube_with_reference(self, reference_image=reference_image)
+
+    def upscale_datacube_fsrcnn(self, scale: int, model_path: str) -> "DataCube":
+        from ..processing.rescale import upscale_datacube_fsrcnn
+        return upscale_datacube_fsrcnn(self, scale=scale, model_path=model_path)
+
+    def remove_vignette(self, vignette_map, flip: bool = False) -> "DataCube":
+        from ..processing.background import remove_vignette
+        return remove_vignette(self, vignette_map=vignette_map, flip=flip)
+
+    def uniform_filter_dc(self, size: int = 3) -> "DataCube":
+        from ..processing.denoise import  uniform_filter_dc
+        return uniform_filter_dc(self, size=size)
+

@@ -1,6 +1,6 @@
 import wizard
 from wizard._utils.example import generate_pattern_stack
-from wizard._processing.cluster import kmeans, smooth_cluster
+from wizard.processing.cluster import kmeans, smooth_cluster
 import matplotlib.pyplot as plt
 
 # generate synthetic data with spatial patterns

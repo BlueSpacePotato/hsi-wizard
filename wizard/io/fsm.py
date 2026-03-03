@@ -35,7 +35,7 @@ import struct
 import numpy as np
 
 from ._helper import to_cube
-from .._core import DataCube
+from ..core import DataCube
 
 
 def _block_info(data):

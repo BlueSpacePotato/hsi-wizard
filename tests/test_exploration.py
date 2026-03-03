@@ -6,7 +6,7 @@ from mpl_toolkits import mplot3d
 
 import wizard
 from wizard import plotter
-from wizard._exploration import plotter
+from wizard.exploration import plotter
 from wizard import plot_datacube_faces
 from wizard import DataCube
 
@@ -177,7 +177,7 @@ class TestSurcefacePlot:
         val = 0.5  # Example cut value
 
         # Apply function
-        modified_z = wizard._exploration.surface.dc_cut_by_value(z, val, type="")
+        modified_z = wizard.exploration.surface.dc_cut_by_value(z, val, type="")
 
         # Check modifications
         assert modified_z.shape == z.shape, "Shape should remain unchanged"
@@ -191,7 +191,7 @@ class TestSurcefacePlot:
         v = 5
 
         # Compute surface
-        z_surface = wizard._exploration.surface.get_z_surface(dc.cube, v)
+        z_surface = wizard.exploration.surface.get_z_surface(dc.cube, v)
 
         # Check shape
         assert z_surface.shape == (dc.shape[1], dc.shape[2]), "Surface shape mismatch"
@@ -202,7 +202,7 @@ class TestSurcefacePlot:
 
         # Run plot function (not testing output, only checking for errors)
         try:
-            wizard._exploration.surface.plot_surface(dc, index=0)
+            wizard.exploration.surface.plot_surface(dc, index=0)
         except Exception as e:
             pytest.fail(f"plot_surface raised an exception: {e}")
 

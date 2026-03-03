@@ -22,7 +22,7 @@ import re
 from nptdms import TdmsFile
 
 from ._helper import to_cube
-from .._core import DataCube
+from ..core import DataCube
 
 
 # Precompile regex for length extraction

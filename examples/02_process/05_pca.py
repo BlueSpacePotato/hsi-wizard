@@ -1,5 +1,5 @@
 import wizard
-from wizard._processing.cluster import pca
+from wizard.processing.cluster import pca
 from wizard._utils.example import generate_pattern_stack
 
 data = generate_pattern_stack(50, 200, 200, n_circles=2, n_rects=2, n_triangles=2)

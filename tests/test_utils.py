@@ -1,6 +1,6 @@
 from wizard._utils import helper, decorators
 
-from wizard._core.datacube import DataCube
+from wizard.core.datacube import DataCube
 
 
 import time

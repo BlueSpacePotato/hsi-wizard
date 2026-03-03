@@ -22,7 +22,7 @@ Functions
 import os.path
 
 import nrrd as _nrrd
-from .._core import DataCube
+from ..core import DataCube
 
 
 def _read_nrrd(path: str) -> DataCube:

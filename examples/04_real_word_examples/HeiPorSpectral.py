@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 import numpy as np
 import wizard
-from wizard._processing.cluster import pca, spatial_agglomerative_clustering, smooth_cluster
+from wizard.processing.cluster import pca, spatial_agglomerative_clustering, smooth_cluster
 
 # Paths
 data_path = '2021_04_15_09_22_02_SpecCube.dat'
