@@ -1,5 +1,5 @@
 """
-_utils/__init__.py
+_utils.__init__.py
 ===================
 
 .. module:: __init__

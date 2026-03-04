@@ -1,5 +1,5 @@
 """
-_core/datacube.py
+core.datacube.py
 =================
 
 .. module:: datacube
@@ -515,73 +515,321 @@ class DataCube(metaclass=TrackExecutionMeta):
             kwargs = template_data[i]['kwargs']
             method(**kwargs)
 
+    def remove_spikes(self, threshold: int = 6500, window: int = 5):
+        """
+        Remove impulsive spike artifacts from the datacube.
 
-    def remove_spikes(self, threshold: int = 6500, window: int = 5) -> "DataCube":
+        Parameters
+        ----------
+        threshold : int, default=6500
+            Intensity threshold used to detect spikes.
+        window : int, default=5
+            Neighborhood window size used to filter/replace detected spikes.
+
+        Returns
+        -------
+        DataCube
+            The processed datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.denoise import remove_spikes
         return remove_spikes(self, threshold=threshold, window=window)
 
-    def remove_background(self, threshold: int = 50, style: str = "dark") -> "DataCube":
+    def remove_background(self, threshold: int = 50, style: str = "dark"):
+        """
+        Remove background pixels based on an intensity threshold.
+
+        Parameters
+        ----------
+        threshold : int, default=50
+            Threshold used to identify background pixels.
+        style : {"dark", "light"}, default="dark"
+            Background assumption. Use ``"dark"`` if background is near zero,
+            ``"light"`` if background is bright.
+
+        Returns
+        -------
+        DataCube
+            The processed datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.background import remove_background
         return remove_background(self, threshold=threshold, style=style)
 
-    def resize(self, x_new: int, y_new: int, interpolation: str = "linear") -> "DataCube":
+    def resize(self, x_new: int, y_new: int, interpolation: str = "linear"):
+        """
+        Resize the spatial dimensions of the datacube.
+
+        Parameters
+        ----------
+        x_new : int
+            New width (x-dimension).
+        y_new : int
+            New height (y-dimension).
+        interpolation : str, default="linear"
+            Interpolation method used for resampling.
+
+        Returns
+        -------
+        DataCube
+            The resized datacube (same instance) to allow chaining.
+        """
         from ..processing.rescale import resize
         resize(self, x_new=x_new, y_new=y_new, interpolation=interpolation)
-        return self  # ops.resize currently returns None, but it mutates self
+        return self  # resize mutates self
 
-    def baseline_als(self, lam: float = 1_000_000, p: float = 0.01, niter: int = 10) -> "DataCube":
+    def baseline_als(self, lam: float = 1_000_000, p: float = 0.01, niter: int = 10):
+        """
+        Apply ALS (Asymmetric Least Squares) baseline correction to spectra.
+
+        Parameters
+        ----------
+        lam : float, default=1_000_000
+            Smoothness parameter (larger values produce smoother baselines).
+        p : float, default=0.01
+            Asymmetry parameter (typically small, e.g. 0.001–0.1).
+        niter : int, default=10
+            Number of ALS iterations.
+
+        Returns
+        -------
+        DataCube
+            Baseline-corrected datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.baseline import baseline_als
         return baseline_als(self, lam=lam, p=p, niter=niter)
 
-    def merge_cubes(self, other: "DataCube", register: bool = False) -> "DataCube":
+    def merge_cubes(self, other: "DataCube", register: bool = False):
+        """
+        Merge another datacube into this datacube.
+
+        Parameters
+        ----------
+        other : DataCube
+            The other datacube to merge with this one.
+        register : bool, default=False
+            If True, register/align the cubes before merging (implementation-dependent).
+
+        Returns
+        -------
+        DataCube
+            The merged datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.geometry import merge_cubes
         return merge_cubes(self, other, register=register)
 
-    def inverse(self) -> "DataCube":
-        from ..processing.normalization import inverse
+    def inverse(self):
+        """
+        Invert intensities of the datacube.
+
+        Returns
+        -------
+        DataCube
+            The inverted datacube (typically the same instance) to allow chaining.
+        """
+        from wizard.processing.normalization import inverse
         return inverse(self)
 
-    def register_layers_simple(self, max_features: int = 5000, match_percent: float = 0.1) -> "DataCube":
+    def register_layers_simple(self, max_features: int = 5000, match_percent: float = 0.1):
+        """
+        Register (align) spectral layers using a simple feature-based approach.
+
+        Parameters
+        ----------
+        max_features : int, default=5000
+            Maximum number of features to detect per layer.
+        match_percent : float, default=0.1
+            Fraction of best matches to keep when estimating transforms.
+
+        Returns
+        -------
+        DataCube
+            The registered datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.registration import register_layers_simple
         return register_layers_simple(self, max_features=max_features, match_percent=match_percent)
 
-    def remove_vignetting_poly(self, axis: int = 1, slice_params: dict | None = None) -> "DataCube":
+    def remove_vignetting_poly(self, axis: int = 1, slice_params: dict | None = None):
+        """
+        Correct vignetting using a polynomial model estimated along a given axis.
+
+        Parameters
+        ----------
+        axis : int, default=1
+            Axis along which the correction profile is estimated.
+        slice_params : dict or None, default=None
+            Optional slicing parameters to restrict the region used for estimation.
+
+        Returns
+        -------
+        DataCube
+            The vignetting-corrected datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.background import remove_vignetting_poly
         return remove_vignetting_poly(self, axis=axis, slice_params=slice_params)
 
     def normalize(self) -> "DataCube":
-        from ..processing.normalization import normalize
+        """
+        Normalize datacube intensities (implementation-dependent).
+
+        Returns
+        -------
+        DataCube
+            The normalized datacube (typically the same instance) to allow chaining.
+        """
+        from wizard.processing.normalization import normalize
         return normalize(self)
 
-    def register_layers_best(self, ref_layer: int = 0, max_features: int = 5000, match_percent: float = 0.1, rot_thresh: float = 20.0, scale_thresh: float = 1.1, ) -> "DataCube":
+    def register_layers_best(self, ref_layer: int = 0, max_features: int = 5000, match_percent: float = 0.1, rot_thresh: float = 20.0, scale_thresh: float = 1.1):
+        """
+        Register (align) spectral layers using a more robust/best-effort approach.
+
+        Parameters
+        ----------
+        ref_layer : int, default=0
+            Index of the reference layer to which other layers are aligned.
+        max_features : int, default=5000
+            Maximum number of features to detect per layer.
+        match_percent : float, default=0.1
+            Fraction of best matches to keep when estimating transforms.
+        rot_thresh : float, default=20.0
+            Rotation threshold used to reject implausible transforms.
+        scale_thresh : float, default=1.1
+            Scale threshold used to reject implausible transforms.
+
+        Returns
+        -------
+        DataCube
+            The registered datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.registration import register_layers_best
         return register_layers_best(self, ref_layer=ref_layer, max_features=max_features, match_percent=match_percent, rot_thresh=rot_thresh, scale_thresh=scale_thresh)
 
-    def remove_vignetting(self, sigma: float = 50, clip: bool = True, epsilon: float = 1e-6) -> "DataCube":
+    def remove_vignetting(self, sigma: float = 50, clip: bool = True, epsilon: float = 1e-6):
+        """
+        Correct vignetting by estimating and removing a smooth illumination field.
+
+        Parameters
+        ----------
+        sigma : float, default=50
+            Smoothing parameter used when estimating the illumination field.
+        clip : bool, default=True
+            If True, clip output values to a valid range (implementation-dependent).
+        epsilon : float, default=1e-6
+            Small constant to avoid division by zero.
+
+        Returns
+        -------
+        DataCube
+            The vignetting-corrected datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.background import remove_vignetting
         return remove_vignetting(self, sigma=sigma, clip=clip, epsilon=epsilon)
 
-    def upscale_datacube_edsr(self, scale: int, model_path: str) -> "DataCube":
+    def upscale_datacube_edsr(self, scale: int, model_path: str):
+        """
+        Upscale the datacube spatially using an EDSR super-resolution model.
+
+        Parameters
+        ----------
+        scale : int
+            Upscaling factor (e.g., 2, 3, 4).
+        model_path : str
+            Path to the pre-trained EDSR model.
+
+        Returns
+        -------
+        DataCube
+            The upscaled datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.rescale import upscale_datacube_edsr
         return upscale_datacube_edsr(self, scale=scale, model_path=model_path)
 
-    def upscale_datacube_espcn(self, scale: int, model_path: str) -> "DataCube":
+    def upscale_datacube_espcn(self, scale: int, model_path: str):
+        """
+        Upscale the datacube spatially using an ESPCN super-resolution model.
+
+        Parameters
+        ----------
+        scale : int
+            Upscaling factor (e.g., 2, 3, 4).
+        model_path : str
+            Path to the pre-trained ESPCN model.
+
+        Returns
+        -------
+        DataCube
+            The upscaled datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.rescale import upscale_datacube_espcn
         return upscale_datacube_espcn(self, scale=scale, model_path=model_path)
 
-    def upscale_datacube_with_reference(self, reference_image) -> "DataCube":
+    def upscale_datacube_with_reference(self, reference_image):
+        """
+        Upscale the datacube using a reference image as guidance.
+
+        Parameters
+        ----------
+        reference_image : array-like
+            Reference image used to guide upscaling (type depends on implementation).
+
+        Returns
+        -------
+        DataCube
+            The upscaled datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.rescale import upscale_datacube_with_reference
         return upscale_datacube_with_reference(self, reference_image=reference_image)
 
-    def upscale_datacube_fsrcnn(self, scale: int, model_path: str) -> "DataCube":
+    def upscale_datacube_fsrcnn(self, scale: int, model_path: str):
+        """
+        Upscale the datacube spatially using an FSRCNN super-resolution model.
+
+        Parameters
+        ----------
+        scale : int
+            Upscaling factor (e.g., 2, 3, 4).
+        model_path : str
+            Path to the pre-trained FSRCNN model.
+
+        Returns
+        -------
+        DataCube
+            The upscaled datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.rescale import upscale_datacube_fsrcnn
         return upscale_datacube_fsrcnn(self, scale=scale, model_path=model_path)
 
-    def remove_vignette(self, vignette_map, flip: bool = False) -> "DataCube":
+    def remove_vignette(self, vignette_map, flip: bool = False):
+        """
+        Apply a provided vignette correction map to the datacube.
+
+        Parameters
+        ----------
+        vignette_map : array-like
+            Multiplicative (or divisive) correction field used to compensate vignetting.
+        flip : bool, default=False
+            If True, flip the vignette map before applying (orientation correction).
+
+        Returns
+        -------
+        DataCube
+            The vignette-corrected datacube (typically the same instance) to allow chaining.
+        """
         from ..processing.background import remove_vignette
         return remove_vignette(self, vignette_map=vignette_map, flip=flip)
 
-    def uniform_filter_dc(self, size: int = 3) -> "DataCube":
-        from ..processing.denoise import  uniform_filter_dc
-        return uniform_filter_dc(self, size=size)
+    def uniform_filter_dc(self, size: int = 3):
+        """
+        Apply a uniform (mean) filter to each layer of the datacube.
 
+        Parameters
+        ----------
+        size : int, default=3
+            Filter kernel size.
+
+        Returns
+        -------
+        DataCube
+            The filtered datacube (typically the same instance) to allow chaining.
+        """
+        from ..processing.denoise import uniform_filter_dc
+        return uniform_filter_dc(self, size=size)

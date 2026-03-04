@@ -1,6 +1,5 @@
 """
-_core/__init__.py
-<<<<<<< HEAD
+core.__init__.py
 =================
 
 .. module:: __init__

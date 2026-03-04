@@ -1,3 +1,22 @@
+"""
+explorationm.faces.py
+=================
+
+.. module:: faces
+:platform: Unix
+:synopsis: faces plotting module for DataCubes.
+
+Module Overview
+---------------
+Plot all six faces of a DataCube as colored surfaces.
+
+Functions
+---------
+
+.. autofunction:: plot_datacube_faces
+
+"""
+
 from wizard import DataCube
 import numpy as np
 import matplotlib.pyplot as plt

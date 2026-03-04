@@ -1,5 +1,5 @@
 """
-_utils/decorator.py
+_utils.decorator.py
 ====================
 
 .. module:: decorator

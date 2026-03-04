@@ -1,7 +1,39 @@
+"""
+wizard.processing.rescale
+========================
+
+.. module:: wizard.processing.rescale
+:platform: Unix
+:synopsis: Spatial resampling and super-resolution utilities for DataCubes.
+
+Module Overview
+---------------
+
+This module provides functions for spatial resampling of
+:class:`~wizard.core.DataCube` instances, including:
+
+- resizing datacubes to a target spatial resolution, and
+- upscaling via super-resolution models (OpenCV DNN superres or reference-guided methods).
+
+All functions modify the provided :class:`DataCube` **in-place** and return the
+same object (except where explicitly documented) to support method chaining.
+
+Functions
+---------
+.. autofunction:: resize
+.. autofunction:: upscale_datacube_edsr
+.. autofunction:: upscale_datacube_espcn
+.. autofunction:: upscale_datacube_fsrcnn
+.. autofunction:: upscale_datacube_with_reference
+"""
+
+
 from ..core import DataCube
 
+import os
 import cv2
 import numpy as np
+
 
 def resize(dc: DataCube, x_new: int, y_new: int, interpolation: str = 'linear') -> None:
     """
@@ -21,24 +53,24 @@ def resize(dc: DataCube, x_new: int, y_new: int, interpolation: str = 'linear') 
     Parameters
     ----------
     dc : DataCube
-    The DataCube instance to be resized.
+        The DataCube instance to be resized.
     x_new : int
-    The new width (x-dimension).
+        The new width (x-dimension).
     y_new : int
-    The new height (y-dimension).
+        The new height (y-dimension).
     interpolation : str, optional
-    Interpolation method, defaults to 'linear'.
+        Interpolation method, defaults to 'linear'.
     Options: 'linear', 'nearest', 'area', 'cubic', 'lanczos'.
 
     Returns
     -------
     None
-    The DataCube is modified in-place.
+        The DataCube is modified in-place.
 
     Raises
     ------
     ValueError
-    If the interpolation method is not recognized.
+        If the interpolation method is not recognized.
 
     Examples
     --------
@@ -86,29 +118,28 @@ def upscale_datacube_edsr(dc: DataCube, scale: int, model_path: str):
     Parameters
     ----------
     dc : DataCube
-    An instance of the DataCube class. Must have attributes:
-    - datacube.cube: numpy array of shape (v, x, y)
-    - datacube.wavelength: list of length v
+        An instance of the DataCube class. Must have attributes:
+        - datacube.cube: numpy array of shape (v, x, y)
+        - datacube.wavelength: list of length v
     scale : int
-    The upscaling factor (e.g., 2, 3, or 4) supported by the EDSR model.
+        The upscaling factor (e.g., 2, 3, or 4) supported by the EDSR model.
     model_path : str
-    Filesystem path to the pretrained EDSR `.pb` model file
-    (e.g., `"EDSR_x4.pb"`).
+        Filesystem path to the pretrained EDSR `.pb` model file
+        (e.g., `"EDSR_x4.pb"`).
 
     Returns
     -------
     DataCube
-    A new DataCube instance whose `.cube` has shape
-    (v, x * scale, y * scale) and the same `.wavelength` list.
+        A new DataCube instance
 
     Raises
     ------
     FileNotFoundError
-    If the specified `model_path` does not exist or is unreadable.
+        If the specified `model_path` does not exist or is unreadable.
     cv2.error
-    If OpenCV fails to load the model or perform upsampling.
+        If OpenCV fails to load the model or perform upsampling.
     ValueError
-    If the `scale` is not one of the factors supported by the loaded model.
+        If the `scale` is not one of the factors supported by the loaded model.
 
     Notes
     -----
@@ -124,6 +155,7 @@ def upscale_datacube_edsr(dc: DataCube, scale: int, model_path: str):
     >>> print(dc.cube.shape)
     (v, x*4, y*4)
     """
+
     # Create EDSR super-res object
     if not os.path.isfile(model_path):
         raise FileNotFoundError(f"Model file not found: {model_path}")
@@ -168,29 +200,28 @@ def upscale_datacube_espcn(dc: DataCube, scale: int, model_path: str):
     Parameters
     ----------
     dc : DataCube
-    An instance of the DataCube class. Must have attributes:
-    - .cube: numpy array of shape (v, x, y)
-    - .wavelength: list of length v
+        An instance of the DataCube class. Must have attributes:
+        - .cube: numpy array of shape (v, x, y)
+        - .wavelength: list of length v
     scale : int
-    The upscaling factor (2, 3, or 4) supported by the ESPCN model.
+        The upscaling factor (2, 3, or 4) supported by the ESPCN model.
     model_path : str
-    Filesystem path to the pretrained ESPCN `.pb` model file
-    (e.g., "ESPCN_x3.pb").
+        Filesystem path to the pretrained ESPCN `.pb` model file
+        (e.g., "ESPCN_x3.pb").
 
     Returns
     -------
     DataCube
-    A new DataCube instance whose `.cube` has shape
-    (v, x * scale, y * scale) and the same `.wavelength` list.
+    A new DataCube instance
 
     Raises
     ------
     FileNotFoundError
-    If the specified `model_path` does not exist.
+        If the specified `model_path` does not exist.
     ValueError
-    If `scale` is not in {2, 3, 4}.
+        If `scale` is not in {2, 3, 4}.
     cv2.error
-    If OpenCV fails to load the model or perform upsampling.
+        If OpenCV fails to load the model or perform upsampling.
 
     Notes
     -----
@@ -250,20 +281,19 @@ def upscale_datacube_with_reference(dc: DataCube, reference_image: np.ndarray) -
     Parameters
     ----------
     dc : DataCube
-    The input DataCube to be upscaled. Expected shape (v, x, y).
-
+        The input DataCube to be upscaled. Expected shape (v, x, y).
     reference_image : np.ndarray
-    A high-resolution reference image (e.g., RGB) that defines the target (x, y) resolution.
+        A high-resolution reference image (e.g., RGB) that defines the target (x, y) resolution.
 
     Returns
     -------
     DataCube
-    A new DataCube with the same number of bands, but upscaled to match the reference image's spatial resolution.
+        A new DataCube with the same number of bands, but upscaled to match the reference image's spatial resolution.
 
     Raises
     ------
     ValueError
-    If the reference image resolution is smaller than the datacube resolution.
+        If the reference image resolution is smaller than the datacube resolution.
 
     Notes
     -----
@@ -334,29 +364,28 @@ def upscale_datacube_fsrcnn(dc, scale, model_path):
     Parameters
     ----------
     dc : DataCube
-    An instance of the DataCube class. Must have attributes:
-    - .cube: numpy array of shape (v, x, y)
-    - .wavelength: list of length v
+        An instance of the DataCube class. Must have attributes:
+        - .cube: numpy array of shape (v, x, y)
+        - .wavelength: list of length v
     scale : int
-    The upscaling factor (2, 3, or 4) supported by the FSRCNN model.
+        The upscaling factor (2, 3, or 4) supported by the FSRCNN model.
     model_path : str
-    Filesystem path to the pretrained FSRCNN `.pb` model file
-    (e.g., "FSRCNN_x3.pb").
+        Filesystem path to the pretrained FSRCNN `.pb` model file
+        (e.g., "FSRCNN_x3.pb").
 
     Returns
     -------
     DataCube
-    A new DataCube instance whose `.cube` has shape
-    (v, x * scale, y * scale) and the same `.wavelength` list.
+        A new DataCube instance
 
     Raises
     ------
     FileNotFoundError
-    If the specified `model_path` does not exist.
+        If the specified `model_path` does not exist.
     ValueError
-    If `scale` is not in {2, 3, 4}.
+        If `scale` is not in {2, 3, 4}.
     cv2.error
-    If OpenCV fails to load the model or perform upsampling.
+        If OpenCV fails to load the model or perform upsampling.
 
     Notes
     -----
@@ -399,4 +428,3 @@ def upscale_datacube_fsrcnn(dc, scale, model_path):
     # Create and return new DataCube
     dc.set_cube(up_cube)
     return dc
-

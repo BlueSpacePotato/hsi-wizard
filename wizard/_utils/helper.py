@@ -1,5 +1,5 @@
 """
-_utils/helper.py
+_utils.helper.py
 =================
 
 .. module:: helper

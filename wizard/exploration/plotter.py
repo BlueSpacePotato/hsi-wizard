@@ -1,5 +1,5 @@
 """
-plotter.py
+exploration.plotter.py
 ==========
 
 .. module:: plotter

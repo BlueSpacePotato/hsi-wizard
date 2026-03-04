@@ -1,5 +1,5 @@
 """
-_processing/cluster.py
+_processing.cluster.py
 ========================
 
 .. module:: cluster

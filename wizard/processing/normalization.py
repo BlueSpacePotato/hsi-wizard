@@ -1,33 +1,61 @@
+"""
+wizard.processing.normalization
+===============================
 
-from ..core import DataCube
+.. module:: normalization
+:platform: Unix
+:synopsis: Intensity normalization and inversion utilities for DataCubes.
+
+Module Overview
+---------------
+
+This module provides functions to adjust the intensity values of
+:class:`~wizard.core.DataCube` objects, including value inversion and
+per-layer normalization.
+
+These operations are commonly used to standardize spectral data,
+convert between measurement conventions (e.g., transmission ↔ reflectance),
+or scale intensity ranges for further processing.
+
+All functions modify the provided :class:`DataCube` **in-place** and return
+the same object to allow method chaining.
+
+Functions
+---------
+.. autofunction:: inverse
+.. autofunction:: normalize
+"""
+
+from wizard.core import DataCube
 import numpy as np
+
 
 def inverse(dc: DataCube) -> DataCube:
     """
-Invert the DataCube values.
+    Invert the DataCube values.
 
-This operation is useful for converting between transmission and
-reflectance data, or similar inversions. The formula applied is:
-`tmp = cube * -1`
-`tmp += -tmp.min()`
-The data type of the cube is preserved if it's 'uint16' or 'uint8'
-after temporary conversion to 'float16' for calculation.
+    This operation is useful for converting between transmission and
+    reflectance data, or similar inversions. The formula applied is:
+    `tmp = cube * -1`
+    `tmp += -tmp.min()`
+    The data type of the cube is preserved if it's 'uint16' or 'uint8'
+    after temporary conversion to 'float16' for calculation.
 
-Parameters
-----------
-dc : DataCube
-The DataCube to invert.
+    Parameters
+    ----------
+    dc : DataCube
+        The DataCube to invert.
 
-Returns
--------
-DataCube
-The DataCube with inverted values.
+    Returns
+    -------
+    DataCube
+        The DataCube with inverted values.
 
-Examples
---------
->>> import wizard
->>> dc = wizard.read('example.fsm')
->>> dc.inverse()
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read('example.fsm')
+    >>> dc.inverse()
     """
     dtype = dc.cube.dtype
     if dtype == np.uint16 or dtype == np.uint8:  # Use np types for comparison
@@ -43,31 +71,30 @@ Examples
     return dc
 
 
-
 def normalize(dc: DataCube) -> DataCube:
     """
-Normalize spectral information in the data cube to the range [0, 1].
+    Normalize spectral information in the data cube to the range [0, 1].
 
-For each 2D spatial layer in the DataCube, the normalization is performed by:
-`layer = (layer - min_in_layer) / (max_in_layer - min_in_layer)`
-This scales the intensity values of each layer independently across its
-spatial dimensions.
+    For each 2D spatial layer in the DataCube, the normalization is performed by:
+    `layer = (layer - min_in_layer) / (max_in_layer - min_in_layer)`
+    This scales the intensity values of each layer independently across its
+    spatial dimensions.
 
-Parameters
-----------
-dc : DataCube
-The DataCube instance to normalize.
+    Parameters
+    ----------
+    dc : DataCube
+        The DataCube instance to normalize.
 
-Returns
--------
-DataCube
-The normalized DataCube.
+    Returns
+    -------
+    DataCube
+        The normalized DataCube.
 
-Examples
---------
->>> import wizard
->>> dc = wizard.read('example.fsm')
->>> dc.normalize()
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read('example.fsm')
+    >>> dc.normalize()
     """
     cube = dc.cube.astype(np.float32)
     min_vals = cube.min(axis=(1, 2), keepdims=True)
@@ -79,4 +106,3 @@ Examples
     cube = (cube - min_vals) / range_vals
     dc.set_cube(cube)
     return dc
-

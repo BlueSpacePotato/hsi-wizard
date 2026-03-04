@@ -1,5 +1,5 @@
 """
-surface.py
+exploration.surface.py
 ==========
 
 .. module:: surface

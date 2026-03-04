@@ -1,3 +1,27 @@
+"""
+_utils.example.py
+====================
+
+.. module:: example
+:platform: Unix
+:synopsis: example functions
+
+Module Overview
+---------------
+
+This module contains example functions to
+for viszualizaions in the documentation.
+
+Functions
+---------
+
+.. autofunction:: _draw_circle
+.. autofunction:: _draw_rectangle
+.. autofunction:: _draw_triangle
+.. autofunction:: generate_pattern_stack
+
+"""
+
 import numpy as np
 
 

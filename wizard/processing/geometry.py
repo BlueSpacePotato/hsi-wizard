@@ -1,43 +1,72 @@
+"""
+wizard.processing.geometry
+==========================
 
+.. module:: geometry
+:platform: Unix
+:synopsis: Spatial combination and geometric utilities for DataCubes.
+
+Module Overview
+---------------
+
+This module provides functions for geometric operations on
+:class:`~wizard.core.DataCube` objects, such as merging multiple
+datacubes into a single cube.
+
+Operations may optionally include spatial alignment before combining
+data. All functions modify the provided :class:`DataCube` **in-place**
+and return the same object to allow method chaining.
+
+Functions
+---------
+.. autofunction:: merge_cubes
+"""
+
+
+from skimage.transform import warp
+
+from .._utils.helper import feature_registration, RegistrationError
 from ..core import DataCube
 import numpy as np
+import random
+
 
 def merge_cubes(dc1: DataCube, dc2: DataCube, register: bool = False) -> DataCube:
     """
-Merge two DataCubes into a single DataCube, with optional registration.
+    Merge two DataCubes into a single DataCube, with optional registration.
 
-If both datacubes are already registered and the `register` flag is True,
-the function will sample up to 10 random spectral layers from dc2, attempt to
-register each to the first layer of dc1, choose the transform with the lowest
-mean-squared-error alignment, then apply that best transform to all layers of dc2
-before merging.
+    If both datacubes are already registered and the `register` flag is True,
+    the function will sample up to 10 random spectral layers from dc2, attempt to
+    register each to the first layer of dc1, choose the transform with the lowest
+    mean-squared-error alignment, then apply that best transform to all layers of dc2
+    before merging.
 
-Parameters
-----------
-dc1 : DataCube
-The first DataCube (used as reference).
-dc2 : DataCube
-The second DataCube to be merged into the first.
-register : bool, optional
-If True (default), registration will be attempted if both cubes are marked as registered.
+    Parameters
+    ----------
+    dc1 : DataCube
+        The first DataCube (used as reference).
+    dc2 : DataCube
+        The second DataCube to be merged into the first.
+    register : bool, optional
+        If True (default), registration will be attempted if both cubes are marked as registered.
 
-Returns
--------
-DataCube
-A new DataCube containing merged spatial and spectral data.
+    Returns
+    -------
+    DataCube
+        A new DataCube containing merged spatial and spectral data.
 
-Raises
-------
-NotImplementedError
-If the cubes have mismatched spatial dimensions and cannot be merged,
-or if wavelengths overlap without being purely indices.
+    Raises
+    ------
+    NotImplementedError
+        If the cubes have mismatched spatial dimensions and cannot be merged,
+        or if wavelengths overlap without being purely indices.
 
-Examples
---------
->>> import wizard
->>> dc_a = wizard.read('example.fsm')
->>> dc_b = wizard.read('another_file.csv')
->>> dc_a.merge_cubes(dc_b)
+    Examples
+    --------
+    >>> import wizard
+    >>> dc_a = wizard.read('example.fsm')
+    >>> dc_b = wizard.read('another_file.csv')
+    >>> dc_a.merge_cubes(dc_b)
     """
     c1 = dc1.cube
     c2 = dc2.cube
@@ -100,4 +129,3 @@ Examples
     dc1.set_wavelengths(wave3)
 
     return dc1
-

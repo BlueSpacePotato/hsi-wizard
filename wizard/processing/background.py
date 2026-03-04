@@ -1,3 +1,19 @@
+"""
+processing.background.py
+========================
+
+.. module:: background
+:platform: Unix
+:synopsis: Provides function to manipulate or remove the background of DataCubes.
+
+Module Overview
+---------------
+
+This module includes functions for manipulaiting or removing the background from DataCubes.
+
+"""
+
+
 from ..core import DataCube
 
 import rembg
@@ -18,24 +34,24 @@ def remove_background(dc: DataCube, threshold: int = 50, style: str = 'dark') ->
     Parameters
     ----------
     dc : DataCube
-    DataCube containing the image stack.
+        DataCube containing the image stack.
     threshold : int, optional
-    Threshold value to define the background from the alpha mask,
-    defaults to 50. Pixels with alpha < threshold are considered background.
+        Threshold value to define the background from the alpha mask,
+        defaults to 50. Pixels with alpha < threshold are considered background.
     style : str, optional
-    Style of background removal, 'dark' or 'bright', defaults to 'dark'.
+        Style of background removal, 'dark' or 'bright', defaults to 'dark'.
     If 'dark', background pixels are set to 0.
-    If 'bright', background pixels are set to the max value of the cube.y
+        If 'bright', background pixels are set to the max value of the cube.y
 
     Returns
     -------
     DataCube
-    DataCube with the background removed.
+        DataCube with the background removed.
 
     Raises
     ------
     ValueError
-    If style is not 'dark' or 'bright'.
+        If style is not 'dark' or 'bright'.
 
     Examples
     --------
@@ -60,7 +76,6 @@ def remove_background(dc: DataCube, threshold: int = 50, style: str = 'dark') ->
     return dc
 
 
-
 def remove_vignetting_poly(dc: DataCube, axis: int = 1, slice_params: dict = None) -> DataCube:
     """
     Remove vignetting using polynomial fitting along a specified axis.
@@ -73,25 +88,25 @@ def remove_vignetting_poly(dc: DataCube, axis: int = 1, slice_params: dict = Non
     Parameters
     ----------
     dc : DataCube
-    The DataCube instance to process.
+        The DataCube instance to process.
     axis : int, optional
-    The axis along which to calculate the mean and apply correction.
-    1 for correcting along rows (profile used for columns),
-    2 for correcting along columns (profile used for rows). Defaults to 1.
+        The axis along which to calculate the mean and apply correction.
+        1 for correcting along rows (profile used for columns),
+        2 for correcting along columns (profile used for rows). Defaults to 1.
     slice_params : dict, optional
-    Dictionary for slicing behavior before mean calculation.
-    Keys: ``"start"`` (int), ``"end"`` (int), ``"step"`` (int).
-    Defaults to full slice with step 1.
+        Dictionary for slicing behavior before mean calculation.
+        Keys: ``"start"`` (int), ``"end"`` (int), ``"step"`` (int).
+        Defaults to full slice with step 1.
 
     Returns
     -------
     DataCube
-    The processed DataCube with vignetting removed.
+        The processed DataCube with vignetting removed.
 
     Raises
     ------
     ValueError
-    If the DataCube is empty or axis is not 1 or 2.
+        If the DataCube is empty or axis is not 1 or 2.
 
     Examples
     --------
@@ -142,23 +157,23 @@ def remove_vignetting(dc: DataCube, sigma: float = 50, clip: bool = True, epsilo
     Parameters
     ----------
     dc : DataCube
-    The input DataCube (bands, height, width).
+        The input DataCube (bands, height, width).
     sigma : float, optional
-    Standard deviation for Gaussian blur, controlling smoothness.
-    Larger sigma means coarser background estimation. Defaults to 50.
+        Standard deviation for Gaussian blur, controlling smoothness.
+        Larger sigma means coarser background estimation. Defaults to 50.
     clip : bool, optional
-    If True and the original DataCube dtype is integer,
-    clip output values to the valid range of that integer type.
-    Defaults to True.
+        If True and the original DataCube dtype is integer,
+        clip output values to the valid range of that integer type.
+        Defaults to True.
     epsilon : float, optional
-    A small constant to add to the background before division
-    to prevent division by zero errors. Defaults to 1e-6.
+        A small constant to add to the background before division
+        to prevent division by zero errors. Defaults to 1e-6.
 
     Returns
     -------
     DataCube
-    The DataCube with vignetting corrected. The output cube has the
-    same shape and dtype as the input.
+        The DataCube with vignetting corrected. The output cube has the
+        same shape and dtype as the input.
 
     Examples
     --------
@@ -200,24 +215,22 @@ def remove_vignette(dc: DataCube, vignette_map: np.ndarray, flip: bool = False) 
     Parameters
     ----------
     dc: DataCube
-    An instance of the DataCube class. Must have attributes:
-    - .cube: numpy array of shape (v, x, y)
-    - .wavelength: list of length v
+        An instance of the DataCube class.
     vignette_map : np.ndarray
-    2D array of shape (x, y) representing the vignette intensity to subtract.
-    Values should be on the same scale as the cube’s pixel intensities.
+        2D array of shape (x, y) representing the vignette intensity to subtract.
+        Values should be on the same scale as the cube’s pixel intensities.
     flip : bool, default=False
-    If True, invert the vignette_map before subtraction.
+        If True, invert the vignette_map before subtraction.
 
     Returns
     -------
     None
-    Modifies the DataCube.cube in-place.
+        Modifies the DataCube.cube in-place.
 
     Raises
     ------
     ValueError
-    If vignette_map.shape does not match the spatial dimensions of the cube.
+        If vignette_map.shape does not match the spatial dimensions of the cube.
 
     Notes
     -----
@@ -254,4 +267,3 @@ def remove_vignette(dc: DataCube, vignette_map: np.ndarray, flip: bool = False) 
     dc.set_cube(cube)
 
     return dc
-

@@ -1,3 +1,26 @@
+"""
+wizard.processing.denoise
+========================
+
+.. module:: #denoise
+:platform: Unix
+:synopsis: Denoising and artifact removal utilities for DataCubes.
+
+Module Overview
+---------------
+
+This module provides functions to reduce noise and remove common artifacts in
+:class:`~wizard.core.DataCube` objects, including spike removal in spectral
+signals and spatial smoothing of individual spectral bands.
+
+All functions modify the provided :class:`DataCube` **in-place** and return the
+same object to allow method chaining.
+
+Functions
+---------
+.. autofunction:: remove_spikes
+.. autofunction:: uniform_filter_dc
+"""
 
 from ..core import DataCube
 from .._utils.helper import _process_slice
@@ -20,21 +43,21 @@ def remove_spikes(dc: DataCube, threshold: int = 6500, window: int = 5) -> DataC
     Parameters
     ----------
     dc : DataCube
-    The input DataCube with shape (v, x, y), where v is the number of spectral bands.
+        The input DataCube with shape (v, x, y), where v is the number of spectral bands.
     threshold : int, optional
-    Threshold for spike detection via modified z-score, defaults to 6500.
+        Threshold for spike detection via modified z-score, defaults to 6500.
     window : int, optional
-    Window size (in spectral channels) for mean replacement of spikes, defaults to 5.
+        Window size (in spectral channels) for mean replacement of spikes, defaults to 5.
 
     Returns
     -------
     DataCube
-    A new DataCube instance with spikes removed per-pixel.
+        A new DataCube instance with spikes removed per-pixel.
 
     Raises
     ------
     ValueError
-    If `window` is not in the range [1, number of spectral bands].
+        If `window` is not in the range [1, number of spectral bands].
 
     Notes
     -----
@@ -89,22 +112,22 @@ def uniform_filter_dc(dc, size=3):
     Parameters
     ----------
     dc : DataCube
-    The DataCube instance whose `cube` attribute (a numpy array of shape (v, x, y))
-    will be smoothed across the spatial dimensions for each spectral band.
+        The DataCube instance whose `cube` attribute (a numpy array of shape (v, x, y))
+        will be smoothed across the spatial dimensions for each spectral band.
     size : int, optional
-    The size of the square window used by `scipy.ndimage.uniform_filter` for
-    smoothing. Must be a positive odd integer. Defaults to 3.
+        The size of the square window used by `scipy.ndimage.uniform_filter` for
+        smoothing. Must be a positive odd integer. Defaults to 3.
 
     Returns
     -------
     DataCube
-    The same DataCube instance, with its `cube` attribute replaced by the
-    smoothed data of shape (v, x, y).
+        The same DataCube instance, with its `cube` attribute replaced by the
+        smoothed data of shape (v, x, y).
 
     Raises
     ------
     ValueError
-    If `size` is not a positive integer.
+        If `size` is not a positive integer.
 
     Notes
     -----

@@ -1,5 +1,5 @@
 """
-_processing/spectral.py
+processing.spectral.py
 ========================
 
 .. module:: spectral

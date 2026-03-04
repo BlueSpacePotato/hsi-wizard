@@ -1,3 +1,31 @@
+"""
+wizard.processing.registration
+==============================
+
+.. module:: wizard.processing.registration
+:platform: Unix
+:synopsis: Spatial registration utilities for DataCube layers.
+
+Module Overview
+---------------
+
+This module provides functions for spatial alignment (registration) of
+spectral layers within a :class:`~wizard.core.DataCube`.
+
+The implemented methods use feature-based homography estimation to align
+each layer to a reference layer. A simple registration method and a more
+robust fallback-based approach are provided.
+
+All functions operate **in-place** on the given :class:`DataCube` and return
+the modified object to allow method chaining.
+
+Functions
+---------
+.. autofunction:: register_layers_simple
+.. autofunction:: register_layers_best
+"""
+
+
 import cv2
 
 from .._utils.helper import feature_registration, RegistrationError, decompose_homography, normalize_polarity, \
@@ -5,33 +33,34 @@ from .._utils.helper import feature_registration, RegistrationError, decompose_h
 from ..core import DataCube
 import copy
 
+
 def register_layers_simple(dc: DataCube, max_features: int = 5000, match_percent: float = 0.1) -> DataCube:
     """
-Align images within a DataCube using simple feature-based registration.
+    Align images within a DataCube using simple feature-based registration.
 
-Each layer in the DataCube is aligned to the first layer (index 0)
-using ORB feature detection and homography estimation via `_feature_registration`.
+    Each layer in the DataCube is aligned to the first layer (index 0)
+    using ORB feature detection and homography estimation via `_feature_registration`.
 
-Parameters
-----------
-dc : DataCube
-The DataCube whose layers are to be registered.
-max_features : int, optional
-Maximum number of keypoint regions to detect, defaults to 5000.
-match_percent : float, optional
-Percentage of keypoint matches to consider for homography,
-defaults to 0.1 (10%).
+    Parameters
+    ----------
+    dc : DataCube
+        The DataCube whose layers are to be registered.
+    max_features : int, optional
+        Maximum number of keypoint regions to detect, defaults to 5000.
+    match_percent : float, optional
+        Percentage of keypoint matches to consider for homography,
+        defaults to 0.1 (10%).
 
-Returns
--------
-DataCube
-The DataCube with layers registered.
+    Returns
+    -------
+    DataCube
+    The DataCube with layers registered.
 
-Examples
---------
->>> import wizard
->>> dc = wizard.read('example.fsm')
->>> dc.register_layers_simple()
+    Examples
+    --------
+    >>> import wizard
+    >>> dc = wizard.read('example.fsm')
+    >>> dc.register_layers_simple()
     """
     o_img = dc.cube[0, :, :]
     for i in range(dc.cube.shape[0]):
@@ -52,15 +81,7 @@ Examples
     return dc
 
 
-
-def register_layers_best(
-        dc: DataCube,
-        ref_layer: int = 0,
-        max_features: int = 5000,
-        match_percent: float = 0.1,
-        rot_thresh: float = 20.0,
-        scale_thresh: float = 1.1
-) -> DataCube:
+def register_layers_best(dc: DataCube, ref_layer: int = 0, max_features: int = 5000, match_percent: float = 0.1, rot_thresh: float = 20.0, scale_thresh: float = 1.1) -> DataCube:
     """
     Align DataCube layers with robust registration.
 
@@ -73,19 +94,19 @@ def register_layers_best(
     Parameters
     ----------
     dc : DataCube
-    The DataCube to process.
+        The DataCube to process.
     ref_layer : int, optional
-    Index of the reference layer, defaults to 0.
+        Index of the reference layer, defaults to 0.
     max_features : int, optional
-    Maximum features for ORB, defaults to 5000.
+        Maximum features for ORB, defaults to 5000.
     match_percent : float, optional
-    Match percentage for ORB, defaults to 0.1.
+        Match percentage for ORB, defaults to 0.1.
     rot_thresh : float, optional
-    Rotation threshold (degrees) for homography validation,
-    defaults to 20.0.
+        Rotation threshold (degrees) for homography validation,
+        defaults to 20.0.
     scale_thresh : float, optional
-    Scale threshold for homography validation, defaults to 1.1.
-    Checks if max_scale <= scale_thresh and min_scale >= 1/scale_thresh.
+        Scale threshold for homography validation, defaults to 1.1.
+        Checks if max_scale <= scale_thresh and min_scale >= 1/scale_thresh.
 
     Returns
     -------
@@ -172,4 +193,3 @@ def register_layers_best(
                 raise RuntimeError(f"Layer {i}: alignment failed after retry.")
     dc.registered = True
     return dc
-
