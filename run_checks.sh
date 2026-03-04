@@ -3,6 +3,18 @@
 # Activate the virtual environment
 source .venv/bin/activate
 
+
+# Ensure pydocstyle is installed
+if ! command -v pydocstyle >/dev/null 2>&1; then
+    echo "pydocstyle not found. Installing..."
+    pip install pydocstyle
+fi
+
+if ! command -v flake8 >/dev/null 2>&1; then
+    echo "pydocstyle not found. Installing..."
+    pip install flake8
+fi
+
 # Run pydocstyle
 if pydocstyle wizard; then
 # Run flake8
